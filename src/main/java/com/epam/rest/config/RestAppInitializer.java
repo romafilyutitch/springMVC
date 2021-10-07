@@ -1,8 +1,8 @@
-package spittr.config;
+package com.epam.rest.config;
 
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
-public class SpittrWebAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
+public class RestAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
     @Override
     protected Class<?>[] getRootConfigClasses() {
         return new Class<?>[] {RootConfig.class};
