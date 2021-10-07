@@ -3,9 +3,6 @@ plugins {
     id 'war'
 }
 
-group 'org.example'
-version '1.0-SNAPSHOT'
-
 repositories {
     mavenCentral()
 }
@@ -14,10 +11,13 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
     implementation 'org.springframework:spring-webmvc:5.3.10'
-    compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
+    implementation 'javax.servlet:javax.servlet-api:4.0.1'
     testImplementation 'org.springframework:spring-test:5.3.10'
     implementation group: 'javax.servlet', name: 'jstl', version: '1.2'
     implementation 'org.hibernate.validator:hibernate-validator:6.2.0.Final'
+    testImplementation 'org.mockito:mockito-core:3.12.4'
+    testImplementation'org.hamcrest:hamcrest-library:2.1'
+
 }
 
 test {
