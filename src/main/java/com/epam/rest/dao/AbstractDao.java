@@ -2,6 +2,7 @@ package com.epam.rest.dao;
 
 import com.epam.rest.model.Entity;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Component
 public abstract class AbstractDao<T extends Entity> implements Dao<T> {
     private final String findAllSql;
     private final String findByIdSql;

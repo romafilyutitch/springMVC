@@ -33,8 +33,8 @@ public class GiftCertificateJdbcDao extends AbstractDao<GiftCertificate> impleme
         double price = resultSet.getDouble("price");
         int duration = resultSet.getInt("duration");
         LocalDateTime createDate = resultSet.getObject("create_date", LocalDateTime.class);
-        LocalDateTime lastUpdatDate = resultSet.getObject("last_update_date", LocalDateTime.class);
-        return new GiftCertificate(id, name, description, price, duration, createDate, lastUpdatDate);
+        LocalDateTime lastUpdateDate = resultSet.getObject("last_update_date", LocalDateTime.class);
+        return new GiftCertificate(id, name, description, price, duration, createDate, lastUpdateDate);
     }
 
     @Override

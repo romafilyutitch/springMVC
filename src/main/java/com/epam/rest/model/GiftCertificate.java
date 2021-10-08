@@ -1,5 +1,11 @@
 package com.epam.rest.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import org.springframework.format.annotation.DateTimeFormat;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +65,7 @@ public class GiftCertificate extends Entity {
     public void setDuration(Integer duration) {
         this.duration = duration;
     }
-
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     public LocalDateTime getCreateDate() {
         return createDate;
     }
@@ -67,7 +73,7 @@ public class GiftCertificate extends Entity {
     public void setCreateDate(LocalDateTime createDate) {
         this.createDate = createDate;
     }
-
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     public LocalDateTime getLastUpdateDate() {
         return lastUpdateDate;
     }
