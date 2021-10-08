@@ -1,12 +1,11 @@
 package com.epam.rest.conttoller;
 
 import com.epam.rest.model.Tag;
+import com.epam.rest.service.TagExistsException;
 import com.epam.rest.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -28,5 +27,14 @@ public class TagController {
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public Tag showTag(@PathVariable("id") long id) {
         return tagService.findById(id).get();
+    }
+
+    @RequestMapping(method = RequestMethod.POST)
+    public Tag save(@RequestBody Tag tag) {
+        try {
+            return tagService.save(tag);
+        } catch (TagExistsException e) {
+            return null;
+        }
     }
 }

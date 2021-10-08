@@ -10,6 +10,10 @@ public class Tag extends Entity {
         this.name = name;
     }
 
+    public Tag() {
+        super(null);
+    }
+
     public Tag(String name) {
         this(null, name);
     }

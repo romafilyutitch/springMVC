@@ -16,6 +16,10 @@ public class CertificateTag extends Entity {
         this(null, certificateId, tagId);
     }
 
+    public CertificateTag() {
+        super(null);
+    }
+
     public Long getCertificateId() {
         return certificateId;
     }

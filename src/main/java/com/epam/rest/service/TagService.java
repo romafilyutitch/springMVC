@@ -10,7 +10,7 @@ public interface TagService {
 
     Optional<Tag> findById(Long id);
 
-    Tag save(Tag tag);
+    Tag save(Tag tag) throws TagExistsException;
 
     Tag update(Tag tag);
 

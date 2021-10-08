@@ -27,7 +27,12 @@ public class TagRestService implements TagService {
     }
 
     @Override
-    public Tag save(Tag tag) {
+    public Tag save(Tag tag) throws TagExistsException {
+        String tagName = tag.getName();
+        Optional<Tag> foundTag = tagDao.findByName(tagName);
+        if (foundTag.isPresent()) {
+            throw new TagExistsException();
+        }
         return tagDao.save(tag);
     }
 
