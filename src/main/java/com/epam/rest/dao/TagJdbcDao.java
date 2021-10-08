@@ -43,7 +43,7 @@ public class TagJdbcDao extends AbstractDao<Tag> implements TagDao {
     @Override
     public Optional<Tag> findByName(String name) {
         try (Connection connection = dataSource.getConnection();
-        PreparedStatement findByNameStatement = connection.prepareStatement(FIND_BY_NAME_SQL)) {
+             PreparedStatement findByNameStatement = connection.prepareStatement(FIND_BY_NAME_SQL)) {
             findByNameStatement.setString(1, name);
             ResultSet resultSet = findByNameStatement.executeQuery();
             if (resultSet.next()) {

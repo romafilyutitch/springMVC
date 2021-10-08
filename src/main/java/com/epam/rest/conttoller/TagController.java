@@ -4,7 +4,6 @@ import com.epam.rest.model.Tag;
 import com.epam.rest.service.TagExistsException;
 import com.epam.rest.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,5 +35,10 @@ public class TagController {
         } catch (TagExistsException e) {
             return null;
         }
+    }
+
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    public void delete(@PathVariable("id") long id) {
+        tagService.delete(id);
     }
 }

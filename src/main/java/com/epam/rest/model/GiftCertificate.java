@@ -1,13 +1,8 @@
 package com.epam.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -18,9 +13,9 @@ public class GiftCertificate extends Entity {
     private Integer duration;
     private LocalDateTime createDate;
     private LocalDateTime lastUpdateDate;
-    private List<Tag> tags = new ArrayList<>();
+    private List<Tag> tags;
 
-    public GiftCertificate(Long id, String name, String description, Double price, Integer duration, LocalDateTime createDate, LocalDateTime lastUpdateDate) {
+    public GiftCertificate(Long id, String name, String description, Double price, Integer duration, LocalDateTime createDate, LocalDateTime lastUpdateDate, List<Tag> tags) {
         super(id);
         this.name = name;
         this.description = description;
@@ -28,10 +23,15 @@ public class GiftCertificate extends Entity {
         this.duration = duration;
         this.createDate = createDate;
         this.lastUpdateDate = lastUpdateDate;
+        this.tags = tags;
     }
 
-    public GiftCertificate(String name, String description, Double price, Integer duration, LocalDateTime createDate, LocalDateTime lastUpdateDate) {
-        this(null, name, description, price, duration, createDate, lastUpdateDate);
+    public GiftCertificate(String name, String description, Double price, Integer duration, LocalDateTime createDate, LocalDateTime lastUpdateDate, List<Tag> tags) {
+        this(null, name, description, price, duration, createDate, lastUpdateDate, tags);
+    }
+
+    public GiftCertificate() {
+        super(null);
     }
 
     public String getName() {
@@ -65,7 +65,8 @@ public class GiftCertificate extends Entity {
     public void setDuration(Integer duration) {
         this.duration = duration;
     }
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     public LocalDateTime getCreateDate() {
         return createDate;
     }
@@ -73,7 +74,8 @@ public class GiftCertificate extends Entity {
     public void setCreateDate(LocalDateTime createDate) {
         this.createDate = createDate;
     }
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     public LocalDateTime getLastUpdateDate() {
         return lastUpdateDate;
     }

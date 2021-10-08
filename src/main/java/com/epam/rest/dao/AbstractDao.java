@@ -33,13 +33,13 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
     public List<T> findAll() {
         List<T> entities = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
-        Statement findAllStatement = connection.createStatement();
-        ResultSet resultSet = findAllStatement.executeQuery(findAllSql)) {
-            while(resultSet.next()) {
+             Statement findAllStatement = connection.createStatement();
+             ResultSet resultSet = findAllStatement.executeQuery(findAllSql)) {
+            while (resultSet.next()) {
                 T entity = mapResultSetToEntity(resultSet);
                 entities.add(entity);
             }
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             throw new DaoException(e);
         }
         return entities;
@@ -47,11 +47,11 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
 
     @Override
     public Optional<T> findById(Long id) {
-        try(Connection connection = dataSource.getConnection();
-            PreparedStatement findByIdStatement = connection.prepareStatement(findByIdSql)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement findByIdStatement = connection.prepareStatement(findByIdSql)) {
             findByIdStatement.setLong(1, id);
             ResultSet resultSet = findByIdStatement.executeQuery();
-            if(resultSet.next()) {
+            if (resultSet.next()) {
                 return Optional.of(mapResultSetToEntity(resultSet));
             } else {
                 return Optional.empty();
@@ -64,7 +64,7 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
     @Override
     public T save(T entity) {
         try (Connection connection = dataSource.getConnection();
-        PreparedStatement saveStatement = connection.prepareStatement(saveSql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement saveStatement = connection.prepareStatement(saveSql, Statement.RETURN_GENERATED_KEYS)) {
             mapEntityToSavePreparedStatement(saveStatement, entity);
             saveStatement.executeUpdate();
             ResultSet generatedKeys = saveStatement.getGeneratedKeys();
@@ -94,6 +94,7 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement deleteStatement = connection.prepareStatement(deleteSql)) {
             deleteStatement.setLong(1, id);
+            deleteStatement.executeUpdate();
         } catch (SQLException e) {
             throw new DaoException(e);
         }
@@ -101,7 +102,7 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
 
     protected abstract T mapResultSetToEntity(ResultSet resultSet) throws SQLException;
 
-    protected abstract void mapEntityToSavePreparedStatement(PreparedStatement saveStatement, T entity ) throws SQLException;
+    protected abstract void mapEntityToSavePreparedStatement(PreparedStatement saveStatement, T entity) throws SQLException;
 
     protected abstract void mapEntityToUpdatePreparedStatement(PreparedStatement updateStatement, T entity) throws SQLException;
 }

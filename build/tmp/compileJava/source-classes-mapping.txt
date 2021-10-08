@@ -1,5 +1,3 @@
-com/epam/rest/dao/GifCertificateDao.java
- com.epam.rest.dao.GifCertificateDao
 com/epam/rest/dao/GiftCertificateJdbcDao.java
  com.epam.rest.dao.GiftCertificateJdbcDao
 com/epam/rest/service/TagService.java
@@ -14,8 +12,8 @@ com/epam/rest/conttoller/TagController.java
  com.epam.rest.conttoller.TagController
 com/epam/rest/model/CertificateTag.java
  com.epam.rest.model.CertificateTag
-com/epam/rest/conttoller/Controller.java
- com.epam.rest.conttoller.Controller
+com/epam/rest/service/GiftCertificateService.java
+ com.epam.rest.service.GiftCertificateService
 com/epam/rest/dao/DaoException.java
  com.epam.rest.dao.DaoException
 com/epam/rest/config/WebConfig.java
@@ -36,7 +34,15 @@ com/epam/rest/config/RootConfig.java
  com.epam.rest.config.RootConfig
 com/epam/rest/dao/CertificateTagJdbcDao.java
  com.epam.rest.dao.CertificateTagJdbcDao
+com/epam/rest/conttoller/GiftCertificateController.java
+ com.epam.rest.conttoller.GiftCertificateController
+com/epam/rest/service/GifCertificateRestService.java
+ com.epam.rest.service.GifCertificateRestService
+com/epam/rest/service/CertificateExistsException.java
+ com.epam.rest.service.CertificateExistsException
 com/epam/rest/config/RestAppInitializer.java
  com.epam.rest.config.RestAppInitializer
+com/epam/rest/dao/GiftCertificateDao.java
+ com.epam.rest.dao.GiftCertificateDao
 com/epam/rest/dao/TagDao.java
  com.epam.rest.dao.TagDao
