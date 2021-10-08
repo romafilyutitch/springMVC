@@ -1,6 +1,7 @@
 package com.epam.rest.dao;
 
 import com.epam.rest.model.Tag;
+import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -8,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
 
+@Component
 public class TagJdbcDao extends AbstractDao<Tag> implements TagDao {
     private static final String FIND_ALL_SQL = "select * from tag";
     private static final String FIND_BY_ID_SQL = "select * from tag where id = ?";

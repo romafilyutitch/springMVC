@@ -1,6 +1,7 @@
 package com.epam.rest.model;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -11,9 +12,9 @@ public class GiftCertificate extends Entity {
     private Integer duration;
     private LocalDateTime createDate;
     private LocalDateTime lastUpdateDate;
-    private List<Tag> tags;
+    private List<Tag> tags = new ArrayList<>();
 
-    public GiftCertificate(Long id, String name, String description, Double price, Integer duration, LocalDateTime createDate, LocalDateTime lastUpdateDate, List<Tag> tags) {
+    public GiftCertificate(Long id, String name, String description, Double price, Integer duration, LocalDateTime createDate, LocalDateTime lastUpdateDate) {
         super(id);
         this.name = name;
         this.description = description;
@@ -21,11 +22,10 @@ public class GiftCertificate extends Entity {
         this.duration = duration;
         this.createDate = createDate;
         this.lastUpdateDate = lastUpdateDate;
-        this.tags = tags;
     }
 
-    public GiftCertificate(String name, String description, Double price, Integer duration, LocalDateTime createDate, LocalDateTime lastUpdateDate, List<Tag> tags) {
-        this(null, name, description, price, duration, createDate, lastUpdateDate, tags);
+    public GiftCertificate(String name, String description, Double price, Integer duration, LocalDateTime createDate, LocalDateTime lastUpdateDate) {
+        this(null, name, description, price, duration, createDate, lastUpdateDate);
     }
 
     public String getName() {
