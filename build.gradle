@@ -22,6 +22,7 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-core:2.13.0'
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.13.0'
     implementation 'mysql:mysql-connector-java:8.0.26'
+    implementation 'org.apache.commons:commons-dbcp2:2.9.0'
 }
 
 test {
