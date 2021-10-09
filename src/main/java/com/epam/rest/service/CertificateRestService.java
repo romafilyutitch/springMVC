@@ -1,7 +1,7 @@
 package com.epam.rest.service;
 
 import com.epam.rest.dao.CertificateTagDao;
-import com.epam.rest.dao.GiftCertificateDao;
+import com.epam.rest.dao.CertificateDao;
 import com.epam.rest.dao.TagDao;
 import com.epam.rest.model.CertificateTag;
 import com.epam.rest.model.GiftCertificate;
@@ -14,13 +14,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
-public class GifCertificateRestService implements GiftCertificateService {
-    private GiftCertificateDao giftCertificateDao;
+public class CertificateRestService implements GiftCertificateService {
+    private CertificateDao giftCertificateDao;
     private CertificateTagDao certificateTagDao;
     private TagDao tagDao;
 
     @Autowired
-    public GifCertificateRestService(GiftCertificateDao giftCertificateDao, CertificateTagDao certificateTagDao, TagDao tagDao) {
+    public CertificateRestService(CertificateDao giftCertificateDao, CertificateTagDao certificateTagDao, TagDao tagDao) {
         this.giftCertificateDao = giftCertificateDao;
         this.certificateTagDao = certificateTagDao;
         this.tagDao = tagDao;
