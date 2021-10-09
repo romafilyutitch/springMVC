@@ -1,10 +1,10 @@
 package com.epam.rest.service;
 
-import com.epam.rest.dao.CertificateTagDao;
 import com.epam.rest.dao.CertificateDao;
+import com.epam.rest.dao.CertificateTagDao;
 import com.epam.rest.dao.TagDao;
+import com.epam.rest.model.Certificate;
 import com.epam.rest.model.CertificateTag;
-import com.epam.rest.model.GiftCertificate;
 import com.epam.rest.model.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -27,36 +27,36 @@ public class CertificateRestService implements GiftCertificateService {
     }
 
     @Override
-    public List<GiftCertificate> findAll() {
-        List<GiftCertificate> allCertificates = giftCertificateDao.findAll();
-        for (GiftCertificate certificate : allCertificates) {
+    public List<Certificate> findAll() {
+        List<Certificate> allCertificates = giftCertificateDao.findAll();
+        for (Certificate certificate : allCertificates) {
             addTagsToCertificate(certificate);
         }
         return allCertificates;
     }
 
     @Override
-    public Optional<GiftCertificate> findById(Long id) {
-        Optional<GiftCertificate> foundCertificate = giftCertificateDao.findById(id);
+    public Optional<Certificate> findById(Long id) {
+        Optional<Certificate> foundCertificate = giftCertificateDao.findById(id);
         foundCertificate.ifPresent(this::addTagsToCertificate);
         return foundCertificate;
     }
 
     @Override
-    public Optional<GiftCertificate> findByName(String name) {
-        Optional<GiftCertificate> foundCertificate = giftCertificateDao.findByName(name);
+    public Optional<Certificate> findByName(String name) {
+        Optional<Certificate> foundCertificate = giftCertificateDao.findByName(name);
         foundCertificate.ifPresent(this::addTagsToCertificate);
         return foundCertificate;
     }
 
     @Override
-    public List<GiftCertificate> findByTagsNames(List<String> tagNames) {
-        List<GiftCertificate> giftCertificates = new ArrayList<>();
+    public List<Certificate> findByTagsNames(List<String> tagNames) {
+        List<Certificate> giftCertificates = new ArrayList<>();
         for (String tagName : tagNames) {
             Optional<Tag> foundTag = tagDao.findByName(tagName);
             List<CertificateTag> foundCertificateTagList = certificateTagDao.findByTagId(foundTag.get().getId());
             for (CertificateTag certificateTag : foundCertificateTagList) {
-                Optional<GiftCertificate> foundCertificate = giftCertificateDao.findById(certificateTag.getCertificateId());
+                Optional<Certificate> foundCertificate = giftCertificateDao.findById(certificateTag.getCertificateId());
                 giftCertificates.add(foundCertificate.get());
             }
         }
@@ -64,12 +64,12 @@ public class CertificateRestService implements GiftCertificateService {
     }
 
     @Override
-    public GiftCertificate save(GiftCertificate certificate) throws CertificateExistsException {
-        Optional<GiftCertificate> foundCertificate = giftCertificateDao.findByName(certificate.getName());
+    public Certificate save(Certificate certificate) throws CertificateExistsException {
+        Optional<Certificate> foundCertificate = giftCertificateDao.findByName(certificate.getName());
         if (foundCertificate.isPresent()) {
             throw new CertificateExistsException();
         }
-        GiftCertificate savedCertificate = giftCertificateDao.save(certificate);
+        Certificate savedCertificate = giftCertificateDao.save(certificate);
         List<Tag> tags = savedCertificate.getTags();
         for (Tag tag : tags) {
             Optional<Tag> foundTag = tagDao.findByName(tag.getName());
@@ -86,7 +86,7 @@ public class CertificateRestService implements GiftCertificateService {
     }
 
     @Override
-    public GiftCertificate update(Long id, GiftCertificate certificate) {
+    public Certificate update(Long id, Certificate certificate) {
         return giftCertificateDao.update(certificate);
     }
 
@@ -95,7 +95,7 @@ public class CertificateRestService implements GiftCertificateService {
         giftCertificateDao.delete(id);
     }
 
-    private void addTagsToCertificate(GiftCertificate certificate) {
+    private void addTagsToCertificate(Certificate certificate) {
         List<CertificateTag> certificateTagList = certificateTagDao.findByCertificateId(certificate.getId());
         for (CertificateTag certificateTag : certificateTagList) {
             Optional<Tag> tagDaoById = tagDao.findById(certificateTag.getTagId());

@@ -3,8 +3,12 @@ package com.epam.rest.dao;
 import com.epam.rest.model.Certificate;
 import org.springframework.stereotype.Component;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Optional;
 
 @Component
@@ -12,8 +16,10 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     private static final String FIND_ALL_SQL = "select * from gift_certificate";
     private static final String FIND_BY_ID_SQL = "select * from gift_certificate where id = ?";
     private static final String FIND_BY_NAME_SQL = "select * from gift_certificate where name = ?";
-    private static final String SAVE_SQL = "insert into gift_certificate (name, description, price, duration) values (?, ?, ?, ?)";
-    private static final String UPDATE_SQL = "update gift_certificate set name = ?, description = ?, price = ?, duration = ? where id = ?";
+    private static final String SAVE_SQL = "insert into gift_certificate (name, description, price, duration, create_date, last_update_date)" +
+            " values (?, ?, ?, ?, ?, ?)";
+    private static final String UPDATE_SQL = "update gift_certificate set name = ?, description = ?, price = ?, duration = ?, create_date = ?, last_update_date = ? " +
+            "where id = ?";
     private static final String DELETE_SQL = "delete from gift_certificate where id = ?";
 
     public CertificateJdbcDao() {
@@ -29,7 +35,7 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         int duration = resultSet.getInt("duration");
         LocalDateTime createDate = resultSet.getObject("create_date", LocalDateTime.class);
         LocalDateTime lastUpdateDate = resultSet.getObject("last_update_date", LocalDateTime.class);
-        return new Certificate(id, name, description, price, duration, createDate, lastUpdateDate);
+        return new Certificate(id, name, description, price, duration, createDate, lastUpdateDate, new ArrayList<>());
     }
 
     @Override

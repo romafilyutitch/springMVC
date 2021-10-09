@@ -1,6 +1,6 @@
 package com.epam.rest.conttoller;
 
-import com.epam.rest.model.GiftCertificate;
+import com.epam.rest.model.Certificate;
 import com.epam.rest.service.CertificateExistsException;
 import com.epam.rest.service.GiftCertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,27 +11,27 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/GiftCertificates")
-public class GiftCertificateController {
+public class CertificateController {
     private GiftCertificateService giftCertificateService;
 
     @Autowired
-    public GiftCertificateController(GiftCertificateService giftCertificateService) {
+    public CertificateController(GiftCertificateService giftCertificateService) {
         this.giftCertificateService = giftCertificateService;
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public List<GiftCertificate> showAllGiftCertificates() {
+    public List<Certificate> showAllGiftCertificates() {
         return giftCertificateService.findAll();
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    public GiftCertificate showGiftCertificate(@PathVariable("id") long id) {
-        Optional<GiftCertificate> foundCertificate = giftCertificateService.findById(id);
+    public Certificate showGiftCertificate(@PathVariable("id") long id) {
+        Optional<Certificate> foundCertificate = giftCertificateService.findById(id);
         return foundCertificate.get();
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public GiftCertificate save(@RequestBody GiftCertificate certificate) {
+    public Certificate save(@RequestBody Certificate certificate) {
         try {
             return giftCertificateService.save(certificate);
         } catch (CertificateExistsException e) {
@@ -40,7 +40,7 @@ public class GiftCertificateController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.POST)
-    public GiftCertificate update(@PathVariable("id") long id, @RequestBody GiftCertificate certificate) {
+    public Certificate update(@PathVariable("id") long id, @RequestBody Certificate certificate) {
         return giftCertificateService.update(id, certificate);
     }
 
