@@ -35,12 +35,8 @@ public class CertificateController {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public Certificate saveCertificate(@RequestBody Certificate certificate) {
-        try {
-            return certificateService.save(certificate);
-        } catch (CertificateExistsException e) {
-            return null;
-        }
+    public Certificate saveCertificate(@RequestBody Certificate certificate) throws CertificateExistsException {
+        return certificateService.save(certificate);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.POST)

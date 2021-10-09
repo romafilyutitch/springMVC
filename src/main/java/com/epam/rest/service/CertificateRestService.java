@@ -29,23 +29,18 @@ public class CertificateRestService implements CertificateService {
     @Override
     public List<Certificate> findAll() {
         List<Certificate> allCertificates = certificateDao.findAll();
-        for (Certificate certificate : allCertificates) {
-            addTagsToCertificate(certificate);
-        }
         return allCertificates;
     }
 
     @Override
     public Optional<Certificate> findById(Long id) {
         Optional<Certificate> foundCertificate = certificateDao.findById(id);
-        foundCertificate.ifPresent(this::addTagsToCertificate);
         return foundCertificate;
     }
 
     @Override
     public Optional<Certificate> findByName(String name) {
         Optional<Certificate> foundCertificate = certificateDao.findByName(name);
-        foundCertificate.ifPresent(this::addTagsToCertificate);
         return foundCertificate;
     }
 
@@ -65,19 +60,7 @@ public class CertificateRestService implements CertificateService {
 
     @Override
     public Certificate save(Certificate certificate) throws CertificateExistsException {
-        Optional<Certificate> foundCertificate = certificateDao.findByName(certificate.getName());
-        if (foundCertificate.isPresent()) {
-            throw new CertificateExistsException();
-        }
-        Certificate savedCertificate = certificateDao.save(certificate);
-        List<Tag> tags = savedCertificate.getTags();
-        for (Tag tag : tags) {
-            Optional<Tag> optionalTag = tagDao.findByName(tag.getName());
-            Tag savedTag = optionalTag.isEmpty() ? tagDao.save(tag) : optionalTag.get();
-            CertificateTag certificateTag = new CertificateTag(savedCertificate.getId(), savedTag.getId());
-            certificateTagDao.save(certificateTag);
-        }
-        return findById(savedCertificate.getId()).get();
+        return certificateDao.save(certificate);
     }
 
     @Override
@@ -109,11 +92,4 @@ public class CertificateRestService implements CertificateService {
         certificateDao.delete(id);
     }
 
-    private void addTagsToCertificate(Certificate certificate) {
-        List<CertificateTag> certificateTagList = certificateTagDao.findByCertificateId(certificate.getId());
-        for (CertificateTag certificateTag : certificateTagList) {
-            Optional<Tag> tagDaoById = tagDao.findById(certificateTag.getTagId());
-            certificate.getTags().add(tagDaoById.get());
-        }
-    }
 }

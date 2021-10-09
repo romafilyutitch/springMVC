@@ -10,9 +10,9 @@ import java.util.*;
 
 @Component
 public class CertificateJdbcDao extends AbstractDao<Certificate> implements CertificateDao {
-    private static final String FIND_ALL_SQL = "select gift_certificate.*, tag.* from gift_certificate";
-    private static final String FIND_BY_ID_SQL = "select gift_certificate.*, tag.* from gift_certificate where gift_certificate.id = ?";
-    private static final String FIND_BY_NAME_SQL = "select * from gift_certificate where name = ?";
+    private static final String FIND_ALL_SQL = "select gift_certificate.*, tag.* from gift_certificate inner join certificate_tag on certificate_tag.certificate_id = gift_certificate.id inner join tag on certificate_tag.tag_id = tag.id";
+    private static final String FIND_BY_ID_SQL = "select gift_certificate.*, tag.* from gift_certificate inner join certificate_tag on certificate_tag.certificate_id = gift_certificate.id inner join tag on certificate_tag.tag_id = tag.id where gift_certificate.id = ?";
+    private static final String FIND_BY_NAME_SQL = "select gift_certificate.*, tag.* from gift_certificate inner join certificate_tag on certificate_tag.certificate_id = gift_certificate.id inner join tag on certificate_tag.tag_id = tag.id where gift_certificate.name = ?";;
     private static final String SAVE_SQL = "insert into gift_certificate (name, description, price, duration) values (?, ?, ?, ?)";
     private static final String UPDATE_SQL = "update gift_certificate set name = ?, description = ?, price = ?, duration = ? where id = ?";
     private static final String DELETE_SQL = "delete from gift_certificate where id = ?";
@@ -40,14 +40,16 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
                 entity.setId(certificateId);
                 List<Tag> tags = entity.getTags();
                 for (Tag tag : tags) {
-                    saveTagStatement.setString(1, tag.getName());
-                    saveTagStatement.executeUpdate();
-                    ResultSet tagGeneratedKeys = saveTagStatement.getGeneratedKeys();
-                    tagGeneratedKeys.next();
-                    long tagId = tagGeneratedKeys.getLong("GENERATED_KEY");
-                    tag.setId(tagId);
+                    if (tag.getId() == null) {
+                        saveTagStatement.setString(1, tag.getName());
+                        saveTagStatement.executeUpdate();
+                        ResultSet tagGeneratedKeys = saveTagStatement.getGeneratedKeys();
+                        tagGeneratedKeys.next();
+                        long tagId = tagGeneratedKeys.getLong("GENERATED_KEY");
+                        tag.setId(tagId);
+                    }
                     saveCertificateTagStatement.setLong(1, certificateId);
-                    saveCertificateTagStatement.setLong(2, tagId);
+                    saveCertificateTagStatement.setLong(2, tag.getId());
                     saveCertificateTagStatement.executeUpdate();
                 }
                 connection.commit();
@@ -69,14 +71,18 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         Statement findAllStatement = connection.createStatement();
         ResultSet resultSet = findAllStatement.executeQuery(FIND_ALL_SQL)) {
             while (resultSet.next()) {
-                Certificate savedCertificate = mapResultSetToEntity(resultSet);
+                Certificate foundCertificate = mapResultSetToEntity(resultSet);
                 long tagId = resultSet.getLong("tag.id");
                 String tagName = resultSet.getString("tag.name");
                 Tag tag = new Tag(tagId, tagName);
-                Certificate certificateFromMap = certificateMap.get(savedCertificate.getId());
-                savedCertificate.getTags().addAll(certificateFromMap.getTags());
-                savedCertificate.getTags().add(tag);
-                certificateMap.put(savedCertificate.getId(), savedCertificate);
+                if (certificateMap.containsKey(foundCertificate.getId())) {
+                    Certificate savedCertificate = certificateMap.get(foundCertificate.getId());
+                    savedCertificate.getTags().add(tag);
+                    certificateMap.put(savedCertificate.getId(), savedCertificate);
+                } else {
+                    foundCertificate.getTags().add(tag);
+                    certificateMap.put(foundCertificate.getId(), foundCertificate);
+                }
             }
         } catch (SQLException e) {
             throw new DaoException(e);
@@ -88,17 +94,22 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     public Optional<Certificate> findById(Long id) {
         Map<Long, Certificate> certificateMap = new HashMap<>();
         try (Connection connection = dataSource.getConnection();
-             Statement findAllStatement = connection.createStatement();
-             ResultSet resultSet = findAllStatement.executeQuery(FIND_ALL_SQL)) {
+             PreparedStatement findByIdStatement = connection.prepareStatement(FIND_BY_ID_SQL)) {
+            findByIdStatement.setLong(1, id);
+            ResultSet resultSet = findByIdStatement.executeQuery();
             while (resultSet.next()) {
-                Certificate savedCertificate = mapResultSetToEntity(resultSet);
+                Certificate foundCertificate = mapResultSetToEntity(resultSet);
                 long tagId = resultSet.getLong("tag.id");
                 String tagName = resultSet.getString("tag.name");
                 Tag tag = new Tag(tagId, tagName);
-                Certificate certificateFromMap = certificateMap.get(savedCertificate.getId());
-                savedCertificate.getTags().addAll(certificateFromMap.getTags());
-                savedCertificate.getTags().add(tag);
-                certificateMap.put(savedCertificate.getId(), savedCertificate);
+                if (certificateMap.containsKey(foundCertificate.getId())) {
+                    Certificate savedCertificate = certificateMap.get(foundCertificate.getId());
+                    savedCertificate.getTags().add(tag);
+                    certificateMap.put(savedCertificate.getId(), savedCertificate);
+                } else {
+                    foundCertificate.getTags().add(tag);
+                    certificateMap.put(foundCertificate.getId(), foundCertificate);
+                }
             }
         } catch (SQLException e) {
             throw new DaoException(e);
