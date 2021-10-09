@@ -4,6 +4,7 @@ import com.epam.rest.model.Certificate;
 import com.epam.rest.model.Tag;
 import com.epam.rest.service.CertificateExistsException;
 import com.epam.rest.service.CertificateService;
+import com.epam.rest.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,10 +15,12 @@ import java.util.Optional;
 @RequestMapping("/certificates")
 public class CertificateController {
     private CertificateService certificateService;
+    private TagService tagService;
 
     @Autowired
-    public CertificateController(CertificateService certificateService) {
+    public CertificateController(CertificateService certificateService, TagService tagService) {
         this.certificateService = certificateService;
+        this.tagService = tagService;
     }
 
     @RequestMapping(method = RequestMethod.GET)
@@ -66,5 +69,18 @@ public class CertificateController {
         return optionalTag.get();
     }
 
+    @RequestMapping(value = "/{id}/tags", method = RequestMethod.POST)
+    public Certificate addTagToCertificate(@PathVariable("id") long id, @RequestBody List<Tag> tags) {
+        Optional<Certificate> optionalCertificate = certificateService.findById(id);
+        Certificate foundCertificate = optionalCertificate.get();
+        List<Tag> foundCertificateTags = foundCertificate.getTags();
+        foundCertificateTags.addAll(tags);
+        return certificateService.update(id, foundCertificate);
+    }
+
+    @RequestMapping(value = "/{id}/tags/{tagId}", method = RequestMethod.DELETE)
+    public void deleteCertificateTag(@PathVariable("id") long id, @PathVariable("tagId") long tagId) {
+        tagService.delete(tagId);
+    }
 
 }
