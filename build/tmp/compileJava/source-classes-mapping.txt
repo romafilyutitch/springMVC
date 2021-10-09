@@ -16,12 +16,12 @@ com/epam/rest/conttoller/TagController.java
  com.epam.rest.conttoller.TagController
 com/epam/rest/model/CertificateTag.java
  com.epam.rest.model.CertificateTag
-com/epam/rest/service/GiftCertificateService.java
- com.epam.rest.service.GiftCertificateService
 com/epam/rest/dao/DaoException.java
  com.epam.rest.dao.DaoException
 com/epam/rest/config/WebConfig.java
  com.epam.rest.config.WebConfig
+com/epam/rest/service/CertificateService.java
+ com.epam.rest.service.CertificateService
 com/epam/rest/dao/AbstractDao.java
  com.epam.rest.dao.AbstractDao
 com/epam/rest/model/Entity.java

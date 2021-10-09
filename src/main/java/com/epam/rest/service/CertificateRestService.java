@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
-public class CertificateRestService implements GiftCertificateService {
+public class CertificateRestService implements CertificateService {
     private CertificateDao certificateDao;
     private CertificateTagDao certificateTagDao;
     private TagDao tagDao;
