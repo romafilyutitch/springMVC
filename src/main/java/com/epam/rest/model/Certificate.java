@@ -3,6 +3,7 @@ package com.epam.rest.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -13,9 +14,9 @@ public class Certificate extends Entity {
     private Integer duration;
     private LocalDateTime createDate;
     private LocalDateTime lastUpdateDate;
-    private List<Tag> tags;
+    private List<Tag> tags = new ArrayList<>();
 
-    public Certificate(Long id, String name, String description, Double price, Integer duration, LocalDateTime createDate, LocalDateTime lastUpdateDate, List<Tag> tags) {
+    public Certificate(Long id, String name, String description, Double price, Integer duration, LocalDateTime createDate, LocalDateTime lastUpdateDate) {
         super(id);
         this.name = name;
         this.description = description;
@@ -23,11 +24,10 @@ public class Certificate extends Entity {
         this.duration = duration;
         this.createDate = createDate;
         this.lastUpdateDate = lastUpdateDate;
-        this.tags = tags;
     }
 
-    public Certificate(String name, String description, Double price, Integer duration, LocalDateTime createDate, LocalDateTime lastUpdateDate, List<Tag> tags) {
-        this(null, name, description, price, duration, createDate, lastUpdateDate, tags);
+    public Certificate(String name, String description, Double price, Integer duration, LocalDateTime createDate, LocalDateTime lastUpdateDate) {
+        this(null, name, description, price, duration, createDate, lastUpdateDate);
     }
 
     public Certificate() {

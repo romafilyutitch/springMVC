@@ -35,7 +35,7 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         int duration = resultSet.getInt("duration");
         LocalDateTime createDate = resultSet.getObject("create_date", LocalDateTime.class);
         LocalDateTime lastUpdateDate = resultSet.getObject("last_update_date", LocalDateTime.class);
-        return new Certificate(id, name, description, price, duration, createDate, lastUpdateDate, new ArrayList<>());
+        return new Certificate(id, name, description, price, duration, createDate, lastUpdateDate);
     }
 
     @Override

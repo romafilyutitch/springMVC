@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class CertificateTagJdbcDao extends AbstractDao<CertificateTag> implements CertificateTagDao {
@@ -73,6 +74,23 @@ public class CertificateTagJdbcDao extends AbstractDao<CertificateTag> implement
                 certificateTags.add(certificateTag);
             }
             return certificateTags;
+        } catch (SQLException e) {
+            throw new DaoException(e);
+        }
+    }
+
+    @Override
+    public Optional<CertificateTag> findByCertificateIdAndTagId(Long certificateId, Long tagId) {
+        try (Connection connection = dataSource.getConnection();
+        PreparedStatement findStatement = connection.prepareStatement("select * from certificate_tag where certificate_id = ? and tag_id = ?")) {
+            findStatement.setLong(1, certificateId);
+            findStatement.setLong(2, tagId);
+            ResultSet resultSet = findStatement.executeQuery();
+            if (resultSet.next()) {
+                return Optional.of(mapResultSetToEntity(resultSet));
+            } else {
+                return Optional.empty();
+            }
         } catch (SQLException e) {
             throw new DaoException(e);
         }

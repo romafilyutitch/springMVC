@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/GiftCertificates")
+@RequestMapping("/certificates")
 public class CertificateController {
     private GiftCertificateService giftCertificateService;
 

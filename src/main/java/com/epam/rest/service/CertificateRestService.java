@@ -15,20 +15,20 @@ import java.util.Optional;
 
 @Component
 public class CertificateRestService implements GiftCertificateService {
-    private CertificateDao giftCertificateDao;
+    private CertificateDao certificateDao;
     private CertificateTagDao certificateTagDao;
     private TagDao tagDao;
 
     @Autowired
-    public CertificateRestService(CertificateDao giftCertificateDao, CertificateTagDao certificateTagDao, TagDao tagDao) {
-        this.giftCertificateDao = giftCertificateDao;
+    public CertificateRestService(CertificateDao certificateDao, CertificateTagDao certificateTagDao, TagDao tagDao) {
+        this.certificateDao = certificateDao;
         this.certificateTagDao = certificateTagDao;
         this.tagDao = tagDao;
     }
 
     @Override
     public List<Certificate> findAll() {
-        List<Certificate> allCertificates = giftCertificateDao.findAll();
+        List<Certificate> allCertificates = certificateDao.findAll();
         for (Certificate certificate : allCertificates) {
             addTagsToCertificate(certificate);
         }
@@ -37,14 +37,14 @@ public class CertificateRestService implements GiftCertificateService {
 
     @Override
     public Optional<Certificate> findById(Long id) {
-        Optional<Certificate> foundCertificate = giftCertificateDao.findById(id);
+        Optional<Certificate> foundCertificate = certificateDao.findById(id);
         foundCertificate.ifPresent(this::addTagsToCertificate);
         return foundCertificate;
     }
 
     @Override
     public Optional<Certificate> findByName(String name) {
-        Optional<Certificate> foundCertificate = giftCertificateDao.findByName(name);
+        Optional<Certificate> foundCertificate = certificateDao.findByName(name);
         foundCertificate.ifPresent(this::addTagsToCertificate);
         return foundCertificate;
     }
@@ -56,7 +56,7 @@ public class CertificateRestService implements GiftCertificateService {
             Optional<Tag> foundTag = tagDao.findByName(tagName);
             List<CertificateTag> foundCertificateTagList = certificateTagDao.findByTagId(foundTag.get().getId());
             for (CertificateTag certificateTag : foundCertificateTagList) {
-                Optional<Certificate> foundCertificate = giftCertificateDao.findById(certificateTag.getCertificateId());
+                Optional<Certificate> foundCertificate = certificateDao.findById(certificateTag.getCertificateId());
                 giftCertificates.add(foundCertificate.get());
             }
         }
@@ -65,34 +65,48 @@ public class CertificateRestService implements GiftCertificateService {
 
     @Override
     public Certificate save(Certificate certificate) throws CertificateExistsException {
-        Optional<Certificate> foundCertificate = giftCertificateDao.findByName(certificate.getName());
+        Optional<Certificate> foundCertificate = certificateDao.findByName(certificate.getName());
         if (foundCertificate.isPresent()) {
             throw new CertificateExistsException();
         }
-        Certificate savedCertificate = giftCertificateDao.save(certificate);
+        Certificate savedCertificate = certificateDao.save(certificate);
         List<Tag> tags = savedCertificate.getTags();
         for (Tag tag : tags) {
-            Optional<Tag> foundTag = tagDao.findByName(tag.getName());
-            if (foundTag.isEmpty()) {
-                Tag savedTag = tagDao.save(tag);
-                CertificateTag certificateTag = new CertificateTag(savedCertificate.getId(), savedTag.getId());
-                certificateTagDao.save(certificateTag);
-            } else {
-                CertificateTag certificateTag = new CertificateTag(savedCertificate.getId(), foundTag.get().getId());
-                certificateTagDao.save(certificateTag);
-            }
+            Optional<Tag> optionalTag = tagDao.findByName(tag.getName());
+            Tag savedTag = optionalTag.isEmpty() ? tagDao.save(tag) : optionalTag.get();
+            CertificateTag certificateTag = new CertificateTag(savedCertificate.getId(), savedTag.getId());
+            certificateTagDao.save(certificateTag);
         }
-        return savedCertificate;
+        return findById(savedCertificate.getId()).get();
     }
 
     @Override
     public Certificate update(Long id, Certificate certificate) {
-        return giftCertificateDao.update(certificate);
+        Optional<Certificate> optionalCertificate = certificateDao.findById(id);
+        Certificate foundCertificate = optionalCertificate.get();
+        foundCertificate.setName(certificate.getName() == null ? foundCertificate.getName() : certificate.getName());
+        foundCertificate.setDescription(certificate.getDescription() == null ? foundCertificate.getDescription() : certificate.getDescription());
+        foundCertificate.setPrice(certificate.getPrice() == null ? foundCertificate.getPrice() : certificate.getPrice());
+        foundCertificate.setDuration(certificate.getDuration() == null ? foundCertificate.getDuration() : certificate.getDuration());
+        List<Tag> tags = certificate.getTags();
+        if (tags != null) {
+            for (Tag tag : tags) {
+                Optional<Tag> optionalTag = tagDao.findByName(tag.getName());
+                Tag savedTag = optionalTag.isEmpty() ? tagDao.save(tag) : optionalTag.get();
+                Optional<CertificateTag> optionalCertificateTag = certificateTagDao.findByCertificateIdAndTagId(foundCertificate.getId(), savedTag.getId());
+                if (optionalCertificateTag.isEmpty()) {
+                    CertificateTag certificateTag = new CertificateTag(foundCertificate.getId(), savedTag.getId());
+                    certificateTagDao.save(certificateTag);
+                }
+            }
+        }
+        Certificate updatedCertificate = certificateDao.update(foundCertificate);
+        return findById(updatedCertificate.getId()).get();
     }
 
     @Override
     public void delete(Long id) {
-        giftCertificateDao.delete(id);
+        certificateDao.delete(id);
     }
 
     private void addTagsToCertificate(Certificate certificate) {
