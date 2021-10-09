@@ -10,9 +10,9 @@ import java.util.*;
 
 @Component
 public class CertificateJdbcDao extends AbstractDao<Certificate> implements CertificateDao {
-    private static final String FIND_ALL_SQL = "select gift_certificate.*, tag.* from gift_certificate inner join certificate_tag on certificate_tag.certificate_id = gift_certificate.id inner join tag on certificate_tag.tag_id = tag.id";
-    private static final String FIND_BY_ID_SQL = "select gift_certificate.*, tag.* from gift_certificate inner join certificate_tag on certificate_tag.certificate_id = gift_certificate.id inner join tag on certificate_tag.tag_id = tag.id where gift_certificate.id = ?";
-    private static final String FIND_BY_NAME_SQL = "select gift_certificate.*, tag.* from gift_certificate inner join certificate_tag on certificate_tag.certificate_id = gift_certificate.id inner join tag on certificate_tag.tag_id = tag.id where gift_certificate.name = ?";;
+    private static final String FIND_ALL_SQL = "select gift_certificate.*, tag.* from gift_certificate left join certificate_tag on certificate_tag.certificate_id = gift_certificate.id left join tag on certificate_tag.tag_id = tag.id";
+    private static final String FIND_BY_ID_SQL = "select gift_certificate.*, tag.* from gift_certificate left join certificate_tag on certificate_tag.certificate_id = gift_certificate.id left join tag on certificate_tag.tag_id = tag.id where gift_certificate.id = ?";
+    private static final String FIND_BY_NAME_SQL = "select gift_certificate.*, tag.* from gift_certificate left join certificate_tag on certificate_tag.certificate_id = gift_certificate.id left join tag on certificate_tag.tag_id = tag.id where gift_certificate.name = ?";;
     private static final String SAVE_SQL = "insert into gift_certificate (name, description, price, duration) values (?, ?, ?, ?)";
     private static final String UPDATE_SQL = "update gift_certificate set name = ?, description = ?, price = ?, duration = ? where id = ?";
     private static final String DELETE_SQL = "delete from gift_certificate where id = ?";
@@ -26,7 +26,8 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         try (Connection connection = dataSource.getConnection();
              PreparedStatement saveCertificateStatement = connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS);
              PreparedStatement saveTagStatement = connection.prepareStatement("insert into tag (name) values (?)", Statement.RETURN_GENERATED_KEYS);
-             PreparedStatement saveCertificateTagStatement = connection.prepareStatement("insert int certificate_tag (certificate_id, tag_id) values (?, ?)")) {
+             PreparedStatement saveCertificateTagStatement = connection.prepareStatement("insert into certificate_tag (certificate_id, tag_id) values (?, ?)");
+             PreparedStatement findTagByNameStatement = connection.prepareStatement("select * from tag where name = ?")) {
             connection.setAutoCommit(false);
             try {
                 saveCertificateStatement.setString(1, entity.getName());
@@ -40,21 +41,27 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
                 entity.setId(certificateId);
                 List<Tag> tags = entity.getTags();
                 for (Tag tag : tags) {
-                    if (tag.getId() == null) {
+                    findTagByNameStatement.setString(1, tag.getName());
+                    ResultSet resultSet = findTagByNameStatement.executeQuery();
+                    long tagId;
+                    if (resultSet.next()) {
+                        tagId = resultSet.getLong("id");
+                    } else {
                         saveTagStatement.setString(1, tag.getName());
                         saveTagStatement.executeUpdate();
                         ResultSet tagGeneratedKeys = saveTagStatement.getGeneratedKeys();
                         tagGeneratedKeys.next();
-                        long tagId = tagGeneratedKeys.getLong("GENERATED_KEY");
+                        tagId = tagGeneratedKeys.getLong("GENERATED_KEY");
                         tag.setId(tagId);
                     }
+                    tag.setId(tagId);
                     saveCertificateTagStatement.setLong(1, certificateId);
-                    saveCertificateTagStatement.setLong(2, tag.getId());
+                    saveCertificateTagStatement.setLong(2, tagId);
                     saveCertificateTagStatement.executeUpdate();
                 }
-                connection.commit();
             } catch (SQLException e) {
                 connection.rollback();
+                throw e;
             } finally {
                 connection.setAutoCommit(true);
             }
@@ -75,13 +82,17 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
                 long tagId = resultSet.getLong("tag.id");
                 String tagName = resultSet.getString("tag.name");
                 Tag tag = new Tag(tagId, tagName);
-                if (certificateMap.containsKey(foundCertificate.getId())) {
-                    Certificate savedCertificate = certificateMap.get(foundCertificate.getId());
-                    savedCertificate.getTags().add(tag);
-                    certificateMap.put(savedCertificate.getId(), savedCertificate);
-                } else {
-                    foundCertificate.getTags().add(tag);
+                if (tag.getName() == null) {
                     certificateMap.put(foundCertificate.getId(), foundCertificate);
+                } else {
+                    if (certificateMap.containsKey(foundCertificate.getId())) {
+                        Certificate savedCertificate = certificateMap.get(foundCertificate.getId());
+                        savedCertificate.getTags().add(tag);
+                        certificateMap.put(savedCertificate.getId(), savedCertificate);
+                    } else {
+                        foundCertificate.getTags().add(tag);
+                        certificateMap.put(foundCertificate.getId(), foundCertificate);
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -119,7 +130,25 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
 
     @Override
     public Certificate update(Certificate entity) {
-        return super.update(entity);
+        //@todo fix this bug
+        try(Connection connection = dataSource.getConnection();
+        PreparedStatement findByIdStatement = connection.prepareStatement(FIND_BY_ID_SQL);
+        PreparedStatement updateStatement = connection.prepareStatement(UPDATE_SQL)) {
+            findByIdStatement.setLong(1, entity.getId());
+            ResultSet resultSet = findByIdStatement.executeQuery();
+            if (resultSet.next()) {
+                Certificate foundCertificate = mapResultSetToEntity(resultSet);
+                updateStatement.setString(1, entity.getName() == null ? foundCertificate.getDescription() : entity.getName());
+                updateStatement.setString(2, entity.getDescription() == null ? foundCertificate.getDescription() : entity.getDescription());
+                updateStatement.setDouble(3, entity.getPrice() == null ? foundCertificate.getPrice() : entity.getPrice());
+                updateStatement.setInt(4, entity.getDuration() == null ? foundCertificate.getDuration() : entity.getDuration());
+                updateStatement.setLong(5, entity.getId());
+                updateStatement.executeUpdate();
+            }
+            return entity;
+        } catch (SQLException e) {
+            throw new DaoException(e);
+        }
     }
 
     @Override

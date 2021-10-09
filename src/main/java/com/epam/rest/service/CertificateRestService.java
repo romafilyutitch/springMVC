@@ -9,6 +9,7 @@ import com.epam.rest.model.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -60,31 +61,21 @@ public class CertificateRestService implements CertificateService {
 
     @Override
     public Certificate save(Certificate certificate) throws CertificateExistsException {
-        return certificateDao.save(certificate);
+        Certificate savedCertificate = certificateDao.save(certificate);
+        savedCertificate.setCreateDate(LocalDateTime.now());
+        return savedCertificate;
     }
 
     @Override
     public Certificate update(Long id, Certificate certificate) {
         Optional<Certificate> optionalCertificate = certificateDao.findById(id);
-        Certificate foundCertificate = optionalCertificate.get();
-        foundCertificate.setName(certificate.getName() == null ? foundCertificate.getName() : certificate.getName());
-        foundCertificate.setDescription(certificate.getDescription() == null ? foundCertificate.getDescription() : certificate.getDescription());
-        foundCertificate.setPrice(certificate.getPrice() == null ? foundCertificate.getPrice() : certificate.getPrice());
-        foundCertificate.setDuration(certificate.getDuration() == null ? foundCertificate.getDuration() : certificate.getDuration());
-        List<Tag> tags = certificate.getTags();
-        if (tags != null) {
-            for (Tag tag : tags) {
-                Optional<Tag> optionalTag = tagDao.findByName(tag.getName());
-                Tag savedTag = optionalTag.isEmpty() ? tagDao.save(tag) : optionalTag.get();
-                Optional<CertificateTag> optionalCertificateTag = certificateTagDao.findByCertificateIdAndTagId(foundCertificate.getId(), savedTag.getId());
-                if (optionalCertificateTag.isEmpty()) {
-                    CertificateTag certificateTag = new CertificateTag(foundCertificate.getId(), savedTag.getId());
-                    certificateTagDao.save(certificateTag);
-                }
-            }
+        if (optionalCertificate.isPresent()) {
+            certificate.setId(id);
+            Certificate updatedCertificate = certificateDao.update(certificate);
+            updatedCertificate.setLastUpdateDate(LocalDateTime.now());
+            return updatedCertificate;
         }
-        Certificate updatedCertificate = certificateDao.update(foundCertificate);
-        return findById(updatedCertificate.getId()).get();
+        return null;
     }
 
     @Override
