@@ -9,21 +9,19 @@ import java.util.Optional;
 public interface CertificateService {
     List<Certificate> findAll();
 
-    Optional<Certificate> findById(Long id);
-
-    Optional<Certificate> findByName(String name);
+    Certificate findById(Long id) throws CertificateNotFound;
 
     List<Certificate> findByTagName(String tagName);
 
     Certificate save(Certificate certificate) throws CertificateExistsException;
 
-    Certificate update(Long id, Certificate certificate);
+    Certificate update(Long id, Certificate certificate) throws CertificateNotFound;
 
     List<Certificate> searchByName(String name);
 
-    void delete(Long id);
+    void delete(Long id) throws CertificateNotFound;
 
     List<Certificate> sortByNameThenDate(List<Certificate> certificates, boolean nameAcceding, boolean dateAcceding);
 
-    Certificate addTags(Long certificateId, List<Tag> tags);
+    Certificate addTags(Long certificateId, List<Tag> tags) throws CertificateNotFound;
 }
