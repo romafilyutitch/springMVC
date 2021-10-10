@@ -40,26 +40,20 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     public Certificate save(Certificate entity) {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement saveCertificateStatement = connection.prepareStatement(SAVE_CERTIFICATE_SQL, Statement.RETURN_GENERATED_KEYS);
-             PreparedStatement saveTagStatement = connection.prepareStatement(SAVE_TAG_SQL, Statement.RETURN_GENERATED_KEYS);
-             PreparedStatement saveCertificateTagStatement = connection.prepareStatement(SAVE_CERTIFICATE_TAG_SQL);
-             PreparedStatement findTagByNameStatement = connection.prepareStatement(FIND_TAG_BY_NAME_SQL)) {
+             PreparedStatement saveCertificateTagStatement = connection.prepareStatement(SAVE_CERTIFICATE_TAG_SQL)) {
             connection.setAutoCommit(false);
             try {
                 mapEntityToSavePreparedStatement(saveCertificateStatement, entity);
                 saveCertificateStatement.executeUpdate();
                 ResultSet certificateKeys = saveCertificateStatement.getGeneratedKeys();
                 certificateKeys.next();
-                long certificateId = certificateKeys.getLong("GENERATED_KEY");
+                long certificateId = certificateKeys.getLong(1);
                 entity.setId(certificateId);
                 List<Tag> tags = entity.getTags();
                 for (Tag tag : tags) {
                     Optional<Tag> optionalTag = tagDao.findByName(tag.getName());
-                    long tagId;
-                    if (optionalTag.isPresent()) {
-                        tagId = optionalTag.get().getId();
-                    } else {
-                        tagId = tagDao.save(tag).getId();
-                    }
+                    long tagId = optionalTag.isPresent() ? optionalTag.get().getId() : tagDao.save(tag).getId();
+                    tag.setId(tagId);
                     saveCertificateTagStatement.setLong(1, certificateId);
                     saveCertificateTagStatement.setLong(2, tagId);
                     saveCertificateTagStatement.executeUpdate();
@@ -67,7 +61,6 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
                 connection.commit();
             } catch (SQLException e) {
                 connection.rollback();
-                throw e;
             } finally {
                 connection.setAutoCommit(true);
             }
