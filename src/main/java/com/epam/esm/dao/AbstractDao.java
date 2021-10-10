@@ -1,6 +1,6 @@
-package com.epam.rest.dao;
+package com.epam.esm.dao;
 
-import com.epam.rest.model.Entity;
+import com.epam.esm.model.Entity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

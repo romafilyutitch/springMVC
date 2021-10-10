@@ -1,6 +1,6 @@
-package com.epam.rest.dao;
+package com.epam.esm.dao;
 
-import com.epam.rest.model.Entity;
+import com.epam.esm.model.Entity;
 
 import java.util.List;
 import java.util.Optional;

@@ -1,4 +1,4 @@
-package com.epam.rest.config;
+package com.epam.esm.config;
 
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 

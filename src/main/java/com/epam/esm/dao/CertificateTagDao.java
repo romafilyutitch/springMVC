@@ -1,6 +1,6 @@
-package com.epam.rest.dao;
+package com.epam.esm.dao;
 
-import com.epam.rest.model.CertificateTag;
+import com.epam.esm.model.CertificateTag;
 
 import java.util.List;
 import java.util.Optional;

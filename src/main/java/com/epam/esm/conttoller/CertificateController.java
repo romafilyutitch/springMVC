@@ -1,10 +1,10 @@
-package com.epam.rest.conttoller;
+package com.epam.esm.conttoller;
 
-import com.epam.rest.model.Certificate;
-import com.epam.rest.model.Tag;
-import com.epam.rest.service.CertificateExistsException;
-import com.epam.rest.service.CertificateService;
-import com.epam.rest.service.TagService;
+import com.epam.esm.model.Certificate;
+import com.epam.esm.model.Tag;
+import com.epam.esm.service.CertificateExistsException;
+import com.epam.esm.service.CertificateService;
+import com.epam.esm.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,8 +24,12 @@ public class CertificateController {
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public List<Certificate> showAllCertificates() {
-        return certificateService.findAll();
+    public List<Certificate> showCertificates(@RequestParam(required = false) String name,
+                                              @RequestParam(required = false) String tagName,
+                                              @RequestParam(required = false) boolean sortName,
+                                              @RequestParam(required = false) boolean sortDate) {
+        List<Certificate> certificates = name == null ? tagName == null ? certificateService.findAll() : certificateService.findByTagName(tagName) : certificateService.searchByName(name);
+        return certificateService.sortByNameThenDate(certificates, sortName, sortDate);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
@@ -67,11 +71,7 @@ public class CertificateController {
 
     @RequestMapping(value = "/{id}/tags", method = RequestMethod.POST)
     public Certificate addTagToCertificate(@PathVariable("id") long id, @RequestBody List<Tag> tags) {
-        Optional<Certificate> optionalCertificate = certificateService.findById(id);
-        Certificate foundCertificate = optionalCertificate.get();
-        List<Tag> foundCertificateTags = foundCertificate.getTags();
-        foundCertificateTags.addAll(tags);
-        return certificateService.update(id, foundCertificate);
+        return certificateService.addTags(id, tags);
     }
 
     @RequestMapping(value = "/{id}/tags/{tagId}", method = RequestMethod.DELETE)

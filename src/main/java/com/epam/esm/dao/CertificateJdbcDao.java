@@ -1,7 +1,7 @@
-package com.epam.rest.dao;
+package com.epam.esm.dao;
 
-import com.epam.rest.model.Certificate;
-import com.epam.rest.model.Tag;
+import com.epam.esm.model.Certificate;
+import com.epam.esm.model.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,18 +14,22 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     private static final String FIND_ALL_CERTIFICATES_SQL = "select gift_certificate.*, tag.* from gift_certificate " +
             "left join certificate_tag on certificate_tag.certificate_id = gift_certificate.id " +
             "left join tag on certificate_tag.tag_id = tag.id";
+    private static final String Find_ALL_SERTIFICATES_BY_TAG_NAME = "SELECT * FROM gift_certificate " +
+            "left join certificate_tag on certificate_tag.certificate_id = gift_certificate.id " +
+            "left join tag on certificate_tag.tag_id = tag.id where tag.name = ?";
     private static final String FIND_CERTIFICATE_BY_ID_SQL = "select gift_certificate.*, tag.* from gift_certificate " +
             "left join certificate_tag on certificate_tag.certificate_id = gift_certificate.id " +
             "left join tag on certificate_tag.tag_id = tag.id where gift_certificate.id = ?";
     private static final String FIND_CERTIFICATE_BY_NAME_SQL = "select gift_certificate.*, tag.* from gift_certificate " +
             "left join certificate_tag on certificate_tag.certificate_id = gift_certificate.id " +
             "left join tag on certificate_tag.tag_id = tag.id where gift_certificate.name = ?";
+    private static final String SEARCH_CERTIFICATE_BY_NAME = "select gift_certificate.*, tag.* from gift_certificate " +
+            "left join certificate_tag on certificate_tag.certificate_id = gift_certificate.id " +
+            "left join tag on certificate_tag.tag_id = tag.id where gift_certificate.name like ?";
     private static final String SAVE_CERTIFICATE_SQL = "insert into gift_certificate (name, description, price, duration) values (?, ?, ?, ?)";
     private static final String UPDATE_CERTIFICATE_SQL = "update gift_certificate set name = ?, description = ?, price = ?, duration = ? where id = ?";
     private static final String DELETE_CERTIFICATE_SQL = "delete from gift_certificate where id = ?";
-    public static final String SAVE_TAG_SQL = "insert into tag (name) values (?)";
-    public static final String SAVE_CERTIFICATE_TAG_SQL = "insert into certificate_tag (certificate_id, tag_id) values (?, ?)";
-    public static final String FIND_TAG_BY_NAME_SQL = "select * from tag where name = ?";
+    private static final String SAVE_CERTIFICATE_TAG_SQL = "insert into certificate_tag (certificate_id, tag_id) values (?, ?)";
 
 
     private TagDao tagDao;
@@ -207,6 +211,43 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
 
     @Override
     public List<Certificate> findByTagName(String tagName) {
-        return null;
+        Map<Long, Certificate> certificateMap = new HashMap<>();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement findCertificatesByTagNameStatement = connection.prepareStatement(Find_ALL_SERTIFICATES_BY_TAG_NAME)) {
+            findCertificatesByTagNameStatement.setString(1, tagName);
+            ResultSet resultSet = findCertificatesByTagNameStatement.executeQuery();
+            while (resultSet.next()) {
+                Certificate foundCertificate = mapResultSetToEntity(resultSet);
+                String foundTagName = resultSet.getString("tag.name");
+                Optional<Tag> optionalTag = tagDao.findByName(foundTagName);
+                certificateMap.putIfAbsent(foundCertificate.getId(), foundCertificate);
+                Certificate savedCertificate = certificateMap.get(foundCertificate.getId());
+                optionalTag.ifPresent(tag -> savedCertificate.getTags().add(tag));
+            }
+        } catch (SQLException e) {
+            throw new DaoException(e);
+        }
+        return new ArrayList<>(certificateMap.values());
+    }
+
+    @Override
+    public List<Certificate> searchByName(String name) {
+        Map<Long, Certificate> certificateMap = new HashMap<>();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement findCertificatesByTagNameStatement = connection.prepareStatement(SEARCH_CERTIFICATE_BY_NAME)) {
+            findCertificatesByTagNameStatement.setString(1, "%" + name + "%");
+            ResultSet resultSet = findCertificatesByTagNameStatement.executeQuery();
+            while (resultSet.next()) {
+                Certificate foundCertificate = mapResultSetToEntity(resultSet);
+                String foundTagName = resultSet.getString("tag.name");
+                Optional<Tag> optionalTag = tagDao.findByName(foundTagName);
+                certificateMap.putIfAbsent(foundCertificate.getId(), foundCertificate);
+                Certificate savedCertificate = certificateMap.get(foundCertificate.getId());
+                optionalTag.ifPresent(tag -> savedCertificate.getTags().add(tag));
+            }
+        } catch (SQLException e) {
+            throw new DaoException(e);
+        }
+        return new ArrayList<>(certificateMap.values());
     }
 }

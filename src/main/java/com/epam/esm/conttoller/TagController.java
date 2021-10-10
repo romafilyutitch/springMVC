@@ -1,8 +1,8 @@
-package com.epam.rest.conttoller;
+package com.epam.esm.conttoller;
 
-import com.epam.rest.model.Tag;
-import com.epam.rest.service.TagExistsException;
-import com.epam.rest.service.TagService;
+import com.epam.esm.model.Tag;
+import com.epam.esm.service.TagExistsException;
+import com.epam.esm.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
