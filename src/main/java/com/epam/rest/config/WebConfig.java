@@ -20,7 +20,7 @@ public class WebConfig extends WebMvcConfigurerAdapter {
         dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
         dataSource.setUrl("jdbc:mysql://localhost:3306/restdb");
         dataSource.setUsername("root");
-        dataSource.setPassword("rootrootroot");
+        dataSource.setPassword("050399");
         dataSource.setInitialSize(5);
         dataSource.setMaxTotal(10);
         return dataSource;
