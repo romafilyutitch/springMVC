@@ -106,17 +106,11 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
             ResultSet resultSet = findByIdStatement.executeQuery();
             while (resultSet.next()) {
                 Certificate foundCertificate = mapResultSetToEntity(resultSet);
-                long tagId = resultSet.getLong("tag.id");
                 String tagName = resultSet.getString("tag.name");
-                Tag tag = new Tag(tagId, tagName);
-                if (certificateMap.containsKey(foundCertificate.getId())) {
-                    Certificate savedCertificate = certificateMap.get(foundCertificate.getId());
-                    savedCertificate.getTags().add(tag);
-                    certificateMap.put(savedCertificate.getId(), savedCertificate);
-                } else {
-                    foundCertificate.getTags().add(tag);
-                    certificateMap.put(foundCertificate.getId(), foundCertificate);
-                }
+                Optional<Tag> optionalTag = tagDao.findByName(tagName);
+                certificateMap.putIfAbsent(foundCertificate.getId(), foundCertificate);
+                Certificate savedCertificate = certificateMap.get(foundCertificate.getId());
+                optionalTag.ifPresent(tag -> savedCertificate.getTags().add(tag));
             }
         } catch (SQLException e) {
             throw new DaoException(e);
