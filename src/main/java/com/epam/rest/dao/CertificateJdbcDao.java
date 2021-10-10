@@ -39,8 +39,7 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     @Override
     public Certificate save(Certificate entity) {
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement saveCertificateStatement = connection.prepareStatement(SAVE_CERTIFICATE_SQL, Statement.RETURN_GENERATED_KEYS);
-             PreparedStatement saveCertificateTagStatement = connection.prepareStatement(SAVE_CERTIFICATE_TAG_SQL)) {
+             PreparedStatement saveCertificateStatement = connection.prepareStatement(SAVE_CERTIFICATE_SQL, Statement.RETURN_GENERATED_KEYS)) {
             connection.setAutoCommit(false);
             try {
                 mapEntityToSavePreparedStatement(saveCertificateStatement, entity);
@@ -50,14 +49,7 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
                 long certificateId = certificateKeys.getLong(1);
                 entity.setId(certificateId);
                 List<Tag> tags = entity.getTags();
-                for (Tag tag : tags) {
-                    Optional<Tag> optionalTag = tagDao.findByName(tag.getName());
-                    long tagId = optionalTag.isPresent() ? optionalTag.get().getId() : tagDao.save(tag).getId();
-                    tag.setId(tagId);
-                    saveCertificateTagStatement.setLong(1, certificateId);
-                    saveCertificateTagStatement.setLong(2, tagId);
-                    saveCertificateTagStatement.executeUpdate();
-                }
+                saveCertificateTags(entity, connection, tags);
                 connection.commit();
             } catch (SQLException e) {
                 connection.rollback();
@@ -74,8 +66,8 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     public List<Certificate> findAll() {
         Map<Long, Certificate> certificateMap = new HashMap<>();
         try (Connection connection = dataSource.getConnection();
-        Statement findAllStatement = connection.createStatement();
-        ResultSet resultSet = findAllStatement.executeQuery(FIND_ALL_CERTIFICATES_SQL)) {
+             Statement findAllStatement = connection.createStatement();
+             ResultSet resultSet = findAllStatement.executeQuery(FIND_ALL_CERTIFICATES_SQL)) {
             while (resultSet.next()) {
                 Certificate foundCertificate = mapResultSetToEntity(resultSet);
                 String tagName = resultSet.getString("tag.name");
@@ -113,47 +105,58 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
 
     @Override
     public Certificate update(Certificate entity) {
-        try(Connection connection = dataSource.getConnection();
-            PreparedStatement findByIdStatement = connection.prepareStatement(FIND_CERTIFICATE_BY_ID_SQL);
-            PreparedStatement updateStatement = connection.prepareStatement(UPDATE_CERTIFICATE_SQL);
-            PreparedStatement ignored = connection.prepareStatement("select * from tag where name = ?");
-            PreparedStatement saveCertificateTagStatement = connection.prepareStatement("insert into certificate_tag (certificate_id, tag_id) values (?, ?)");
-            PreparedStatement findCertificateTagStatement = connection.prepareStatement("select * from certificate_tag where certificate_id = ? and tag_id = ?")) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement findByIdStatement = connection.prepareStatement(FIND_CERTIFICATE_BY_ID_SQL);
+             PreparedStatement updateStatement = connection.prepareStatement(UPDATE_CERTIFICATE_SQL);) {
             findByIdStatement.setLong(1, entity.getId());
             ResultSet resultSet = findByIdStatement.executeQuery();
-            if (resultSet.next()) {
-                Certificate foundCertificate = mapResultSetToEntity(resultSet);
-                updateStatement.setString(1, entity.getName() == null ? foundCertificate.getDescription() : entity.getName());
-                updateStatement.setString(2, entity.getDescription() == null ? foundCertificate.getDescription() : entity.getDescription());
-                updateStatement.setDouble(3, entity.getPrice() == null ? foundCertificate.getPrice() : entity.getPrice());
-                updateStatement.setInt(4, entity.getDuration() == null ? foundCertificate.getDuration() : entity.getDuration());
-                updateStatement.setLong(5, entity.getId());
-                updateStatement.executeUpdate();
-                List<Tag> tags = entity.getTags();
-                for (Tag tag : tags) {
-                    Optional<Tag> optionalTag = tagDao.findByName(tag.getName());
-                    long tagId;
-                    if (optionalTag.isPresent()) {
-                        tagId = optionalTag.get().getId();
-                    } else {
-                        tagId = tagDao.save(tag).getId();
-                    }
-                    tag.setId(tagId);
-                    findCertificateTagStatement.setLong(1, entity.getId());
-                    findCertificateTagStatement.setLong(2, tagId);
-                    ResultSet resultSet1 = findCertificateTagStatement.executeQuery();
-                    if (!resultSet1.next()) {
-                        saveCertificateTagStatement.setLong(1, entity.getId());
-                        saveCertificateTagStatement.setLong(2, tagId);
-                        saveCertificateTagStatement.executeUpdate();
-                    }
-                }
-                foundCertificate.setTags(tags);
-                return foundCertificate;
-            }
-            return null;
+            resultSet.next();
+            Certificate foundCertificate = mapResultSetToEntity(resultSet);
+            setUpdateOnlyPassedValues(entity, updateStatement, foundCertificate);
+            updateStatement.executeUpdate();
+            List<Tag> tags = entity.getTags();
+            saveCertificateTags(entity, connection, tags);
+            foundCertificate.setTags(tags);
+            return foundCertificate;
         } catch (SQLException e) {
             throw new DaoException(e);
+        }
+    }
+
+    private void setUpdateOnlyPassedValues(Certificate entity, PreparedStatement updateStatement, Certificate foundCertificate) throws SQLException {
+        updateStatement.setString(1, entity.getName() == null ? foundCertificate.getDescription() : entity.getName());
+        updateStatement.setString(2, entity.getDescription() == null ? foundCertificate.getDescription() : entity.getDescription());
+        updateStatement.setDouble(3, entity.getPrice() == null ? foundCertificate.getPrice() : entity.getPrice());
+        updateStatement.setInt(4, entity.getDuration() == null ? foundCertificate.getDuration() : entity.getDuration());
+        updateStatement.setLong(5, entity.getId());
+    }
+
+    private void saveCertificateTags(Certificate entity, Connection connection, List<Tag> tags) throws SQLException {
+        for (Tag tag : tags) {
+            Optional<Tag> optionalTag = tagDao.findByName(tag.getName());
+            long savedTagId = optionalTag.isPresent() ? optionalTag.get().getId() : tagDao.save(tag).getId();
+            tag.setId(savedTagId);
+            boolean isTagLinked = isTagLiked(connection, entity, tag);
+            if (!isTagLinked) {
+                linkTagWithCertificate(connection, entity.getId(), tag);
+            }
+        }
+    }
+
+    private boolean isTagLiked(Connection connection, Certificate entity, Tag savedTag) throws SQLException {
+        try (PreparedStatement findCertificateTagStatement = connection.prepareStatement("select * from certificate_tag where certificate_id = ? and tag_id = ?")) {
+            findCertificateTagStatement.setLong(1, entity.getId());
+            findCertificateTagStatement.setLong(2, savedTag.getId());
+            ResultSet resultSet1 = findCertificateTagStatement.executeQuery();
+            return resultSet1.next();
+        }
+    }
+
+    private void linkTagWithCertificate(Connection connection, long certificateId, Tag savedTag) throws SQLException {
+        try (PreparedStatement saveCertificateTagStatement = connection.prepareStatement(SAVE_CERTIFICATE_TAG_SQL)) {
+            saveCertificateTagStatement.setLong(1, certificateId);
+            saveCertificateTagStatement.setLong(2, savedTag.getId());
+            saveCertificateTagStatement.executeUpdate();
         }
     }
 
