@@ -1,4 +1,4 @@
-package com.epam.rest.model;
+package com.epam.esm.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 

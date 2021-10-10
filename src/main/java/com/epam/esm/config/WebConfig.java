@@ -1,4 +1,4 @@
-package com.epam.rest.config;
+package com.epam.esm.config;
 
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.springframework.context.annotation.Bean;
@@ -11,7 +11,7 @@ import javax.sql.DataSource;
 
 @Configuration
 @EnableWebMvc
-@ComponentScan("com.epam.rest")
+@ComponentScan("com.epam.esm")
 public class WebConfig extends WebMvcConfigurerAdapter {
 
     @Bean

@@ -1,6 +1,6 @@
-package com.epam.rest.dao;
+package com.epam.esm.dao;
 
-import com.epam.rest.model.Tag;
+import com.epam.esm.model.Tag;
 import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
