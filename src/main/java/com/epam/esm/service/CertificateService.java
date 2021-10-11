@@ -8,19 +8,19 @@ import java.util.List;
 public interface CertificateService {
     List<Certificate> findAll();
 
-    Certificate findById(Long id) throws CertificateNotFound;
+    Certificate findById(Long id) throws CertificateNotFoundException;
 
     List<Certificate> findByTagName(String tagName);
 
     Certificate save(Certificate certificate) throws CertificateExistsException;
 
-    Certificate update(Long id, Certificate certificate) throws CertificateNotFound;
+    Certificate update(Long id, Certificate certificate) throws CertificateNotFoundException;
 
     List<Certificate> searchByName(String name);
 
-    void delete(Long id) throws CertificateNotFound;
+    void delete(Long id) throws CertificateNotFoundException;
 
     List<Certificate> sortByNameThenDate(List<Certificate> certificates, boolean nameAcceding, boolean dateAcceding);
 
-    Certificate addTags(Long certificateId, List<Tag> tags) throws CertificateNotFound;
+    Certificate addTags(Long certificateId, List<Tag> tags) throws CertificateNotFoundException;
 }

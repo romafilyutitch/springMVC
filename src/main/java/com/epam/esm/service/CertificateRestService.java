@@ -32,12 +32,12 @@ public class CertificateRestService implements CertificateService {
     }
 
     @Override
-    public Certificate findById(Long id) throws CertificateNotFound {
+    public Certificate findById(Long id) throws CertificateNotFoundException {
         Optional<Certificate> optionalCertificate = certificateDao.findById(id);
         if (optionalCertificate.isPresent()) {
             return optionalCertificate.get();
         } else {
-            throw new CertificateNotFound(id);
+            throw new CertificateNotFoundException(id);
         }
     }
 
@@ -58,7 +58,7 @@ public class CertificateRestService implements CertificateService {
     }
 
     @Override
-    public Certificate update(Long id, Certificate certificate) throws CertificateNotFound {
+    public Certificate update(Long id, Certificate certificate) throws CertificateNotFoundException {
         Optional<Certificate> optionalCertificate = certificateDao.findById(id);
         if (optionalCertificate.isPresent()) {
             certificate.setId(id);
@@ -66,17 +66,17 @@ public class CertificateRestService implements CertificateService {
             updatedCertificate.setLastUpdateDate(LocalDateTime.now());
             return updatedCertificate;
         } else {
-            throw new CertificateNotFound(id);
+            throw new CertificateNotFoundException(id);
         }
     }
 
     @Override
-    public void delete(Long id) throws CertificateNotFound {
+    public void delete(Long id) throws CertificateNotFoundException {
         Optional<Certificate> optionalCertificate = certificateDao.findById(id);
         if (optionalCertificate.isPresent()) {
             certificateDao.delete(id);
         } else {
-            throw new CertificateNotFound(id);
+            throw new CertificateNotFoundException(id);
         }
     }
 
@@ -97,7 +97,7 @@ public class CertificateRestService implements CertificateService {
     }
 
     @Override
-    public Certificate addTags(Long certificateId, List<Tag> tags) throws CertificateNotFound {
+    public Certificate addTags(Long certificateId, List<Tag> tags) throws CertificateNotFoundException {
         Optional<Certificate> optionalCertificate = certificateDao.findById(certificateId);
         if (optionalCertificate.isPresent()) {
             Certificate certificate = optionalCertificate.get();
@@ -105,7 +105,7 @@ public class CertificateRestService implements CertificateService {
             certificateTags.addAll(tags);
             return certificateDao.update(certificate);
         } else {
-            throw new CertificateNotFound(certificateId);
+            throw new CertificateNotFoundException(certificateId);
         }
     }
 }

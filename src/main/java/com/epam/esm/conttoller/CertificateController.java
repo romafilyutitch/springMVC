@@ -3,7 +3,7 @@ package com.epam.esm.conttoller;
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
 import com.epam.esm.service.CertificateExistsException;
-import com.epam.esm.service.CertificateNotFound;
+import com.epam.esm.service.CertificateNotFoundException;
 import com.epam.esm.service.CertificateService;
 import com.epam.esm.service.TagService;
 import org.springframework.context.MessageSource;
@@ -43,7 +43,7 @@ public class CertificateController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    public ResponseEntity<Certificate> showCertificate(@PathVariable("id") long id) throws CertificateNotFound {
+    public ResponseEntity<Certificate> showCertificate(@PathVariable("id") long id) throws CertificateNotFoundException {
         return new ResponseEntity<>(certificateService.findById(id), HttpStatus.OK);
     }
 
@@ -54,18 +54,18 @@ public class CertificateController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.POST)
-    public ResponseEntity<Certificate> updateCertificate(@PathVariable("id") long id, @RequestBody Certificate certificate) throws CertificateNotFound {
+    public ResponseEntity<Certificate> updateCertificate(@PathVariable("id") long id, @RequestBody Certificate certificate) throws CertificateNotFoundException {
         return new ResponseEntity<>(certificateService.update(id, certificate), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    public ResponseEntity<?> deleteCertificate(@PathVariable("id") long id) throws CertificateNotFound {
+    public ResponseEntity<?> deleteCertificate(@PathVariable("id") long id) throws CertificateNotFoundException {
         certificateService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @RequestMapping(value = "/{id}/tags", method = RequestMethod.GET)
-    public ResponseEntity<List<Tag>> showCertificateTags(@PathVariable("id") long id) throws CertificateNotFound {
+    public ResponseEntity<List<Tag>> showCertificateTags(@PathVariable("id") long id) throws CertificateNotFoundException {
         Certificate foundCertificate = certificateService.findById(id);
         List<Tag> tags = foundCertificate.getTags();
         if (tags.isEmpty()) {
@@ -76,7 +76,7 @@ public class CertificateController {
     }
 
     @RequestMapping(value = "/{id}/tags/{tagId}", method = RequestMethod.GET)
-    public ResponseEntity<Tag> showCertificateTag(@PathVariable("id") long id, @PathVariable("tagId") long tagId) throws CertificateNotFound {
+    public ResponseEntity<Tag> showCertificateTag(@PathVariable("id") long id, @PathVariable("tagId") long tagId) throws CertificateNotFoundException {
         Certificate certificate = certificateService.findById(id);
         Optional<Tag> optionalTag = tagService.findById(tagId);
         if (optionalTag.isPresent()) {
@@ -87,7 +87,7 @@ public class CertificateController {
     }
 
     @RequestMapping(value = "/{id}/tags", method = RequestMethod.POST)
-    public Certificate addTagToCertificate(@PathVariable("id") long id, @RequestBody List<Tag> tags) throws CertificateNotFound {
+    public Certificate addTagToCertificate(@PathVariable("id") long id, @RequestBody List<Tag> tags) throws CertificateNotFoundException {
         return certificateService.addTags(id, tags);
     }
 
@@ -96,10 +96,10 @@ public class CertificateController {
         tagService.delete(tagId);
     }
 
-    @ExceptionHandler(CertificateNotFound.class)
-    public ResponseEntity<Error> certificateNotFound(CertificateNotFound exception, Locale locale) {
+    @ExceptionHandler(CertificateNotFoundException.class)
+    public ResponseEntity<Error> certificateNotFound(CertificateNotFoundException exception, Locale locale) {
         String message = messageSource.getMessage("certificate.notFound", new Object[]{exception.getCertificateId()}, locale);
-        long code = exception.getCertificateId() + HttpStatus.NOT_FOUND.value();
+        long code = HttpStatus.NOT_FOUND.value() + exception.getCode();
         Error error = new Error(code, message);
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
@@ -107,7 +107,7 @@ public class CertificateController {
     @ExceptionHandler({CertificateExistsException.class})
     public ResponseEntity<Error> certificateExists(CertificateExistsException exception, Locale locale) {
         String message = messageSource.getMessage("certificate.exists", new Object[]{}, locale);
-        long code = exception.getCertificateId();
+        long code = HttpStatus.BAD_REQUEST.value() + exception.getCode();
         Error error = new Error(code, message);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
