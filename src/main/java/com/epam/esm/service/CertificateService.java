@@ -23,4 +23,8 @@ public interface CertificateService {
     List<Certificate> sortByNameThenDate(List<Certificate> certificates, boolean nameAcceding, boolean dateAcceding);
 
     Certificate addTags(Long certificateId, List<Tag> tags) throws CertificateNotFoundException;
+
+    void deleteCertificateTag(Long certificateId, Long tagId) throws CertificateNotFoundException, TagNotFoundException;
+
+    Tag findCertificateTag(Long certificateId, Long tagId) throws CertificateNotFoundException, TagNotFoundException;
 }
