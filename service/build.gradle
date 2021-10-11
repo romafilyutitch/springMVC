@@ -1,7 +1,8 @@
 plugins {
     id 'java'
-    id 'war'
 }
+
+version 'unspecified'
 
 repositories {
     mavenCentral()
@@ -10,9 +11,9 @@ repositories {
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    implementation 'org.springframework:spring-webmvc:5.3.10'
+    testImplementation 'org.mockito:mockito-core:3.12.4'
     implementation project(':persistance')
-    implementation project(':service')
-    implementation project(':web')
 }
 
 test {
