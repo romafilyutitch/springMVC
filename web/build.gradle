@@ -11,6 +11,12 @@ repositories {
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
+    implementation 'org.springframework:spring-webmvc:5.3.10'
+    implementation 'org.apache.commons:commons-dbcp2:2.9.0'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.0'
+    implementation project(':service')
+    implementation project(':persistance')
 }
 
 test {
