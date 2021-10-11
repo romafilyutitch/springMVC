@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -33,13 +32,13 @@ public class CertificateRestService implements CertificateService {
     }
 
     @Override
-    public Optional<Certificate> findById(Long id) {
-        return certificateDao.findById(id);
-    }
-
-    @Override
-    public Optional<Certificate> findByName(String name) {
-        return certificateDao.findByName(name);
+    public Certificate findById(Long id) throws CertificateNotFound {
+        Optional<Certificate> optionalCertificate = certificateDao.findById(id);
+        if (optionalCertificate.isPresent()) {
+            return optionalCertificate.get();
+        } else {
+            throw new CertificateNotFound(id);
+        }
     }
 
     @Override
@@ -49,22 +48,36 @@ public class CertificateRestService implements CertificateService {
 
     @Override
     public Certificate save(Certificate certificate) throws CertificateExistsException {
+        Optional<Certificate> optionalCertificate = certificateDao.findByName(certificate.getName());
+        if (optionalCertificate.isPresent()) {
+            throw new CertificateExistsException(optionalCertificate.get().getId());
+        }
         Certificate savedCertificate = certificateDao.save(certificate);
         savedCertificate.setCreateDate(LocalDateTime.now());
         return savedCertificate;
     }
 
     @Override
-    public Certificate update(Long id, Certificate certificate) {
+    public Certificate update(Long id, Certificate certificate) throws CertificateNotFound {
+        Optional<Certificate> optionalCertificate = certificateDao.findById(id);
+        if (optionalCertificate.isPresent()) {
             certificate.setId(id);
             Certificate updatedCertificate = certificateDao.update(certificate);
             updatedCertificate.setLastUpdateDate(LocalDateTime.now());
             return updatedCertificate;
+        } else {
+            throw new CertificateNotFound(id);
+        }
     }
 
     @Override
-    public void delete(Long id) {
-        certificateDao.delete(id);
+    public void delete(Long id) throws CertificateNotFound {
+        Optional<Certificate> optionalCertificate = certificateDao.findById(id);
+        if (optionalCertificate.isPresent()) {
+            certificateDao.delete(id);
+        } else {
+            throw new CertificateNotFound(id);
+        }
     }
 
     @Override
@@ -84,11 +97,15 @@ public class CertificateRestService implements CertificateService {
     }
 
     @Override
-    public Certificate addTags(Long certificateId, List<Tag> tags) {
+    public Certificate addTags(Long certificateId, List<Tag> tags) throws CertificateNotFound {
         Optional<Certificate> optionalCertificate = certificateDao.findById(certificateId);
-        Certificate certificate = optionalCertificate.get();
-        List<Tag> certificateTags = certificate.getTags();
-        certificateTags.addAll(tags);
-        return certificateDao.update(certificate);
+        if (optionalCertificate.isPresent()) {
+            Certificate certificate = optionalCertificate.get();
+            List<Tag> certificateTags = certificate.getTags();
+            certificateTags.addAll(tags);
+            return certificateDao.update(certificate);
+        } else {
+            throw new CertificateNotFound(certificateId);
+        }
     }
 }

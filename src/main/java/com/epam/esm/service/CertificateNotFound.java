@@ -1,9 +1,9 @@
 package com.epam.esm.service;
 
-public class CertificateExistsException extends Exception {
+public class CertificateNotFound extends Exception {
     private Long certificateId;
 
-    public CertificateExistsException(Long certificateId) {
+    public CertificateNotFound(Long certificateId) {
         this.certificateId = certificateId;
     }
 
