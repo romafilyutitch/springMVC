@@ -8,7 +8,6 @@ import com.epam.esm.service.CertificateService;
 import com.epam.esm.service.TagService;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -71,8 +70,9 @@ public class CertificateController {
         List<Tag> tags = foundCertificate.getTags();
         if (tags.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } else {
+            return new ResponseEntity<>(tags, HttpStatus.OK);
         }
-        else return new ResponseEntity<>(tags, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}/tags/{tagId}", method = RequestMethod.GET)
@@ -107,7 +107,7 @@ public class CertificateController {
     @ExceptionHandler({CertificateExistsException.class})
     public ResponseEntity<Error> certificateExists(CertificateExistsException exception, Locale locale) {
         String message = messageSource.getMessage("certificate.exists", new Object[]{}, locale);
-        long code =  exception.getCertificateId();
+        long code = exception.getCertificateId();
         Error error = new Error(code, message);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
