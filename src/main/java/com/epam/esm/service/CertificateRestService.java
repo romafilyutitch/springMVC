@@ -108,4 +108,34 @@ public class CertificateRestService implements CertificateService {
             throw new CertificateNotFoundException(certificateId);
         }
     }
+
+    @Override
+    public void deleteCertificateTag(Long certificateId, Long tagId) throws CertificateNotFoundException, TagNotFoundException {
+        Optional<Certificate> optionalCertificate = certificateDao.findById(certificateId);
+        if (optionalCertificate.isPresent()) {
+            Optional<Tag> optionalTag = tagDao.findById(tagId);
+            if(optionalTag.isPresent()) {
+                tagDao.delete(tagId);
+            } else {
+                throw new TagNotFoundException(tagId);
+            }
+        } else {
+            throw new CertificateNotFoundException(certificateId);
+        }
+    }
+
+    @Override
+    public Tag findCertificateTag(Long certificateId, Long tagId) throws CertificateNotFoundException, TagNotFoundException {
+        Optional<Certificate> optionalCertificate = certificateDao.findById(certificateId);
+        if (optionalCertificate.isPresent()) {
+            Optional<Tag> optionalTag = tagDao.findById(tagId);
+            if (optionalTag.isPresent()) {
+                return optionalTag.get();
+            } else {
+                throw new TagNotFoundException(tagId);
+            }
+        } else {
+            throw new CertificateNotFoundException(certificateId);
+        }
+    }
 }

@@ -2,10 +2,8 @@ package com.epam.esm.conttoller;
 
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
-import com.epam.esm.service.CertificateExistsException;
-import com.epam.esm.service.CertificateNotFoundException;
-import com.epam.esm.service.CertificateService;
-import com.epam.esm.service.TagService;
+import com.epam.esm.service.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,12 +17,11 @@ import java.util.Optional;
 @RequestMapping("/certificates")
 public class CertificateController {
     private CertificateService certificateService;
-    private TagService tagService;
     private MessageSource messageSource;
 
+    @Autowired
     public CertificateController(CertificateService certificateService, TagService tagService, MessageSource messageSource) {
         this.certificateService = certificateService;
-        this.tagService = tagService;
         this.messageSource = messageSource;
     }
 
@@ -76,14 +73,8 @@ public class CertificateController {
     }
 
     @RequestMapping(value = "/{id}/tags/{tagId}", method = RequestMethod.GET)
-    public ResponseEntity<Tag> showCertificateTag(@PathVariable("id") long id, @PathVariable("tagId") long tagId) throws CertificateNotFoundException {
-        Certificate certificate = certificateService.findById(id);
-        Optional<Tag> optionalTag = tagService.findById(tagId);
-        if (optionalTag.isPresent()) {
-            return new ResponseEntity<>(optionalTag.get(), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<Tag> showCertificateTag(@PathVariable("id") long id, @PathVariable("tagId") long tagId) throws CertificateNotFoundException, TagNotFoundException {
+        return new ResponseEntity<>(certificateService.findCertificateTag(id, tagId), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}/tags", method = RequestMethod.POST)
@@ -92,8 +83,8 @@ public class CertificateController {
     }
 
     @RequestMapping(value = "/{id}/tags/{tagId}", method = RequestMethod.DELETE)
-    public void deleteCertificateTag(@PathVariable("id") long id, @PathVariable("tagId") long tagId) {
-        tagService.delete(tagId);
+    public void deleteCertificateTag(@PathVariable("id") long id, @PathVariable("tagId") long tagId) throws TagNotFoundException, CertificateNotFoundException {
+        certificateService.deleteCertificateTag(id, tagId);
     }
 
     @ExceptionHandler(CertificateNotFoundException.class)
@@ -104,12 +95,20 @@ public class CertificateController {
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler({CertificateExistsException.class})
+    @ExceptionHandler(CertificateExistsException.class)
     public ResponseEntity<Error> certificateExists(CertificateExistsException exception, Locale locale) {
         String message = messageSource.getMessage("certificate.exists", new Object[]{}, locale);
         long code = HttpStatus.BAD_REQUEST.value() + exception.getCode();
         Error error = new Error(code, message);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(TagNotFoundException.class)
+    public ResponseEntity<Error> tagNotFound(TagNotFoundException exception, Locale locale) {
+        String message = messageSource.getMessage("tag.notFound", new Object[]{exception.getTagId()}, locale);
+        long code = HttpStatus.NOT_FOUND.value() + TagNotFoundException.getCode();
+        Error error = new Error(code, message);
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
 }
