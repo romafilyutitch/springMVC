@@ -16,13 +16,11 @@ import java.util.Optional;
 @Component
 public class CertificateRestService implements CertificateService {
     private CertificateDao certificateDao;
-    private CertificateTagDao certificateTagDao;
     private TagDao tagDao;
 
     @Autowired
-    public CertificateRestService(CertificateDao certificateDao, CertificateTagDao certificateTagDao, TagDao tagDao) {
+    public CertificateRestService(CertificateDao certificateDao, TagDao tagDao) {
         this.certificateDao = certificateDao;
-        this.certificateTagDao = certificateTagDao;
         this.tagDao = tagDao;
     }
 
