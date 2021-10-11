@@ -14,23 +14,14 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     private static final String FIND_ALL_CERTIFICATES_SQL = "select gift_certificate.*, tag.* from gift_certificate " +
             "left join certificate_tag on certificate_tag.certificate_id = gift_certificate.id " +
             "left join tag on certificate_tag.tag_id = tag.id";
-    private static final String Find_ALL_SERTIFICATES_BY_TAG_NAME = "SELECT * FROM gift_certificate " +
-            "left join certificate_tag on certificate_tag.certificate_id = gift_certificate.id " +
-            "left join tag on certificate_tag.tag_id = tag.id where tag.name = ?";
-    private static final String FIND_CERTIFICATE_BY_ID_SQL = "select gift_certificate.*, tag.* from gift_certificate " +
-            "left join certificate_tag on certificate_tag.certificate_id = gift_certificate.id " +
-            "left join tag on certificate_tag.tag_id = tag.id where gift_certificate.id = ?";
-    private static final String FIND_CERTIFICATE_BY_NAME_SQL = "select gift_certificate.*, tag.* from gift_certificate " +
-            "left join certificate_tag on certificate_tag.certificate_id = gift_certificate.id " +
-            "left join tag on certificate_tag.tag_id = tag.id where gift_certificate.name = ?";
-    private static final String SEARCH_CERTIFICATE_BY_NAME = "select gift_certificate.*, tag.* from gift_certificate " +
-            "left join certificate_tag on certificate_tag.certificate_id = gift_certificate.id " +
-            "left join tag on certificate_tag.tag_id = tag.id where gift_certificate.name like ?";
+    private static final String FIND_ALL_CERTIFICATES_BY_TAG_NAME = String.format("%s where tag.name = ?", FIND_ALL_CERTIFICATES_SQL);
+    private static final String FIND_CERTIFICATE_BY_ID_SQL = String.format("%s where gift_certificate.id = ?", FIND_ALL_CERTIFICATES_SQL);
+    private static final String FIND_CERTIFICATE_BY_NAME_SQL = String.format("%s where gift_certificate.name = ?", FIND_ALL_CERTIFICATES_SQL);
+    private static final String SEARCH_CERTIFICATE_BY_NAME = String.format("%s where gift_certificate.name like ?", FIND_ALL_CERTIFICATES_SQL);
     private static final String SAVE_CERTIFICATE_SQL = "insert into gift_certificate (name, description, price, duration) values (?, ?, ?, ?)";
     private static final String UPDATE_CERTIFICATE_SQL = "update gift_certificate set name = ?, description = ?, price = ?, duration = ? where id = ?";
     private static final String DELETE_CERTIFICATE_SQL = "delete from gift_certificate where id = ?";
     private static final String SAVE_CERTIFICATE_TAG_SQL = "insert into certificate_tag (certificate_id, tag_id) values (?, ?)";
-
 
     private final TagDao tagDao;
 
@@ -162,7 +153,7 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     public List<Certificate> findByTagName(String tagName) {
         Map<Long, Certificate> certificateMap = new HashMap<>();
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement findCertificatesByTagNameStatement = connection.prepareStatement(Find_ALL_SERTIFICATES_BY_TAG_NAME)) {
+             PreparedStatement findCertificatesByTagNameStatement = connection.prepareStatement(FIND_ALL_CERTIFICATES_BY_TAG_NAME)) {
             findCertificatesByTagNameStatement.setString(1, tagName);
             ResultSet resultSet = findCertificatesByTagNameStatement.executeQuery();
             addTagsToFoundCertificate(certificateMap, resultSet);
