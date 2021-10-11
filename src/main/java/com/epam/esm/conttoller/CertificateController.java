@@ -8,6 +8,7 @@ import com.epam.esm.service.CertificateService;
 import com.epam.esm.service.TagService;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -103,7 +104,7 @@ public class CertificateController {
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(CertificateExistsException.class)
+    @ExceptionHandler({CertificateExistsException.class})
     public ResponseEntity<Error> certificateExists(CertificateExistsException exception, Locale locale) {
         String message = messageSource.getMessage("certificate.exists", new Object[]{}, locale);
         long code =  exception.getCertificateId();
