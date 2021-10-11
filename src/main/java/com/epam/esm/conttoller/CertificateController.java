@@ -83,6 +83,7 @@ public class CertificateController {
     }
 
     @RequestMapping(value = "/{id}/tags/{tagId}", method = RequestMethod.DELETE)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCertificateTag(@PathVariable("id") long id, @PathVariable("tagId") long tagId) throws TagNotFoundException, CertificateNotFoundException {
         certificateService.deleteCertificateTag(id, tagId);
     }
