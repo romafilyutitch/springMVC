@@ -1,16 +1,16 @@
 package com.epam.esm.conttoller;
 
 public class Error {
-    private long code;
+    private long errorCode;
     private String message;
 
-    public Error(long code, String message) {
-        this.code = code;
+    public Error(long errorCode, String message) {
+        this.errorCode = errorCode;
         this.message = message;
     }
 
-    public long getCode() {
-        return code;
+    public long getErrorCode() {
+        return errorCode;
     }
 
     public String getMessage() {

@@ -66,7 +66,7 @@ public class Certificate extends Entity {
         this.duration = duration;
     }
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     public LocalDateTime getCreateDate() {
         return createDate;
     }
@@ -75,7 +75,7 @@ public class Certificate extends Entity {
         this.createDate = createDate;
     }
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     public LocalDateTime getLastUpdateDate() {
         return lastUpdateDate;
     }
