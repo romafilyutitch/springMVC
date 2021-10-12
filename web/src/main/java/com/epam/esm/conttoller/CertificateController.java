@@ -41,18 +41,14 @@ public class CertificateController {
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<Certificate>> showCertificates(@RequestParam(required = false) String name, @RequestParam(required = false) String tagName) {
         List<Certificate> certificates;
-        if (name == null &&  tagName == null) {
+        if (name == null && tagName == null) {
             certificates = certificateService.findAll();
-        } else if (name != null) {
+        } else if(name != null) {
             certificates = certificateService.findByPartOfName(name);
         } else {
             certificates = certificateService.findByTagName(tagName);
         }
-        if (certificates.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } else {
-            return new ResponseEntity<>(certificates, HttpStatus.OK);
-        }
+        return certificates.isEmpty() ? new ResponseEntity<>(HttpStatus.NOT_FOUND) : new ResponseEntity<>(certificates, HttpStatus.OK);
     }
 
     /**

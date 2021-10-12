@@ -153,13 +153,12 @@ class CertificateRestServiceTest {
         Tag tag = new Tag(1L, "Tag");
         certificate.getTags().add(tag);
         when(certificateDao.findById(1L)).thenReturn(Optional.of(certificate));
-        when(tagDao.findById(1L)).thenReturn(Optional.of(tag));
 
         Tag certificateTag = service.findCertificateTag(1L, 1L);
 
         assertEquals(tag, certificateTag);
         verify(certificateDao).findById(1L);
-        verify(tagDao).findById(1L);
+
     }
 
     @Test
@@ -174,24 +173,20 @@ class CertificateRestServiceTest {
     @Test
     public void findCertificateTag_shouldThrowExceptionWhenTagNotFound() {
         when(certificateDao.findById(1L)).thenReturn(Optional.of(certificate));
-        when(tagDao.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(TagNotFoundException.class, () -> service.findCertificateTag(1L, 1L));
 
         verify(certificateDao).findById(1L);
-        verify(tagDao).findById(1L);
     }
 
     @Test
     public void deleteCertificateTag_shouldDeleteTag() {
-        when(certificateDao.findById(1L)).thenReturn(Optional.of(certificate));
         Tag tag = new Tag(1L, "tag");
-        when(tagDao.findById(1L)).thenReturn(Optional.of(tag));
+        certificate.getTags().add(tag);
+        when(certificateDao.findById(1L)).thenReturn(Optional.of(certificate));
 
         assertDoesNotThrow(() -> service.deleteCertificateTag(1L, 1L));
 
-        verify(certificateDao).findById(1L);
-        verify(tagDao).findById(1L);
     }
 
     @Test
@@ -206,12 +201,10 @@ class CertificateRestServiceTest {
     @Test
     public void deleteCertificateTag_shouldThrowExceptionWhenTagNotFound() {
         when(certificateDao.findById(1L)).thenReturn(Optional.of(certificate));
-        when(tagDao.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(TagNotFoundException.class, () -> service.deleteCertificateTag(1L, 1L));
 
         verify(certificateDao).findById(1L);
-        verify(tagDao).findById(1L);
     }
 
     @Test
