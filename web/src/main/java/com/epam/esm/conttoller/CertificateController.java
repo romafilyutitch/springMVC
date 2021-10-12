@@ -19,7 +19,7 @@ public class CertificateController {
     private MessageSource messageSource;
 
     @Autowired
-    public CertificateController(CertificateService certificateService, TagService tagService, MessageSource messageSource) {
+    public CertificateController(CertificateService certificateService, MessageSource messageSource) {
         this.certificateService = certificateService;
         this.messageSource = messageSource;
     }

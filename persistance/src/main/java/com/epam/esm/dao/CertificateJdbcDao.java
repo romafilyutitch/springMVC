@@ -97,11 +97,11 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
             updateStatement.executeUpdate();
             List<Tag> tags = entity.getTags();
             saveCertificateTags(entity, connection, tags);
-            foundCertificate.setTags(tags);
-            return foundCertificate;
         } catch (SQLException e) {
             throw new DaoException(e);
         }
+        Optional<Certificate> optionalCertificate = findById(entity.getId());
+        return optionalCertificate.orElseThrow(DaoException::new);
     }
 
     @Override
@@ -156,11 +156,19 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
              PreparedStatement findCertificatesByTagNameStatement = connection.prepareStatement(FIND_ALL_CERTIFICATES_BY_TAG_NAME)) {
             findCertificatesByTagNameStatement.setString(1, tagName);
             ResultSet resultSet = findCertificatesByTagNameStatement.executeQuery();
-            addTagsToFoundCertificate(certificateMap, resultSet);
+            while(resultSet.next()) {
+                Certificate certificate = mapResultSetToEntity(resultSet);
+                certificateMap.put(certificate.getId(), certificate);
+            }
         } catch (SQLException e) {
             throw new DaoException(e);
         }
-        return new ArrayList<>(certificateMap.values());
+        Set<Long> ids = certificateMap.keySet();
+        List<Certificate> certificates = new ArrayList<>();
+        for(Long id : ids) {
+            certificates.add(findById(id).orElseThrow(DaoException::new));
+        }
+        return certificates;
     }
 
     @Override
