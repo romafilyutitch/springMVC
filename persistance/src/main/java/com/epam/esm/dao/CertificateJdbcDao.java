@@ -28,6 +28,7 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     private static final String UPDATE_CERTIFICATE_SQL = "update gift_certificate set name = ?, description = ?, price = ?, duration = ? where id = ?";
     private static final String DELETE_CERTIFICATE_SQL = "delete from gift_certificate where id = ?";
     private static final String SAVE_CERTIFICATE_TAG_SQL = "insert into certificate_tag (certificate_id, tag_id) values (?, ?)";
+    private static final String FIND_CERTIFICATE_TAG_LINK_SQL = "select * from certificate_tag where certificate_id = ? and tag_id = ?";
 
     private final TagDao tagDao;
 
@@ -274,7 +275,7 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     }
 
     private boolean isTagLiked(Connection connection, Certificate entity, Tag savedTag) throws SQLException {
-        try (PreparedStatement findCertificateTagStatement = connection.prepareStatement("select * from certificate_tag where certificate_id = ? and tag_id = ?")) {
+        try (PreparedStatement findCertificateTagStatement = connection.prepareStatement(FIND_CERTIFICATE_TAG_LINK_SQL)) {
             findCertificateTagStatement.setLong(1, entity.getId());
             findCertificateTagStatement.setLong(2, savedTag.getId());
             ResultSet resultSet1 = findCertificateTagStatement.executeQuery();
