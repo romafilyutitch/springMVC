@@ -9,6 +9,12 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.*;
 
+/**
+ * Realisation of abstract dao for certificate that use gift_certificate table to
+ * perform CRUD operations with database table. Uses SQL queries to perform those operations.
+ * Certificates contains list of tags that related to each other as many to many relationship so class
+ * also operates certificate_tag table to link tag with certificate and use tag table to save certificate tags
+ */
 @Component
 public class CertificateJdbcDao extends AbstractDao<Certificate> implements CertificateDao {
     private static final String FIND_ALL_CERTIFICATES_SQL = "select gift_certificate.*, tag.* from gift_certificate " +
@@ -31,6 +37,13 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         this.tagDao = tagDao;
     }
 
+    /**
+     * Performs insert query to database to save certificate. Also
+     * saves certificate in tag table and insert row to link tags with saved
+     * certificate by adding row in certificate_tag table
+     * @param entity entity that need to be saved
+     * @return saved certificate with assigned id
+     */
     @Override
     public Certificate save(Certificate entity) {
         try (Connection connection = dataSource.getConnection();
@@ -57,6 +70,11 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         }
     }
 
+    /**
+     * Finds all certificates from database and returns. Also finds certificate
+     * tags that certificate tag by finding them in tag table
+     * @return List of all certificates
+     */
     @Override
     public List<Certificate> findAll() {
         Map<Long, Certificate> certificateMap = new HashMap<>();
@@ -70,6 +88,12 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         return new ArrayList<>(certificateMap.values());
     }
 
+    /**
+     * Finds certificate that has passed id and its tags
+     * @param id id of entity that need to be found
+     * @return optional certificate if there is certificate with passed id
+     * or empty optional if there is not certificate with passed id
+     */
     @Override
     public Optional<Certificate> findById(Long id) {
         Map<Long, Certificate> certificateMap = new HashMap<>();
@@ -84,6 +108,12 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         return Optional.ofNullable(certificateMap.get(id));
     }
 
+    /**
+     * Performs updated operations to updated entity. Also saves tags if its new tags and links them together.
+     * If there is tag, then links lik with entity.
+     * @param entity entity that need to be updated
+     * @return updated entity
+     */
     @Override
     public Certificate update(Certificate entity) {
         try (Connection connection = dataSource.getConnection();
@@ -104,6 +134,12 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         return optionalCertificate.orElseThrow(DaoException::new);
     }
 
+    /**
+     * Uses ResultSet get methods to map ResultSet to Certificate
+     * @param resultSet from which need get values and map entity
+     * @return Certificate from ResultSet
+     * @throws SQLException if exception with database operations occurs
+     */
     @Override
     protected Certificate mapResultSetToEntity(ResultSet resultSet) throws SQLException {
         Long id = resultSet.getLong("id");
@@ -116,6 +152,13 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         return new Certificate(id, name, description, price, duration, createDate, lastUpdateDate);
     }
 
+    /**
+     * Uses ResultSet set methods to set into save prepared statement
+     * Certificate's properties
+     * @param saveStatement prepared statement that accept entity's properties
+     * @param entity entity which properties need to map to save statement
+     * @throws SQLException if exception with database operations occurs
+     */
     @Override
     protected void mapEntityToSavePreparedStatement(PreparedStatement saveStatement, Certificate entity) throws SQLException {
         saveStatement.setString(1, entity.getName());
@@ -124,6 +167,13 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         saveStatement.setInt(4, entity.getDuration());
     }
 
+    /**
+     * Uses ResultSet set methods to set into updated prepared statement
+     * Certificate's properties
+     * @param updateStatement prepared statement that accept entity's properties
+     * @param entity entity witch properties need to map to updated statement
+     * @throws SQLException if exception with database operations occurs
+     */
     @Override
     protected void mapEntityToUpdatePreparedStatement(PreparedStatement updateStatement, Certificate entity) throws SQLException {
         updateStatement.setString(1, entity.getName());
@@ -133,6 +183,13 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         updateStatement.setLong(5, entity.getId());
     }
 
+    /**
+     * Uses select from certificate database statement to find
+     * certificate that has passed name
+     * @param name of certificate that need to be found
+     * @return optional certificate if there is certificate with passed name
+     * or empty optional otherwise
+     */
     @Override
     public Optional<Certificate> findByName(String name) {
         try (Connection connection = dataSource.getConnection();
@@ -149,6 +206,12 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         }
     }
 
+    /**
+     * Uses select from certificate table to find certificates
+     * that have tag with passed name.
+     * @param tagName name of tag that need to be found
+     * @return list of certificates that have tag with passed tag name
+     */
     @Override
     public List<Certificate> findByTagName(String tagName) {
         Map<Long, Certificate> certificateMap = new HashMap<>();
@@ -171,6 +234,11 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         return certificates;
     }
 
+    /**
+     * Performs select like statement to find certificate by part of name.
+     * @param name part of certificate name that need to be found.
+     * @return certificate that have passed name as part of ists name
+     */
     @Override
     public List<Certificate> searchByName(String name) {
         Map<Long, Certificate> certificateMap = new HashMap<>();

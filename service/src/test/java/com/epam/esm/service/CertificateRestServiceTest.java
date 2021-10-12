@@ -7,9 +7,7 @@ import com.epam.esm.model.Tag;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.swing.text.html.Option;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -143,7 +141,7 @@ class CertificateRestServiceTest {
     public void searchByName_shouldFindCertificatesWithPassedName() {
         when(certificateDao.searchByName(certificate.getName())).thenReturn(Collections.singletonList(certificate));
 
-        List<Certificate> certificates = service.searchByName(certificate.getName());
+        List<Certificate> certificates = service.findByPartOfName(certificate.getName());
 
         assertTrue(certificates.contains(certificate));
 

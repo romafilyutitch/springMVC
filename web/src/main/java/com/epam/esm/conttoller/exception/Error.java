@@ -1,8 +1,12 @@
-package com.epam.esm.conttoller;
+package com.epam.esm.conttoller.exception;
 
+/**
+ * Custom error class to display
+ * when exception in controller occurs
+ */
 public class Error {
-    private long errorCode;
-    private String message;
+    private final long errorCode;
+    private final String message;
 
     public Error(long errorCode, String message) {
         this.errorCode = errorCode;
