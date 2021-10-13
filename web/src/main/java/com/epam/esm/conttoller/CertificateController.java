@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -34,20 +35,12 @@ public class CertificateController {
      * Handles GET certificates request and shows all certificates.
      * If passed name param then finds certificates by part of name.
      * If passed tagName param then finds certificates by tag name
-     * @param name parameter than make find by part of name find
-     * @param tagName parameter that make find by tag name find
+     * @param findParams find parameters.
      * @return controller response in JSON format and OK or NOT FOUND status code
      */
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<Certificate>> showCertificates(@RequestParam(required = false) String name, @RequestParam(required = false) String tagName) {
-        List<Certificate> certificates;
-        if (name == null && tagName == null) {
-            certificates = certificateService.findAll();
-        } else if(name != null) {
-            certificates = certificateService.findByPartOfName(name);
-        } else {
-            certificates = certificateService.findByTagName(tagName);
-        }
+    public ResponseEntity<List<Certificate>> showCertificates(@RequestParam(required = false) LinkedHashMap<String, String> findParams) {
+        List<Certificate> certificates = findParams.isEmpty() ? certificateService.findAll() : certificateService.findAllWithParameters(findParams);
         return certificates.isEmpty() ? new ResponseEntity<>(HttpStatus.NOT_FOUND) : new ResponseEntity<>(certificates, HttpStatus.OK);
     }
 

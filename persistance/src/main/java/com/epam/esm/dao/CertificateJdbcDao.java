@@ -1,5 +1,6 @@
 package com.epam.esm.dao;
 
+import com.epam.esm.builder.FindCertificateBuilder;
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -252,6 +253,29 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
             throw new DaoException(e);
         }
         return new ArrayList<>(certificateMap.values());
+    }
+
+    @Override
+    public List<Certificate> findWithParameters(LinkedHashMap<String, String> findParameters) {
+        String tagName = findParameters.remove("tagName");
+        String partOfName = findParameters.remove("partOfName");
+        String partOfDescription = findParameters.remove("partOfDescription");
+        Set<Map.Entry<String, String>> entries = findParameters.entrySet();
+        FindCertificateBuilder builder = FindCertificateBuilder.findAll()
+                .whereTagName(tagName)
+                .wherePartOfName(partOfName)
+                .wherePartOfDescription(partOfDescription);
+        for (Map.Entry<String, String> entry : entries) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            builder = key.equals("sortByName") ? builder.orderBy().orderByName(value) : builder;
+            builder = key.equals("sortByDate") ? builder.orderBy().orderByDate(value) : builder;
+            entries.remove(entry);
+            if (!entries.isEmpty()) {
+                builder = builder.thenOrder();
+            }
+        }
+        return null;
     }
 
     private void setUpdateOnlyPassedValues(Certificate entity, PreparedStatement updateStatement, Certificate foundCertificate) throws SQLException {

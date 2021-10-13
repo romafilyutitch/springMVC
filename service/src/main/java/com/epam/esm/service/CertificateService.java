@@ -3,6 +3,7 @@ package com.epam.esm.service;
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
@@ -16,6 +17,16 @@ public interface CertificateService {
      * @return list of certificates
      */
     List<Certificate> findAll();
+
+    /**
+     * Finds certificates that matches passed find parameters.
+     * May return empty list if there is no certificates that matches
+     * passed parameters.
+     * @param findParameters parameters that need to find certificates that
+     *                       certificates must matches
+     * @return list of certificates that matches passed parameters
+     */
+    List<Certificate> findAllWithParameters(LinkedHashMap<String, String> findParameters);
 
     /**
      * Finds Certificate that has passed id.

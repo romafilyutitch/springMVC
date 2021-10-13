@@ -2,6 +2,7 @@ package com.epam.esm.dao;
 
 import com.epam.esm.model.Certificate;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,4 +38,6 @@ public interface CertificateDao extends Dao<Certificate> {
      * or empty list
      */
     List<Certificate> searchByName(String name);
+
+    List<Certificate> findWithParameters(LinkedHashMap<String, String> findParameters);
 }
