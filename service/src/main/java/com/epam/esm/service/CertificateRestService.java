@@ -68,31 +68,15 @@ public class CertificateRestService implements CertificateService {
     }
 
     /**
-     * Finds certificates that have tag with passed name
-     *
-     * @param tagName of tag that certificates have
-     * @return list of certificates that have tag with passed name
-     */
-    @Override
-    public List<Certificate> findByTagName(String tagName) {
-        return certificateDao.findByTagName(tagName);
-    }
-
-    /**
      * Perform certificate save operation.
      * Saves certificate in database.
      * Sets certificate create time to current time
      *
      * @param certificate that need to be saved
      * @return saved certificate
-     * @throws CertificateExistsException if there is other saved certificate with passed name
      */
     @Override
-    public Certificate save(Certificate certificate) throws CertificateExistsException {
-        Optional<Certificate> optionalCertificate = certificateDao.findByName(certificate.getName());
-        if (optionalCertificate.isPresent()) {
-            throw new CertificateExistsException(optionalCertificate.get().getId());
-        }
+    public Certificate save(Certificate certificate) {
         Certificate savedCertificate = certificateDao.save(certificate);
         savedCertificate.setCreateDate(LocalDateTime.now());
         return savedCertificate;
@@ -136,18 +120,6 @@ public class CertificateRestService implements CertificateService {
         } else {
             throw new CertificateNotFoundException(id);
         }
-    }
-
-    /**
-     * Finds certificates which names contain passed name as part of name. Finds certificates by part of name
-     * Uses certificates in database.
-     *
-     * @param name by which need to find certificate
-     * @return list of certificates that have names that contains passed names.
-     */
-    @Override
-    public List<Certificate> findByPartOfName(String name) {
-        return certificateDao.searchByName(name);
     }
 
     /**

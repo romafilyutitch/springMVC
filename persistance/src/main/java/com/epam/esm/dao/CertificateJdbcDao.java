@@ -21,10 +21,7 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     private static final String FIND_ALL_CERTIFICATES_SQL = "select gift_certificate.*, tag.* from gift_certificate " +
             "left join certificate_tag on certificate_tag.certificate_id = gift_certificate.id " +
             "left join tag on certificate_tag.tag_id = tag.id";
-    private static final String FIND_ALL_CERTIFICATES_BY_TAG_NAME = String.format("%s where tag.name = ?", FIND_ALL_CERTIFICATES_SQL);
     private static final String FIND_CERTIFICATE_BY_ID_SQL = String.format("%s where gift_certificate.id = ?", FIND_ALL_CERTIFICATES_SQL);
-    private static final String FIND_CERTIFICATE_BY_NAME_SQL = String.format("%s where gift_certificate.name = ?", FIND_ALL_CERTIFICATES_SQL);
-    private static final String SEARCH_CERTIFICATE_BY_NAME = String.format("%s where gift_certificate.name like ?", FIND_ALL_CERTIFICATES_SQL);
     private static final String SAVE_CERTIFICATE_SQL = "insert into gift_certificate (name, description, price, duration) values (?, ?, ?, ?)";
     private static final String UPDATE_CERTIFICATE_SQL = "update gift_certificate set name = ?, description = ?, price = ?, duration = ? where id = ?";
     private static final String DELETE_CERTIFICATE_SQL = "delete from gift_certificate where id = ?";
@@ -122,7 +119,7 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     public Certificate update(Certificate entity) {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement findByIdStatement = connection.prepareStatement(FIND_CERTIFICATE_BY_ID_SQL);
-             PreparedStatement updateStatement = connection.prepareStatement(UPDATE_CERTIFICATE_SQL);) {
+             PreparedStatement updateStatement = connection.prepareStatement(UPDATE_CERTIFICATE_SQL)) {
             findByIdStatement.setLong(1, entity.getId());
             ResultSet resultSet = findByIdStatement.executeQuery();
             resultSet.next();
@@ -185,76 +182,6 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         updateStatement.setDouble(3, entity.getPrice());
         updateStatement.setInt(4, entity.getDuration());
         updateStatement.setLong(5, entity.getId());
-    }
-
-    /**
-     * Uses select from certificate database statement to find
-     * certificate that has passed name
-     * @param name of certificate that need to be found
-     * @return optional certificate if there is certificate with passed name
-     * or empty optional otherwise
-     */
-    @Override
-    public Optional<Certificate> findByName(String name) {
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement findByNameStatement = connection.prepareStatement(FIND_CERTIFICATE_BY_NAME_SQL)) {
-            findByNameStatement.setString(1, name);
-            ResultSet resultSet = findByNameStatement.executeQuery();
-            if (resultSet.next()) {
-                return Optional.of(mapResultSetToEntity(resultSet));
-            } else {
-                return Optional.empty();
-            }
-        } catch (SQLException e) {
-            throw new DaoException(e);
-        }
-    }
-
-    /**
-     * Uses select from certificate table to find certificates
-     * that have tag with passed name.
-     * @param tagName name of tag that need to be found
-     * @return list of certificates that have tag with passed tag name
-     */
-    @Override
-    public List<Certificate> findByTagName(String tagName) {
-        Map<Long, Certificate> certificateMap = new HashMap<>();
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement findCertificatesByTagNameStatement = connection.prepareStatement(FIND_ALL_CERTIFICATES_BY_TAG_NAME)) {
-            findCertificatesByTagNameStatement.setString(1, tagName);
-            ResultSet resultSet = findCertificatesByTagNameStatement.executeQuery();
-            while(resultSet.next()) {
-                Certificate certificate = mapResultSetToEntity(resultSet);
-                certificateMap.put(certificate.getId(), certificate);
-            }
-        } catch (SQLException e) {
-            throw new DaoException(e);
-        }
-        Set<Long> ids = certificateMap.keySet();
-        List<Certificate> certificates = new ArrayList<>();
-        for(Long id : ids) {
-            certificates.add(findById(id).orElseThrow(DaoException::new));
-        }
-        return certificates;
-    }
-
-    /**
-     * Performs select like statement to find certificate by part of name.
-     * @param name part of certificate name that need to be found.
-     * @return certificate that have passed name as part of ists name
-     */
-    @Override
-    public List<Certificate> searchByName(String name) {
-        Map<Long, Certificate> certificateMap = new HashMap<>();
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement findCertificatesByTagNameStatement = connection.prepareStatement(SEARCH_CERTIFICATE_BY_NAME)) {
-            findCertificatesByTagNameStatement.setString(1, "%" + name + "%");
-            ResultSet resultSet = findCertificatesByTagNameStatement.executeQuery();
-            addTagsToFoundCertificate(certificateMap, resultSet);
-        } catch (SQLException e) {
-            throw new DaoException(e);
-        }
-        return new ArrayList<>(certificateMap.values());
     }
 
     @Override

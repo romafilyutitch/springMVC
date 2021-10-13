@@ -37,13 +37,6 @@ public interface CertificateService {
     Certificate findById(Long id) throws CertificateNotFoundException;
 
     /**
-     * Finds Certificates that have tag with passed id.
-     * @param tagName of tag that certificates have
-     * @return list of certificates that have tag with passed name
-     */
-    List<Certificate> findByTagName(String tagName);
-
-    /**
      * Performs save certificate operation. Saved only certificates with unique names
      * @param certificate that need to be saved
      * @return saved certificate
@@ -60,14 +53,6 @@ public interface CertificateService {
      * @throws CertificateNotFoundException if there is not certificated with passed id
      */
     Certificate update(Long id, Certificate certificate) throws CertificateNotFoundException;
-
-    /**
-     * Finds certificates witch names contains passed name, finds certificates
-     * by part of name
-     * @param name by which need to find certificate
-     * @return certificates which names contains passed name
-     */
-    List<Certificate> findByPartOfName(String name);
 
     /**
      * Performs certificate delete operation.
