@@ -1,6 +1,5 @@
 package com.epam.esm.service;
 
-import com.epam.esm.builder.FindCertificateBuilder;
 import com.epam.esm.dao.CertificateDao;
 import com.epam.esm.dao.TagDao;
 import com.epam.esm.model.Certificate;
@@ -9,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Service layer certificate certificate service implementation
@@ -41,6 +42,7 @@ public class CertificateRestService implements CertificateService {
      * Finds certificates that matches passed find parameters.
      * May return empty list if there is no certificates that matches
      * passed parameters.
+     *
      * @param findParameters parameters that need to find certificates that
      *                       certificates must matches
      * @return list of certificates that matches passed parameters

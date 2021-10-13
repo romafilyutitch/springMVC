@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -64,18 +65,22 @@ class CertificateRestServiceTest {
     }
 
     @Test
-    public void findByTagName_shouldReturnCertificatesListWithTag() {
-        List<Certificate> mockCertificates = Collections.singletonList(certificate);
-        when(certificateDao.findByTagName("tag")).thenReturn(mockCertificates);
+    public void findWithParameters_shouldReturnCertificatesThatMatchesPassedParameters() {
+        LinkedHashMap<String, String> map = new LinkedHashMap<>();
+        map.put("partOfName", "e");
+        map.put("partOfDescription", "e");
+        List<Certificate> singletonCertificate = Collections.singletonList(certificate);
+        when(certificateDao.findWithParameters(map)).thenReturn(singletonCertificate);
 
-        List<Certificate> certificates = service.findByTagName("tag");
+        List<Certificate> certificatesWithParameters = service.findAllWithParameters(map);
 
-        assertEquals(mockCertificates, certificates);
-        verify(certificateDao).findByTagName("tag");
+        assertEquals(singletonCertificate, certificatesWithParameters);
+        verify(certificateDao).findWithParameters(map);
     }
 
+
     @Test
-    public void save_shouldSaveCertificateIfNotExists() throws CertificateExistsException {
+    public void save_shouldSaveCertificate() {
         Certificate unsaved = new Certificate(null, "saved", "saved", 1.1, 1, LocalDateTime.now(), LocalDateTime.now());
         Certificate saved = new Certificate(1L, "saved", "saved", 1.1, 1, LocalDateTime.now(), LocalDateTime.now());
         when(certificateDao.save(unsaved)).thenReturn(saved);
@@ -86,14 +91,6 @@ class CertificateRestServiceTest {
         verify(certificateDao).save(unsaved);
     }
 
-    @Test
-    public void save_shouldThrowExceptionWhenCertificateWithNameExists() throws CertificateExistsException {
-        when(certificateDao.findByName(any())).thenReturn(Optional.of(certificate));
-
-        assertThrows(CertificateExistsException.class, () -> service.save(certificate));
-
-        verify(certificateDao).findByName(any());
-    }
 
     @Test
     public void update_shouldUpdateCertificate() throws CertificateNotFoundException {
@@ -137,16 +134,6 @@ class CertificateRestServiceTest {
 
     }
 
-    @Test
-    public void searchByName_shouldFindCertificatesWithPassedName() {
-        when(certificateDao.searchByName(certificate.getName())).thenReturn(Collections.singletonList(certificate));
-
-        List<Certificate> certificates = service.findByPartOfName(certificate.getName());
-
-        assertTrue(certificates.contains(certificate));
-
-        verify(certificateDao).searchByName(certificate.getName());
-    }
 
     @Test
     public void findCertificateTag_shouldGetCertificateTag() throws TagNotFoundException, CertificateNotFoundException {

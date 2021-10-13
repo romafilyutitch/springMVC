@@ -40,9 +40,8 @@ public interface CertificateService {
      * Performs save certificate operation. Saved only certificates with unique names
      * @param certificate that need to be saved
      * @return saved certificate
-     * @throws CertificateExistsException if there is other certificate with passed name
      */
-    Certificate save(Certificate certificate) throws CertificateExistsException;
+    Certificate save(Certificate certificate);
 
     /**
      * updates certificate that have passed id.

@@ -59,12 +59,10 @@ public class CertificateController {
      * Handles POST certificate request and saves posted certificate
      * @param certificate certificate that need to be saved
      * @return controller response in JSON format and CREATED status code
-     * @throws CertificateExistsException if there is other certificate with passed certificate name
      */
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<Certificate> saveCertificate(@RequestBody Certificate certificate) throws CertificateExistsException {
+    public ResponseEntity<Certificate> saveCertificate(@RequestBody Certificate certificate){
         return new ResponseEntity<>(certificateService.save(certificate), HttpStatus.CREATED);
-
     }
 
     /**
@@ -159,20 +157,6 @@ public class CertificateController {
         long code = HttpStatus.NOT_FOUND.value() + exception.getCode();
         Error error = new Error(code, message);
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
-    }
-    /**
-     * Exception handlers methods that handles CertificateExistsException if
-     * exception occurs in other methods and response with localized message
-     * @param exception exception that occur in controller
-     * @param locale client locale
-     * @return controller custom localized error response in JSON format
-     */
-    @ExceptionHandler(CertificateExistsException.class)
-    public ResponseEntity<Error> certificateExists(CertificateExistsException exception, Locale locale) {
-        String message = messageSource.getMessage("certificate.exists", new Object[]{}, locale);
-        long code = HttpStatus.BAD_REQUEST.value() + exception.getCode();
-        Error error = new Error(code, message);
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
     /**
