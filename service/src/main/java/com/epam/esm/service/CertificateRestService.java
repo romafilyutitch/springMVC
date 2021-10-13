@@ -79,9 +79,7 @@ public class CertificateRestService implements CertificateService {
      */
     @Override
     public Certificate save(Certificate certificate) {
-        Certificate savedCertificate = certificateDao.save(certificate);
-        savedCertificate.setCreateDate(LocalDateTime.now());
-        return savedCertificate;
+        return certificateDao.save(certificate);
     }
 
     /**
@@ -96,15 +94,21 @@ public class CertificateRestService implements CertificateService {
      */
     @Override
     public Certificate update(Long id, Certificate certificate) throws CertificateNotFoundException {
-        Optional<Certificate> optionalCertificate = certificateDao.findById(id);
-        if (optionalCertificate.isPresent()) {
-            certificate.setId(id);
-            Certificate updatedCertificate = certificateDao.update(certificate);
-            updatedCertificate.setLastUpdateDate(LocalDateTime.now());
-            return updatedCertificate;
+        Optional<Certificate> certificateFromDb = certificateDao.findById(id);
+        if (certificateFromDb.isPresent()) {
+            Certificate modifiedCertificate = modifyForUpdate(certificateFromDb.get(), certificate);
+            return certificateDao.update(modifiedCertificate);
         } else {
             throw new CertificateNotFoundException(id);
         }
+    }
+
+    private Certificate modifyForUpdate(Certificate fromDb, Certificate fromRequest) {
+        fromDb.setName(fromRequest.getName() == null ? fromDb.getName() : fromRequest.getName());
+        fromDb.setDescription(fromRequest.getDescription() == null ? fromDb.getDescription() : fromRequest.getDescription());
+        fromDb.setPrice(fromRequest.getPrice() == null ? fromDb.getPrice() : fromRequest.getPrice());
+        fromDb.setDuration(fromRequest.getDuration() == null ? fromDb.getDuration() : fromRequest.getDuration());
+        return fromDb;
     }
 
     /**
