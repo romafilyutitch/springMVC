@@ -32,11 +32,13 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     private static final String FIND_CERTIFICATE_TAG_LINK_SQL = "select * from certificate_tag where certificate_id = ? and tag_id = ?";
 
     private final TagDao tagDao;
+    private final FindCertificateBuilder findCertificateBuilder;
 
     @Autowired
-    public CertificateJdbcDao(TagDao tagDao) {
+    public CertificateJdbcDao(TagDao tagDao, FindCertificateBuilder findCertificateBuilder) {
         super(FIND_ALL_CERTIFICATES_SQL, FIND_CERTIFICATE_BY_ID_SQL, SAVE_CERTIFICATE_SQL, UPDATE_CERTIFICATE_SQL, DELETE_CERTIFICATE_SQL);
         this.tagDao = tagDao;
+        this.findCertificateBuilder = findCertificateBuilder;
     }
 
     /**
@@ -257,25 +259,20 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
 
     @Override
     public List<Certificate> findWithParameters(LinkedHashMap<String, String> findParameters) {
-        String tagName = findParameters.remove("tagName");
-        String partOfName = findParameters.remove("partOfName");
-        String partOfDescription = findParameters.remove("partOfDescription");
-        Set<Map.Entry<String, String>> entries = findParameters.entrySet();
-        FindCertificateBuilder builder = FindCertificateBuilder.findAll()
-                .whereTagName(tagName)
-                .wherePartOfName(partOfName)
-                .wherePartOfDescription(partOfDescription);
-        for (Map.Entry<String, String> entry : entries) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-            builder = key.equals("sortByName") ? builder.orderBy().orderByName(value) : builder;
-            builder = key.equals("sortByDate") ? builder.orderBy().orderByDate(value) : builder;
-            entries.remove(entry);
-            if (!entries.isEmpty()) {
-                builder = builder.thenOrder();
+        Map<Long, Certificate> certificateMap = new LinkedHashMap<>();
+        String findSql = findCertificateBuilder.buildSql(findParameters);
+        List<String> values = findCertificateBuilder.getSqlValues(findParameters);
+        try (Connection connection = dataSource.getConnection();
+        PreparedStatement findStatement = connection.prepareStatement(findSql)) {
+            for (int i = 0; i < values.size(); i++) {
+                findStatement.setString(i + 1, values.get(i));
             }
+            ResultSet resultSet = findStatement.executeQuery();
+            addTagsToFoundCertificate(certificateMap, resultSet);
+        } catch (SQLException e) {
+            throw new DaoException(e);
         }
-        return null;
+        return new ArrayList<>(certificateMap.values());
     }
 
     private void setUpdateOnlyPassedValues(Certificate entity, PreparedStatement updateStatement, Certificate foundCertificate) throws SQLException {
