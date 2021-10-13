@@ -1,11 +1,12 @@
 package com.epam.esm.builder;
 
+import com.mysql.cj.x.protobuf.MysqlxCrud;
+
 public class FindSqlBuilder {
     private static final String BASE_SQL = "select gift_certificate.*, tag.* from gift_certificate " +
             "left join certificate_tag on certificate_tag.certificate_id = gift_certificate.id " +
             "left join tag on certificate_tag.tag_id = tag.id ";
     private static final String BY_ID = "where gift_certificate.id = ?";
-    private static final String BY_NAME = "where gift_certificate.name = ?";
     private static final String BY_PART_OF_NAME = "where gift_certificate.name like ?";
     private static final String BY_TAG_NAME = "where tag.name = ?";
     private static final String BY_PART_OF_DESCRIPTION = "where gift_certificate.description like ?";
@@ -36,6 +37,11 @@ public class FindSqlBuilder {
         return this;
     }
 
+    public FindSqlBuilder whereTagName() {
+        finalQuery += BY_TAG_NAME;
+        return this;
+    }
+
     public FindSqlBuilder wherePartOfName() {
         finalQuery += BY_PART_OF_NAME;
         return this;
@@ -47,7 +53,7 @@ public class FindSqlBuilder {
     }
 
     public FindSqlBuilder orderBy() {
-        finalQuery = finalQuery + ORDER_BY;
+        finalQuery += ORDER_BY;
         return this;
     }
 
@@ -57,22 +63,22 @@ public class FindSqlBuilder {
     }
 
     public FindSqlBuilder nameAcceding() {
-        finalQuery = finalQuery + NAME_ASC;
+        finalQuery += NAME_ASC;
         return this;
     }
 
     public FindSqlBuilder nameDescending() {
-        finalQuery = finalQuery + NAME_DESC;
+        finalQuery += NAME_DESC;
         return this;
     }
 
     public FindSqlBuilder dateAcceding() {
-        finalQuery = finalQuery + DATE_ASC;
+        finalQuery += DATE_ASC;
         return this;
     }
 
     public FindSqlBuilder dateDescending() {
-        finalQuery = finalQuery + DATE_DESC;
+        finalQuery += DATE_DESC;
         return this;
     }
 
@@ -80,16 +86,17 @@ public class FindSqlBuilder {
         return finalQuery;
     }
 
+
     public static void main(String[] args) {
-        FindSqlBuilder builder = FindSqlBuilder.findAll()
-                .wherePartOfName()
+        String findSql = FindSqlBuilder.findAll()
+                .whereTagName()
                 .and()
-                .wherePartOfDescription()
+                .wherePartOfName()
                 .orderBy()
                 .nameAcceding()
                 .thenOrder()
-                .dateAcceding();
-        System.out.println(builder.build());
+                .dateDescending()
+                .build();
+        System.out.println(findSql);
     }
-
 }
