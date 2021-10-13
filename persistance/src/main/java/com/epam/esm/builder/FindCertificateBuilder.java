@@ -10,9 +10,9 @@ public class FindCertificateBuilder {
             "left join certificate_tag on certificate_tag.certificate_id = gift_certificate.id " +
             "left join tag on certificate_tag.tag_id = tag.id ";
     private static final String BY_ID = "where gift_certificate.id = ?";
-    private static final String BY_TAG_NAME = "where tag.name = ?";
-    private static final String BY_PART_OF_NAME = "where gift_certificate.name like ?";
-    private static final String BY_PART_OF_DESCRIPTION = "where gift_certificate.description like ?";
+    private static final String BY_TAG_NAME = "tag.name = ?";
+    private static final String BY_PART_OF_NAME = "gift_certificate.name like ?";
+    private static final String BY_PART_OF_DESCRIPTION = "gift_certificate.description like ?";
     private static final String AND = " and ";
     private static final String ORDER_BY = " order by ";
     private static final String NAME_ASC = "gift_certificate.name asc";
@@ -20,6 +20,7 @@ public class FindCertificateBuilder {
     private static final String DATE_ASC = "gift_certificate.create_date asc";
     private static final String DATE_DESC = "gift_certificate.create_date desc";
     private static final String THEN_ORDER = ",";
+    private static final String WHERE = " where ";
 
     private String finalQuery;
 
@@ -68,7 +69,7 @@ public class FindCertificateBuilder {
         if (tagName == null || tagName.isEmpty()) {
             return this;
         }
-        finalQuery = finalQuery.equals(BASE_SQL) ? finalQuery + BY_TAG_NAME : finalQuery + AND + BY_TAG_NAME;
+        finalQuery = finalQuery.contains(WHERE) ? finalQuery + AND + BY_TAG_NAME : finalQuery + WHERE + BY_TAG_NAME ;
         return this;
     }
 
@@ -76,7 +77,7 @@ public class FindCertificateBuilder {
         if (partOfName == null || partOfName.isEmpty()) {
             return this;
         }
-        finalQuery = finalQuery.equals(BASE_SQL) ? finalQuery + BY_PART_OF_NAME : finalQuery + AND + BY_PART_OF_NAME;
+        finalQuery = finalQuery.contains(WHERE) ? finalQuery + AND + BY_PART_OF_NAME : finalQuery + WHERE + BY_PART_OF_NAME ;
         return this;
     }
 
@@ -84,7 +85,7 @@ public class FindCertificateBuilder {
         if (partOfDescription == null || partOfDescription.isEmpty()) {
             return this;
         }
-        finalQuery = finalQuery.equals(BASE_SQL) ? finalQuery + BY_PART_OF_DESCRIPTION : finalQuery + AND + BY_PART_OF_DESCRIPTION;
+        finalQuery = finalQuery.contains(WHERE) ? finalQuery + AND + BY_PART_OF_DESCRIPTION : finalQuery + WHERE + BY_PART_OF_DESCRIPTION;
         return this;
     }
 
