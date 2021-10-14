@@ -111,7 +111,7 @@ public class CertificateJdbcDao implements CertificateDao {
     }
 
     private ArrayList<Certificate> mapTagsToCertificates(List<Certificate> certificates) {
-        Map<Long, Certificate> certificateMap = new HashMap<>();
+        Map<Long, Certificate> certificateMap = new LinkedHashMap<>();
         certificates.forEach(certificate -> {
             Certificate savedCertificate = certificateMap.get(certificate.getId());
             if (savedCertificate == null) {
