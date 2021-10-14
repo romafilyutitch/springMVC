@@ -42,7 +42,8 @@ public class TagJdbcDao implements TagDao {
 
     @Override
     public Optional<Tag> findById(Long id) {
-            return Optional.ofNullable(jdbcTemplate.queryForObject(FIND_BY_ID_SQL, this::mapTag, id));
+        List<Tag> foundTag = jdbcTemplate.query(FIND_BY_ID_SQL, this::mapTag, id);
+        return foundTag.isEmpty() ? Optional.empty() : Optional.of(foundTag.get(0));
     }
 
     @Override
@@ -53,7 +54,7 @@ public class TagJdbcDao implements TagDao {
             saveStatement.setString(1, entity.getName());
             return saveStatement;
         }, generatedKeyHolder);
-        Long id = generatedKeyHolder.getKeyAs(Long.class);
+        Long id = generatedKeyHolder.getKey().longValue();
         entity.setId(id);
         return entity;
     }
@@ -71,7 +72,8 @@ public class TagJdbcDao implements TagDao {
 
     @Override
     public Optional<Tag> findByName(String name) {
-        return Optional.ofNullable(jdbcTemplate.queryForObject(FIND_BY_NAME_SQL, this::mapTag, name));
+        List<Tag> foundTag = jdbcTemplate.query(FIND_BY_NAME_SQL, this::mapTag, name);
+        return foundTag.isEmpty() ? Optional.empty() : Optional.of(foundTag.get(0));
     }
 
     private Tag mapTag(ResultSet rs, int row) throws SQLException {

@@ -75,7 +75,8 @@ public class CertificateJdbcDao implements CertificateDao {
             saveStatement.setInt(4, entity.getDuration());
             return saveStatement;
         }, keyHolder);
-        Long id = keyHolder.getKeyAs(Long.class);
+        Long id = keyHolder.getKey().longValue();
+        entity.setId(id);
         saveAndLinkTagsWithCertificate(entity);
         Optional<Certificate> foundCertificate = findById(id);
         return foundCertificate.orElseThrow(DaoException::new);
@@ -102,11 +103,13 @@ public class CertificateJdbcDao implements CertificateDao {
         int duration = resultSet.getInt("gift_certificate.duration");
         LocalDateTime createDate = resultSet.getObject("gift_certificate.create_date", LocalDateTime.class);
         LocalDateTime lastUpdateDate = resultSet.getObject("gift_certificate.last_update_date", LocalDateTime.class);
+        Certificate certificate = new Certificate(id, name, description, price, duration, createDate, lastUpdateDate);
         long tagId = resultSet.getLong("tag.id");
         String tagName = resultSet.getString("tag.name");
-        Tag tag = new Tag(tagId, tagName);
-        Certificate certificate = new Certificate(id, name, description, price, duration, createDate, lastUpdateDate);
-        certificate.getTags().add(tag);
+        if (tagId != 0 || tagName != null) {
+            Tag tag = new Tag(tagId, tagName);
+            certificate.getTags().add(tag);
+        }
         return certificate;
     }
 
