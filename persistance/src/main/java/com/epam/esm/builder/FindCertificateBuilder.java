@@ -93,14 +93,11 @@ public class FindCertificateBuilder {
         if (order == null || order.isEmpty()) {
             return this;
         }
-        if (finalQuery.contains(ORDER_BY)) {
-            finalQuery += THEN_ORDER;
-        } else {
-            finalQuery += ORDER_BY;
-        }
         if (order.equals("asc")) {
+            finalQuery = finalQuery.contains(ORDER_BY) ? finalQuery + THEN_ORDER : finalQuery + ORDER_BY;
             finalQuery += NAME_ASC;
         } else if (order.equals("desc")) {
+            finalQuery = finalQuery.contains(ORDER_BY) ? finalQuery + THEN_ORDER : finalQuery + ORDER_BY;
             finalQuery += NAME_DESC;
         }
         return this;
@@ -110,14 +107,11 @@ public class FindCertificateBuilder {
         if (order == null || order.isEmpty()) {
             return this;
         }
-        if (finalQuery.contains(ORDER_BY)) {
-            finalQuery += THEN_ORDER;
-        } else {
-            finalQuery += ORDER_BY;
-        }
         if (order.equals("asc")) {
+            finalQuery = finalQuery.contains(ORDER_BY) ? finalQuery + THEN_ORDER : finalQuery + ORDER_BY;
             finalQuery += DATE_ASC;
         } else if (order.equals("desc")) {
+            finalQuery = finalQuery.contains(ORDER_BY) ? finalQuery + THEN_ORDER : finalQuery + ORDER_BY;
             finalQuery += DATE_DESC;
         }
         return this;
@@ -130,9 +124,7 @@ public class FindCertificateBuilder {
     public static void main(String[] args) {
         FindCertificateBuilder findCertificateBuilder = new FindCertificateBuilder();
         LinkedHashMap<String, String> map = new LinkedHashMap<>();
-        map.put("sortByName", "asc");
-        map.put("partOfName", "new");
-        map.put("partOfDescription", "td");
+        map.put("tagName", "tag");
         String sql = findCertificateBuilder.buildSql(map);
         List<String> sqlValues = findCertificateBuilder.getSqlValues(map);
         System.out.println(sql);
