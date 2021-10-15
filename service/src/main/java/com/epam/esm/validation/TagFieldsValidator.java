@@ -4,7 +4,7 @@ import com.epam.esm.model.Tag;
 import org.springframework.stereotype.Component;
 
 @Component
-public class TagFieldsValidator {
+public class TagFieldsValidator implements TagValidator {
     public void validate(Tag resource) throws InvalidTagException {
         String name = resource.getName();
         if (name == null || name.isEmpty()) {
