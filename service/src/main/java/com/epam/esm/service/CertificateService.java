@@ -2,6 +2,8 @@ package com.epam.esm.service;
 
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
+import com.epam.esm.validation.InvalidCertificateException;
+import com.epam.esm.validation.InvalidTagException;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -41,7 +43,7 @@ public interface CertificateService {
      * @param certificate that need to be saved
      * @return saved certificate
      */
-    Certificate save(Certificate certificate);
+    Certificate save(Certificate certificate) throws InvalidCertificateException;
 
     /**
      * updates certificate that have passed id.
@@ -51,7 +53,7 @@ public interface CertificateService {
      * @return updated certificate
      * @throws CertificateNotFoundException if there is not certificated with passed id
      */
-    Certificate update(Long id, Certificate certificate) throws CertificateNotFoundException;
+    Certificate update(Long id, Certificate certificate) throws CertificateNotFoundException, InvalidCertificateException;
 
     /**
      * Performs certificate delete operation.
@@ -67,7 +69,7 @@ public interface CertificateService {
      * @return certificate with added tags
      * @throws CertificateNotFoundException if there is not certificate with passed id
      */
-    Certificate addTags(Long certificateId, List<Tag> tags) throws CertificateNotFoundException;
+    Certificate addTags(Long certificateId, List<Tag> tags) throws CertificateNotFoundException, InvalidTagException;
 
     /**
      * Performs delete certificate tag operation

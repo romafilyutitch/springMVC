@@ -4,10 +4,15 @@ import com.epam.esm.dao.CertificateDao;
 import com.epam.esm.dao.TagDao;
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
+import com.epam.esm.validation.CertificateValidator;
+import com.epam.esm.validation.InvalidCertificateException;
+import com.epam.esm.validation.InvalidTagException;
+import com.epam.esm.validation.TagValidator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
@@ -18,13 +23,18 @@ import java.util.Optional;
  */
 @Component
 public class CertificateRestService implements CertificateService {
+    private static final Logger logger = LogManager.getLogger(CertificateRestService.class);
     private final CertificateDao certificateDao;
     private final TagDao tagDao;
+    private final CertificateValidator certificateFieldsValidator;
+    private final TagValidator tagFieldsValidator;
 
     @Autowired
-    public CertificateRestService(CertificateDao certificateDao, TagDao tagDao) {
+    public CertificateRestService(CertificateDao certificateDao, TagDao tagDao, CertificateValidator certificateFieldsValidator, TagValidator tagFieldsValidator) {
         this.certificateDao = certificateDao;
         this.tagDao = tagDao;
+        this.certificateFieldsValidator = certificateFieldsValidator;
+        this.tagFieldsValidator = tagFieldsValidator;
     }
 
     /**
@@ -35,7 +45,9 @@ public class CertificateRestService implements CertificateService {
      */
     @Override
     public List<Certificate> findAll() {
-        return certificateDao.findAll();
+        List<Certificate> allCertificates = certificateDao.findAll();
+        logger.info("all certificates were found " + allCertificates);
+        return allCertificates;
     }
 
     /**
@@ -49,7 +61,9 @@ public class CertificateRestService implements CertificateService {
      */
     @Override
     public List<Certificate> findAllWithParameters(LinkedHashMap<String, String> findParameters) {
-        return certificateDao.findWithParameters(findParameters);
+        List<Certificate> foundCertificates = certificateDao.findWithParameters(findParameters);
+        logger.info("Certificates with parameters were found " + foundCertificates);
+        return foundCertificates;
     }
 
     /**
@@ -63,8 +77,10 @@ public class CertificateRestService implements CertificateService {
     public Certificate findById(Long id) throws CertificateNotFoundException {
         Optional<Certificate> optionalCertificate = certificateDao.findById(id);
         if (optionalCertificate.isPresent()) {
+            logger.info("Certificate was found by id " + optionalCertificate.get());
             return optionalCertificate.get();
         } else {
+            logger.error("Certificate with id wasn't found " + id);
             throw new CertificateNotFoundException(id);
         }
     }
@@ -78,9 +94,10 @@ public class CertificateRestService implements CertificateService {
      * @return saved certificate
      */
     @Override
-    public Certificate save(Certificate certificate) {
+    public Certificate save(Certificate certificate) throws InvalidCertificateException {
+        certificateFieldsValidator.validate(certificate);
         Certificate savedCertificate = certificateDao.save(certificate);
-        savedCertificate.setCreateDate(LocalDateTime.now());
+        logger.info("New certificate was validated and saved successfully " + savedCertificate);
         return savedCertificate;
     }
 
@@ -95,16 +112,26 @@ public class CertificateRestService implements CertificateService {
      * @throws CertificateNotFoundException if there is not certificate wit passed id
      */
     @Override
-    public Certificate update(Long id, Certificate certificate) throws CertificateNotFoundException {
-        Optional<Certificate> optionalCertificate = certificateDao.findById(id);
-        if (optionalCertificate.isPresent()) {
-            certificate.setId(id);
-            Certificate updatedCertificate = certificateDao.update(certificate);
-            updatedCertificate.setLastUpdateDate(LocalDateTime.now());
+    public Certificate update(Long id, Certificate certificate) throws CertificateNotFoundException, InvalidCertificateException {
+        certificateFieldsValidator.validate(certificate);
+        Optional<Certificate> certificateFromDb = certificateDao.findById(id);
+        if (certificateFromDb.isPresent()) {
+            Certificate modifiedCertificate = modifyForUpdate(certificateFromDb.get(), certificate);
+            Certificate updatedCertificate = certificateDao.update(modifiedCertificate);
+            logger.info("Certificate was validated and updated successfully " + updatedCertificate);
             return updatedCertificate;
         } else {
+            logger.error("Certificate with id wasn't found " + id);
             throw new CertificateNotFoundException(id);
         }
+    }
+
+    private Certificate modifyForUpdate(Certificate fromDb, Certificate fromRequest) {
+        fromDb.setName(fromRequest.getName() == null ? fromDb.getName() : fromRequest.getName());
+        fromDb.setDescription(fromRequest.getDescription() == null ? fromDb.getDescription() : fromRequest.getDescription());
+        fromDb.setPrice(fromRequest.getPrice() == null ? fromDb.getPrice() : fromRequest.getPrice());
+        fromDb.setDuration(fromRequest.getDuration() == null ? fromDb.getDuration() : fromRequest.getDuration());
+        return fromDb;
     }
 
     /**
@@ -119,7 +146,9 @@ public class CertificateRestService implements CertificateService {
         Optional<Certificate> optionalCertificate = certificateDao.findById(id);
         if (optionalCertificate.isPresent()) {
             certificateDao.delete(id);
+            logger.info("Certificate with id was deleted " + id);
         } else {
+            logger.error("Certificate with id wasn't found " + id);
             throw new CertificateNotFoundException(id);
         }
     }
@@ -133,14 +162,20 @@ public class CertificateRestService implements CertificateService {
      * @throws CertificateNotFoundException if there is not certificate with passed id
      */
     @Override
-    public Certificate addTags(Long certificateId, List<Tag> tags) throws CertificateNotFoundException {
+    public Certificate addTags(Long certificateId, List<Tag> tags) throws CertificateNotFoundException, InvalidTagException {
+        for (Tag tag : tags) {
+            tagFieldsValidator.validate(tag);
+        }
         Optional<Certificate> optionalCertificate = certificateDao.findById(certificateId);
         if (optionalCertificate.isPresent()) {
             Certificate certificate = optionalCertificate.get();
             List<Tag> certificateTags = certificate.getTags();
             certificateTags.addAll(tags);
-            return certificateDao.update(certificate);
+            Certificate updatedCertificate = certificateDao.update(certificate);
+            logger.info("Certificate was updated with new tags " + updatedCertificate);
+            return updatedCertificate;
         } else {
+            logger.error("Certificate with id wasn't found " + certificateId);
             throw new CertificateNotFoundException(certificateId);
         }
     }
@@ -163,10 +198,13 @@ public class CertificateRestService implements CertificateService {
             boolean tagExists = tags.stream().anyMatch(tag -> tag.getId().equals(tagId));
             if (tagExists) {
                 tagDao.delete(tagId);
+                logger.info("Certificate tag was deleted successfully");
             } else {
+                logger.error("Certificate tag with id wasn't found by id " + tagId);
                 throw new TagNotFoundException(tagId);
             }
         } else {
+            logger.error("Certificate with id wasn't found by id " + certificateId);
             throw new CertificateNotFoundException(certificateId);
         }
     }
@@ -188,11 +226,15 @@ public class CertificateRestService implements CertificateService {
             List<Tag> tags = certificate.getTags();
             Optional<Tag> optionalTag = tags.stream().filter(tag -> tag.getId().equals(tagId)).findAny();
             if (optionalTag.isPresent()) {
-                return optionalTag.get();
+                Tag foundTag = optionalTag.get();
+                logger.info("Certificate tag was found " + foundTag);
+                return foundTag;
             } else {
+                logger.error("Certificate tag wasn't found by id " + tagId);
                 throw new TagNotFoundException(tagId);
             }
         } else {
+            logger.error("Certificate wasn't found by id " + certificateId);
             throw new CertificateNotFoundException(certificateId);
         }
     }

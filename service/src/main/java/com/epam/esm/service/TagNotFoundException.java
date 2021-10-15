@@ -5,15 +5,15 @@ package com.epam.esm.service;
  * to find tag but tag with passed id not exists in database
  */
 public class TagNotFoundException extends Exception {
-    private static final int CODE = 3;
+    private final String code = "02";
     private final long tagId;
 
     public TagNotFoundException(long tagId) {
         this.tagId = tagId;
     }
 
-    public static int getCode() {
-        return CODE;
+    public String getCode() {
+        return code;
     }
 
     public long getTagId() {

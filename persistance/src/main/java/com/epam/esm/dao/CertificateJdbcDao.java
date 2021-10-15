@@ -4,7 +4,11 @@ import com.epam.esm.builder.FindCertificateBuilder;
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.jdbc.core.JdbcOperations;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -16,8 +20,8 @@ import java.util.*;
  * Certificates contains list of tags that related to each other as many to many relationship so class
  * also operates certificate_tag table to link tag with certificate and use tag table to save certificate tags
  */
-@Component
-public class CertificateJdbcDao extends AbstractDao<Certificate> implements CertificateDao {
+@Repository
+public class CertificateJdbcDao implements CertificateDao {
     private static final String FIND_ALL_CERTIFICATES_SQL = "select gift_certificate.*, tag.* from gift_certificate " +
             "left join certificate_tag on certificate_tag.certificate_id = gift_certificate.id " +
             "left join tag on certificate_tag.tag_id = tag.id";
@@ -28,225 +32,112 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     private static final String SAVE_CERTIFICATE_TAG_SQL = "insert into certificate_tag (certificate_id, tag_id) values (?, ?)";
     private static final String FIND_CERTIFICATE_TAG_LINK_SQL = "select * from certificate_tag where certificate_id = ? and tag_id = ?";
 
-    private final TagDao tagDao;
+    private final JdbcTemplate jdbcTemplate;
     private final FindCertificateBuilder findCertificateBuilder;
+    private final TagDao tagDao;
 
     @Autowired
-    public CertificateJdbcDao(TagDao tagDao, FindCertificateBuilder findCertificateBuilder) {
-        super(FIND_ALL_CERTIFICATES_SQL, FIND_CERTIFICATE_BY_ID_SQL, SAVE_CERTIFICATE_SQL, UPDATE_CERTIFICATE_SQL, DELETE_CERTIFICATE_SQL);
-        this.tagDao = tagDao;
+    public CertificateJdbcDao(JdbcTemplate jdbcTemplate, FindCertificateBuilder findCertificateBuilder, TagDao tagDao) {
+        this.jdbcTemplate = jdbcTemplate;
         this.findCertificateBuilder = findCertificateBuilder;
-    }
-
-    /**
-     * Performs insert query to database to save certificate. Also
-     * saves certificate in tag table and insert row to link tags with saved
-     * certificate by adding row in certificate_tag table
-     * @param entity entity that need to be saved
-     * @return saved certificate with assigned id
-     */
-    @Override
-    public Certificate save(Certificate entity) {
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement saveCertificateStatement = connection.prepareStatement(SAVE_CERTIFICATE_SQL, Statement.RETURN_GENERATED_KEYS)) {
-            connection.setAutoCommit(false);
-            try {
-                mapEntityToSavePreparedStatement(saveCertificateStatement, entity);
-                saveCertificateStatement.executeUpdate();
-                ResultSet certificateKeys = saveCertificateStatement.getGeneratedKeys();
-                certificateKeys.next();
-                long certificateId = certificateKeys.getLong(1);
-                entity.setId(certificateId);
-                List<Tag> tags = entity.getTags();
-                saveCertificateTags(entity, connection, tags);
-                connection.commit();
-            } catch (SQLException e) {
-                connection.rollback();
-            } finally {
-                connection.setAutoCommit(true);
-            }
-            return entity;
-        } catch (SQLException e) {
-            throw new DaoException(e);
-        }
-    }
-
-    /**
-     * Finds all certificates from database and returns. Also finds certificate
-     * tags that certificate tag by finding them in tag table
-     * @return List of all certificates
-     */
-    @Override
-    public List<Certificate> findAll() {
-        Map<Long, Certificate> certificateMap = new HashMap<>();
-        try (Connection connection = dataSource.getConnection();
-             Statement findAllStatement = connection.createStatement();
-             ResultSet resultSet = findAllStatement.executeQuery(FIND_ALL_CERTIFICATES_SQL)) {
-            addTagsToFoundCertificate(certificateMap, resultSet);
-        } catch (SQLException e) {
-            throw new DaoException(e);
-        }
-        return new ArrayList<>(certificateMap.values());
-    }
-
-    /**
-     * Finds certificate that has passed id and its tags
-     * @param id id of entity that need to be found
-     * @return optional certificate if there is certificate with passed id
-     * or empty optional if there is not certificate with passed id
-     */
-    @Override
-    public Optional<Certificate> findById(Long id) {
-        Map<Long, Certificate> certificateMap = new HashMap<>();
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement findByIdStatement = connection.prepareStatement(FIND_CERTIFICATE_BY_ID_SQL)) {
-            findByIdStatement.setLong(1, id);
-            ResultSet resultSet = findByIdStatement.executeQuery();
-            addTagsToFoundCertificate(certificateMap, resultSet);
-        } catch (SQLException e) {
-            throw new DaoException(e);
-        }
-        return Optional.ofNullable(certificateMap.get(id));
-    }
-
-    /**
-     * Performs updated operations to updated entity. Also saves tags if its new tags and links them together.
-     * If there is tag, then links lik with entity.
-     * @param entity entity that need to be updated
-     * @return updated entity
-     */
-    @Override
-    public Certificate update(Certificate entity) {
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement findByIdStatement = connection.prepareStatement(FIND_CERTIFICATE_BY_ID_SQL);
-             PreparedStatement updateStatement = connection.prepareStatement(UPDATE_CERTIFICATE_SQL)) {
-            findByIdStatement.setLong(1, entity.getId());
-            ResultSet resultSet = findByIdStatement.executeQuery();
-            resultSet.next();
-            Certificate foundCertificate = mapResultSetToEntity(resultSet);
-            setUpdateOnlyPassedValues(entity, updateStatement, foundCertificate);
-            updateStatement.executeUpdate();
-            List<Tag> tags = entity.getTags();
-            saveCertificateTags(entity, connection, tags);
-        } catch (SQLException e) {
-            throw new DaoException(e);
-        }
-        Optional<Certificate> optionalCertificate = findById(entity.getId());
-        return optionalCertificate.orElseThrow(DaoException::new);
-    }
-
-    /**
-     * Uses ResultSet get methods to map ResultSet to Certificate
-     * @param resultSet from which need get values and map entity
-     * @return Certificate from ResultSet
-     * @throws SQLException if exception with database operations occurs
-     */
-    @Override
-    protected Certificate mapResultSetToEntity(ResultSet resultSet) throws SQLException {
-        Long id = resultSet.getLong("id");
-        String name = resultSet.getString("name");
-        String description = resultSet.getString("description");
-        double price = resultSet.getDouble("price");
-        int duration = resultSet.getInt("duration");
-        LocalDateTime createDate = resultSet.getObject("create_date", LocalDateTime.class);
-        LocalDateTime lastUpdateDate = resultSet.getObject("last_update_date", LocalDateTime.class);
-        return new Certificate(id, name, description, price, duration, createDate, lastUpdateDate);
-    }
-
-    /**
-     * Uses ResultSet set methods to set into save prepared statement
-     * Certificate's properties
-     * @param saveStatement prepared statement that accept entity's properties
-     * @param entity entity which properties need to map to save statement
-     * @throws SQLException if exception with database operations occurs
-     */
-    @Override
-    protected void mapEntityToSavePreparedStatement(PreparedStatement saveStatement, Certificate entity) throws SQLException {
-        saveStatement.setString(1, entity.getName());
-        saveStatement.setString(2, entity.getDescription());
-        saveStatement.setDouble(3, entity.getPrice());
-        saveStatement.setInt(4, entity.getDuration());
-    }
-
-    /**
-     * Uses ResultSet set methods to set into updated prepared statement
-     * Certificate's properties
-     * @param updateStatement prepared statement that accept entity's properties
-     * @param entity entity witch properties need to map to updated statement
-     * @throws SQLException if exception with database operations occurs
-     */
-    @Override
-    protected void mapEntityToUpdatePreparedStatement(PreparedStatement updateStatement, Certificate entity) throws SQLException {
-        updateStatement.setString(1, entity.getName());
-        updateStatement.setString(2, entity.getDescription());
-        updateStatement.setDouble(3, entity.getPrice());
-        updateStatement.setInt(4, entity.getDuration());
-        updateStatement.setLong(5, entity.getId());
+        this.tagDao = tagDao;
     }
 
     @Override
     public List<Certificate> findWithParameters(LinkedHashMap<String, String> findParameters) {
-        Map<Long, Certificate> certificateMap = new LinkedHashMap<>();
         String findSql = findCertificateBuilder.buildSql(findParameters);
-        List<String> values = findCertificateBuilder.getSqlValues(findParameters);
-        try (Connection connection = dataSource.getConnection();
-        PreparedStatement findStatement = connection.prepareStatement(findSql)) {
-            for (int i = 0; i < values.size(); i++) {
-                findStatement.setString(i + 1, values.get(i));
-            }
-            ResultSet resultSet = findStatement.executeQuery();
-            addTagsToFoundCertificate(certificateMap, resultSet);
-        } catch (SQLException e) {
-            throw new DaoException(e);
+        List<String> findCertificateParametersValues = findCertificateBuilder.getSqlValues(findParameters);
+        List<Certificate> certificates = jdbcTemplate.query(findSql, this::mapCertificate, findCertificateParametersValues.toArray());
+        return mapTagsToCertificates(certificates);
+    }
+
+    @Override
+    public List<Certificate> findAll() {
+        List<Certificate> certificates = jdbcTemplate.query(FIND_ALL_CERTIFICATES_SQL, this::mapCertificate);
+        return mapTagsToCertificates(certificates);
+    }
+
+    @Override
+    public Optional<Certificate> findById(Long id) {
+        List<Certificate> certificates = jdbcTemplate.query(FIND_CERTIFICATE_BY_ID_SQL, this::mapCertificate, id);
+        ArrayList<Certificate> certificateArrayList = mapTagsToCertificates(certificates);
+        return certificateArrayList.isEmpty() ? Optional.empty() : Optional.of(certificateArrayList.get(0));
+    }
+
+    @Override
+    public Certificate save(Certificate entity) {
+        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(statementCreator -> {
+            PreparedStatement saveStatement = statementCreator.prepareStatement(SAVE_CERTIFICATE_SQL, Statement.RETURN_GENERATED_KEYS);
+            saveStatement.setString(1, entity.getName());
+            saveStatement.setString(2, entity.getDescription());
+            saveStatement.setDouble(3, entity.getPrice());
+            saveStatement.setInt(4, entity.getDuration());
+            return saveStatement;
+        }, keyHolder);
+        Long id = keyHolder.getKey().longValue();
+        entity.setId(id);
+        saveAndLinkTagsWithCertificate(entity);
+        Optional<Certificate> foundCertificate = findById(id);
+        return foundCertificate.orElseThrow(DaoException::new);
+    }
+
+    @Override
+    public Certificate update(Certificate entity) {
+        jdbcTemplate.update(UPDATE_CERTIFICATE_SQL, entity.getName(), entity.getDescription(), entity.getPrice(), entity.getDuration(), entity.getId());
+        saveAndLinkTagsWithCertificate(entity);
+        Optional<Certificate> foundCertificate = findById(entity.getId());
+        return foundCertificate.orElseThrow(DaoException::new);
+    }
+
+    @Override
+    public void delete(Long id) {
+        jdbcTemplate.update(DELETE_CERTIFICATE_SQL, id);
+    }
+
+    private Certificate mapCertificate(ResultSet resultSet, int rowNum) throws SQLException {
+        long id = resultSet.getLong("gift_certificate.id");
+        String name = resultSet.getString("gift_certificate.name");
+        String description = resultSet.getString("gift_certificate.description");
+        double price = resultSet.getDouble("gift_certificate.price");
+        int duration = resultSet.getInt("gift_certificate.duration");
+        LocalDateTime createDate = resultSet.getObject("gift_certificate.create_date", LocalDateTime.class);
+        LocalDateTime lastUpdateDate = resultSet.getObject("gift_certificate.last_update_date", LocalDateTime.class);
+        Certificate certificate = new Certificate(id, name, description, price, duration, createDate, lastUpdateDate);
+        long tagId = resultSet.getLong("tag.id");
+        String tagName = resultSet.getString("tag.name");
+        if (tagId != 0 || tagName != null) {
+            Tag tag = new Tag(tagId, tagName);
+            certificate.getTags().add(tag);
         }
+        return certificate;
+    }
+
+    private ArrayList<Certificate> mapTagsToCertificates(List<Certificate> certificates) {
+        Map<Long, Certificate> certificateMap = new LinkedHashMap<>();
+        certificates.forEach(certificate -> {
+            Certificate savedCertificate = certificateMap.get(certificate.getId());
+            if (savedCertificate == null) {
+                certificateMap.put(certificate.getId(), certificate);
+            } else {
+                List<Tag> savedCertificateTags = savedCertificate.getTags();
+                savedCertificateTags.addAll(certificate.getTags());
+                certificateMap.put(savedCertificate.getId(), savedCertificate);
+            }
+        });
         return new ArrayList<>(certificateMap.values());
     }
 
-    private void setUpdateOnlyPassedValues(Certificate entity, PreparedStatement updateStatement, Certificate foundCertificate) throws SQLException {
-        updateStatement.setString(1, entity.getName() == null ? foundCertificate.getDescription() : entity.getName());
-        updateStatement.setString(2, entity.getDescription() == null ? foundCertificate.getDescription() : entity.getDescription());
-        updateStatement.setDouble(3, entity.getPrice() == null ? foundCertificate.getPrice() : entity.getPrice());
-        updateStatement.setInt(4, entity.getDuration() == null ? foundCertificate.getDuration() : entity.getDuration());
-        updateStatement.setLong(5, entity.getId());
-    }
-
-    private void saveCertificateTags(Certificate entity, Connection connection, List<Tag> tags) throws SQLException {
-        for (Tag tag : tags) {
+    private void saveAndLinkTagsWithCertificate(Certificate entity) {
+        List<Tag> tags = entity.getTags();
+        tags.forEach(tag -> {
             Optional<Tag> optionalTag = tagDao.findByName(tag.getName());
-            long savedTagId = optionalTag.isPresent() ? optionalTag.get().getId() : tagDao.save(tag).getId();
-            tag.setId(savedTagId);
-            boolean isTagLinked = isTagLiked(connection, entity, tag);
-            if (!isTagLinked) {
-                linkTagWithCertificate(connection, entity.getId(), tag);
+            Tag savedTag = optionalTag.orElseGet(() -> tagDao.save(tag));
+            SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(FIND_CERTIFICATE_TAG_LINK_SQL, entity.getId(), savedTag.getId());
+            if (sqlRowSet.isLast()) {
+                jdbcTemplate.update(SAVE_CERTIFICATE_TAG_SQL, entity.getId(), savedTag.getId());
             }
-        }
-    }
-
-    private boolean isTagLiked(Connection connection, Certificate entity, Tag savedTag) throws SQLException {
-        try (PreparedStatement findCertificateTagStatement = connection.prepareStatement(FIND_CERTIFICATE_TAG_LINK_SQL)) {
-            findCertificateTagStatement.setLong(1, entity.getId());
-            findCertificateTagStatement.setLong(2, savedTag.getId());
-            ResultSet resultSet1 = findCertificateTagStatement.executeQuery();
-            return resultSet1.next();
-        }
-    }
-
-    private void linkTagWithCertificate(Connection connection, long certificateId, Tag savedTag) throws SQLException {
-        try (PreparedStatement saveCertificateTagStatement = connection.prepareStatement(SAVE_CERTIFICATE_TAG_SQL)) {
-            saveCertificateTagStatement.setLong(1, certificateId);
-            saveCertificateTagStatement.setLong(2, savedTag.getId());
-            saveCertificateTagStatement.executeUpdate();
-        }
-    }
-
-    private void addTagsToFoundCertificate(Map<Long, Certificate> certificateMap, ResultSet resultSet) throws SQLException {
-        while (resultSet.next()) {
-            Certificate foundCertificate = mapResultSetToEntity(resultSet);
-            String tagName = resultSet.getString("tag.name");
-            Optional<Tag> optionalTag = tagDao.findByName(tagName);
-            certificateMap.putIfAbsent(foundCertificate.getId(), foundCertificate);
-            Certificate savedCertificate = certificateMap.get(foundCertificate.getId());
-            optionalTag.ifPresent(tag -> savedCertificate.getTags().add(tag));
-        }
+            tag.setId(savedTag.getId());
+        });
     }
 }

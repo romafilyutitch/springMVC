@@ -5,15 +5,15 @@ package com.epam.esm.conttoller.exception;
  * when exception in controller occurs
  */
 public class Error {
-    private final long errorCode;
+    private final String errorCode;
     private final String message;
 
-    public Error(long errorCode, String message) {
+    public Error(String errorCode, String message) {
         this.errorCode = errorCode;
         this.message = message;
     }
 
-    public long getErrorCode() {
+    public String getErrorCode() {
         return errorCode;
     }
 
