@@ -4,14 +4,15 @@ import com.epam.esm.dao.CertificateDao;
 import com.epam.esm.dao.TagDao;
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
+import com.epam.esm.validation.CertificateValidator;
+import com.epam.esm.validation.InvalidCertificateException;
+import com.epam.esm.validation.InvalidTagException;
+import com.epam.esm.validation.TagValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -25,12 +26,18 @@ class CertificateRestServiceTest {
 
     private TagDao tagDao;
 
+    private CertificateValidator certificateValidator;
+
+    private TagValidator tagValidator;
+
     @BeforeEach
     public void setUp() {
         certificate = new Certificate(1L, "test", "test", 1.1, 2, LocalDateTime.now(), LocalDateTime.now());
         certificateDao = mock(CertificateDao.class);
         tagDao = mock(TagDao.class);
-        service = new CertificateRestService(certificateDao, tagDao);
+        certificateValidator = mock(CertificateValidator.class);
+        tagValidator = mock(TagValidator.class);
+        service = new CertificateRestService(certificateDao, tagDao, certificateValidator, tagValidator);
     }
 
 
@@ -80,20 +87,32 @@ class CertificateRestServiceTest {
 
 
     @Test
-    public void save_shouldSaveCertificate() {
+    public void save_shouldSaveCertificate() throws InvalidCertificateException {
         Certificate unsaved = new Certificate(null, "saved", "saved", 1.1, 1, LocalDateTime.now(), LocalDateTime.now());
         Certificate saved = new Certificate(1L, "saved", "saved", 1.1, 1, LocalDateTime.now(), LocalDateTime.now());
         when(certificateDao.save(unsaved)).thenReturn(saved);
+        doNothing().when(certificateValidator).validate(unsaved);
 
         Certificate savedCertificate = service.save(unsaved);
 
         assertEquals(saved, savedCertificate);
         verify(certificateDao).save(unsaved);
+        verify(certificateValidator).validate(unsaved);
+    }
+
+    @Test
+    public void save_shouldThrowExceptionIfSavedCertificateIsInvalid() throws InvalidCertificateException {
+        Certificate invalidCertificate = new Certificate(null, "", "", 1.1, 1, LocalDateTime.now(), LocalDateTime.now());
+        doThrow(InvalidCertificateException.class).when(certificateValidator).validate(invalidCertificate);
+
+        assertThrows(InvalidCertificateException.class, () -> service.save(invalidCertificate));
+
+        verify(certificateValidator).validate(invalidCertificate);
     }
 
 
     @Test
-    public void update_shouldUpdateCertificate() throws CertificateNotFoundException {
+    public void update_shouldUpdateCertificate() throws CertificateNotFoundException, InvalidCertificateException {
         when(certificateDao.findById(1L)).thenReturn(Optional.of(certificate));
         certificate.setName("updated");
         when(certificateDao.update(certificate)).thenReturn(certificate);
@@ -195,23 +214,39 @@ class CertificateRestServiceTest {
     }
 
     @Test
-    public void addTags_shouldThrowExceptionWhenCertificateNotFound() {
+    public void addTags_shouldThrowExceptionWhenCertificateNotFound() throws InvalidTagException {
+        Tag tag = new Tag(1L, "tag");
         when(certificateDao.findById(1L)).thenReturn(Optional.empty());
-
-        assertThrows(CertificateNotFoundException.class, () -> service.addTags(1L, Collections.singletonList(new Tag(1L, "tag"))));
+        doNothing().when(tagValidator).validate(tag);
+        assertThrows(CertificateNotFoundException.class, () -> service.addTags(1L, Collections.singletonList(tag)));
 
         verify(certificateDao).findById(1L);
+        verify(tagValidator).validate(tag);
     }
 
     @Test
-    public void addTags_shouldAddTagsToCertificate() throws CertificateNotFoundException {
+    public void addTags_shouldAddTagsToCertificate() throws CertificateNotFoundException, InvalidTagException {
         Tag tag = new Tag(1L, "tag");
         certificate.getTags().add(tag);
         when(certificateDao.findById(1L)).thenReturn(Optional.of(certificate));
         when(certificateDao.update(certificate)).thenReturn(certificate);
+        doNothing().when(tagValidator).validate(tag);
 
         Certificate upadtedCertificate = service.addTags(1L, Collections.singletonList(tag));
 
         assertEquals(certificate, upadtedCertificate);
+        verify(certificateDao).findById(1L);
+        verify(tagValidator).validate(tag);
+    }
+
+    @Test
+    public void addTags_shouldThrowExceptionIfTagIsInvalid() throws InvalidTagException {
+        Tag invalidTag = new Tag("");
+        when(certificateDao.findById(1L)).thenReturn(Optional.of(certificate));
+        doThrow(InvalidTagException.class).when(tagValidator).validate(invalidTag);
+
+        assertThrows(InvalidTagException.class, () -> service.addTags(1L, Collections.singletonList(invalidTag)));
+
+        verify(tagValidator).validate(invalidTag);
     }
 }

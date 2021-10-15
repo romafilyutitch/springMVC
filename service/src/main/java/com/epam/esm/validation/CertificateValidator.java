@@ -1,28 +1,27 @@
 package com.epam.esm.validation;
 
 import com.epam.esm.model.Certificate;
-import org.springframework.validation.*;
+import org.springframework.stereotype.Component;
 
-import java.util.List;
+@Component
+public class CertificateValidator {
 
-public class CertificateValidator implements Validator {
-    @Override
-    public boolean supports(Class<?> clazz) {
-        return Certificate.class.equals(clazz);
-    }
-
-    @Override
-    public void validate(Object target, Errors errors) {
-        ValidationUtils.rejectIfEmpty(errors, "name", "name.empty");
-        ValidationUtils.rejectIfEmpty(errors, "description", "description.empty");
-        ValidationUtils.rejectIfEmpty(errors, "price", "price.empty");
-        ValidationUtils.rejectIfEmpty(errors, "duration", "duration.empty");
-        Certificate certificate = (Certificate) target;
-        if (certificate.getPrice() < 0) {
-            errors.rejectValue("price", "negativeprice");
+    public void validate(Certificate resource) throws InvalidCertificateException {
+        String name = resource.getName();
+        String description = resource.getDescription();
+        Double price = resource.getPrice();
+        Integer duration = resource.getDuration();
+        if (name == null || name.isEmpty()) {
+            throw new InvalidCertificateException();
         }
-        if (certificate.getDuration() < 0) {
-            errors.rejectValue("duration", "negativeDuration");
+        if (description == null || description.isEmpty()) {
+            throw new InvalidCertificateException();
+        }
+        if (price == null || price < 0) {
+            throw new InvalidCertificateException();
+        }
+        if (duration == null || duration < 0) {
+            throw new InvalidCertificateException();
         }
     }
 }
