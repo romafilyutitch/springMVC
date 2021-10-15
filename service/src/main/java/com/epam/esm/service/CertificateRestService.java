@@ -4,10 +4,9 @@ import com.epam.esm.dao.CertificateDao;
 import com.epam.esm.dao.TagDao;
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.epam.esm.validation.*;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
@@ -20,11 +19,14 @@ import java.util.Optional;
 public class CertificateRestService implements CertificateService {
     private final CertificateDao certificateDao;
     private final TagDao tagDao;
+    private final CertificateValidator certificateFieldsValidator;
+    private final TagValidator tagFieldsValidator;
 
-    @Autowired
-    public CertificateRestService(CertificateDao certificateDao, TagDao tagDao) {
+    public CertificateRestService(CertificateDao certificateDao, TagDao tagDao, CertificateValidator certificateFieldsValidator, TagValidator tagFieldsValidator) {
         this.certificateDao = certificateDao;
         this.tagDao = tagDao;
+        this.certificateFieldsValidator = certificateFieldsValidator;
+        this.tagFieldsValidator = tagFieldsValidator;
     }
 
     /**
@@ -78,7 +80,8 @@ public class CertificateRestService implements CertificateService {
      * @return saved certificate
      */
     @Override
-    public Certificate save(Certificate certificate) {
+    public Certificate save(Certificate certificate) throws InvalidCertificateException {
+        certificateFieldsValidator.validate(certificate);
         return certificateDao.save(certificate);
     }
 
@@ -93,7 +96,8 @@ public class CertificateRestService implements CertificateService {
      * @throws CertificateNotFoundException if there is not certificate wit passed id
      */
     @Override
-    public Certificate update(Long id, Certificate certificate) throws CertificateNotFoundException {
+    public Certificate update(Long id, Certificate certificate) throws CertificateNotFoundException, InvalidCertificateException {
+        certificateFieldsValidator.validate(certificate);
         Optional<Certificate> certificateFromDb = certificateDao.findById(id);
         if (certificateFromDb.isPresent()) {
             Certificate modifiedCertificate = modifyForUpdate(certificateFromDb.get(), certificate);
@@ -137,7 +141,10 @@ public class CertificateRestService implements CertificateService {
      * @throws CertificateNotFoundException if there is not certificate with passed id
      */
     @Override
-    public Certificate addTags(Long certificateId, List<Tag> tags) throws CertificateNotFoundException {
+    public Certificate addTags(Long certificateId, List<Tag> tags) throws CertificateNotFoundException, InvalidTagException {
+        for (Tag tag : tags) {
+            tagFieldsValidator.validate(tag);
+        }
         Optional<Certificate> optionalCertificate = certificateDao.findById(certificateId);
         if (optionalCertificate.isPresent()) {
             Certificate certificate = optionalCertificate.get();

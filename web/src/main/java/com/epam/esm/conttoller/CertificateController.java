@@ -4,6 +4,8 @@ import com.epam.esm.conttoller.exception.Error;
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
 import com.epam.esm.service.*;
+import com.epam.esm.validation.InvalidCertificateException;
+import com.epam.esm.validation.InvalidTagException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
@@ -61,7 +63,7 @@ public class CertificateController {
      * @return controller response in JSON format and CREATED status code
      */
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<Certificate> saveCertificate(@RequestBody Certificate certificate){
+    public ResponseEntity<Certificate> saveCertificate(@RequestBody Certificate certificate) throws InvalidCertificateException {
         return new ResponseEntity<>(certificateService.save(certificate), HttpStatus.CREATED);
     }
 
@@ -73,7 +75,7 @@ public class CertificateController {
      * @throws CertificateNotFoundException if certificate with passed id not found
      */
     @RequestMapping(value = "/{id}", method = RequestMethod.POST)
-    public ResponseEntity<Certificate> updateCertificate(@PathVariable("id") long id, @RequestBody Certificate certificate) throws CertificateNotFoundException {
+    public ResponseEntity<Certificate> updateCertificate(@PathVariable("id") long id, @RequestBody Certificate certificate) throws CertificateNotFoundException, InvalidCertificateException {
         return new ResponseEntity<>(certificateService.update(id, certificate), HttpStatus.OK);
     }
 
@@ -127,7 +129,7 @@ public class CertificateController {
      * @throws CertificateNotFoundException if there is no certificate with passed id
      */
     @RequestMapping(value = "/{id}/tags", method = RequestMethod.POST)
-    public ResponseEntity<Certificate> addTagToCertificate(@PathVariable("id") long id, @RequestBody List<Tag> tags) throws CertificateNotFoundException {
+    public ResponseEntity<Certificate> addTagToCertificate(@PathVariable("id") long id, @RequestBody List<Tag> tags) throws CertificateNotFoundException, InvalidTagException {
         return new ResponseEntity<>(certificateService.addTags(id, tags), HttpStatus.OK);
     }
 
@@ -154,7 +156,7 @@ public class CertificateController {
     @ExceptionHandler(CertificateNotFoundException.class)
     public ResponseEntity<Error> certificateNotFound(CertificateNotFoundException exception, Locale locale) {
         String message = messageSource.getMessage("certificate.notFound", new Object[]{exception.getCertificateId()}, locale);
-        long code = HttpStatus.NOT_FOUND.value() + exception.getCode();
+        String code = HttpStatus.NOT_FOUND.value() + exception.getCode();
         Error error = new Error(code, message);
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
@@ -169,9 +171,38 @@ public class CertificateController {
     @ExceptionHandler(TagNotFoundException.class)
     public ResponseEntity<Error> tagNotFound(TagNotFoundException exception, Locale locale) {
         String message = messageSource.getMessage("tag.notFound", new Object[]{exception.getTagId()}, locale);
-        long code = HttpStatus.NOT_FOUND.value() + TagNotFoundException.getCode();
+        String code = HttpStatus.NOT_FOUND.value() + exception.getCode();
         Error error = new Error(code, message);
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
+    /**
+     * Exception handler method to handle InvalidCertificateException if
+     * exception occurs in other methods and response with localized message.
+     * @param exception exception that occur in controller
+     * @param locale client locale
+     * @return controller custom localized error response in JSON format
+     */
+    @ExceptionHandler(InvalidCertificateException.class)
+    public ResponseEntity<Error> invalidCertificate(InvalidCertificateException exception, Locale locale) {
+        String message = messageSource.getMessage("certificate.invalid", new Object[]{}, locale);
+        String code = HttpStatus.BAD_REQUEST.value() + exception.getCode();
+        Error error = new Error(code, message);
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Exception handler methods to handle InvalidTagException if
+     * exception occurs in other methods and response with localized message.
+     * @param exception exception that occur in controller
+     * @param locale client locale
+     * @return controller custom localized response in JSON format
+     */
+    @ExceptionHandler(InvalidTagException.class)
+    public ResponseEntity<Error> invalidTag(InvalidTagException exception, Locale locale) {
+        String message = messageSource.getMessage("tag.invalid", new Object[]{}, locale);
+        String code = HttpStatus.BAD_REQUEST.value() + exception.getCode();
+        Error error = new Error(code, message);
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
 }
