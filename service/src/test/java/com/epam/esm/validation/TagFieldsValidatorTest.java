@@ -4,18 +4,16 @@ import com.epam.esm.model.Tag;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.xml.validation.Validator;
-
 import static org.junit.jupiter.api.Assertions.*;
 
-class TagValidatorTest {
-    private TagValidator validator;
+class TagFieldsValidatorTest {
+    private TagFieldsValidator validator;
     private Tag validTag;
     private Tag invalidTag;
 
     @BeforeEach
     void setUp() {
-        validator = new TagValidator();
+        validator = new TagFieldsValidator();
         validTag = new Tag("valid");
         invalidTag = new Tag("");
     }

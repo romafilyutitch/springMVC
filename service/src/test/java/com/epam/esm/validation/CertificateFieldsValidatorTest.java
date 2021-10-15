@@ -4,19 +4,18 @@ import com.epam.esm.model.Certificate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class CertificateValidatorTest {
-    private CertificateValidator validator;
+class CertificateFieldsValidatorTest {
+    private CertificateFieldsValidator validator;
     private Certificate validCertificate;
     private Certificate invalidCertificate;
 
     @BeforeEach
     void setUp() {
-        validator = new CertificateValidator();
+        validator = new CertificateFieldsValidator();
         validCertificate = new Certificate(null, "valid", "valid", 22.1, 23, LocalDateTime.now(), LocalDateTime.now());
         invalidCertificate = new Certificate(null, "", "", -1.2, -3, LocalDateTime.now(), LocalDateTime.now());
     }
