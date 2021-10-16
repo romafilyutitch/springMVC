@@ -1,18 +1,16 @@
 package com.epam.esm.dao;
 
-import com.epam.esm.builder.FindCertificateBuilder;
+import com.epam.esm.builder.FindCertificatesSqlBuilder;
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Realisation of abstract dao for certificate that use gift_certificate table to
@@ -37,20 +35,20 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     private static final String FIND_CERTIFICATE_TAG_BY_CERTIFICATE_ID = "select id, certificate_id, tag_id from certificate_tag where certificate_tag.certificate_id = ?";
     private static final String FIND_CERTIFICATE_TAG_BY_CERTIFICATE_ID_AND_TAG_ID = "select id, certificate_id, tag_id from certificate_tag where certificate_id = ? and tag_id = ?";
     private static final String SAVE_CERTIFICATE_TAG = "insert into certificate_tag (certificate_id, tag_id) values (?, ?)";
-    private final FindCertificateBuilder findCertificateBuilder;
+    private final FindCertificatesSqlBuilder findCertificatesSqlBuilder;
     private final TagDao tagDao;
 
     @Autowired
-    public CertificateJdbcDao(FindCertificateBuilder findCertificateBuilder, TagDao tagDao) {
+    public CertificateJdbcDao(FindCertificatesSqlBuilder findCertificatesSqlBuilder, TagDao tagDao) {
         super(TABLE_NAME, COLUMNS, MAPPER);
-        this.findCertificateBuilder = findCertificateBuilder;
+        this.findCertificatesSqlBuilder = findCertificatesSqlBuilder;
         this.tagDao = tagDao;
     }
 
     @Override
     public List<Certificate> findWithParameters(LinkedHashMap<String, String> findParameters) {
-        String findSql = findCertificateBuilder.buildSql(findParameters);
-        List<String> findCertificateParametersValues = findCertificateBuilder.getSqlValues(findParameters);
+        String findSql = findCertificatesSqlBuilder.buildSql(findParameters);
+        List<String> findCertificateParametersValues = findCertificatesSqlBuilder.getSqlValues(findParameters);
         List<Certificate> allCertificates = template.query(findSql, MAPPER, findCertificateParametersValues.toArray());
         allCertificates.forEach(this::addTagsToCertificate);
         LinkedHashMap<Long, Certificate> certificatesMap = new LinkedHashMap<>();

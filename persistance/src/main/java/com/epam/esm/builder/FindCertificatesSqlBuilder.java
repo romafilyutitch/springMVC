@@ -15,7 +15,7 @@ import java.util.*;
  * with order by name and then by name sql query will be built
  */
 @Component
-public class FindCertificateBuilder {
+public class FindCertificatesSqlBuilder {
     private static final String BASE_SQL = "select gift_certificate.*, tag.* from gift_certificate " +
             "left join certificate_tag on certificate_tag.certificate_id = gift_certificate.id " +
             "left join tag on certificate_tag.tag_id = tag.id ";
@@ -30,6 +30,14 @@ public class FindCertificateBuilder {
     private static final String DATE_DESC = "gift_certificate.create_date desc";
     private static final String THEN_ORDER = ",";
     private static final String WHERE = " where ";
+    private static final String TAG_NAME_KEY = "tagName";
+    private static final String PART_OF_NAME_KEY = "partOfName";
+    private static final String PART_OF_DESCRIPTION_KEY = "partOfDescription";
+    private static final String SORT_BY_NAME_KEY = "sortByName";
+    private static final String SORT_BY_DATE_KEY = "sortByDate";
+    private static final String ACCEDING_ORDER = "asc";
+    private static final String DESCENDING_ORDER = "desc";
+    private static final String PATTERN_FOR_LIKE_QUERY = "%%%s%%";
 
     private String finalQuery;
 
@@ -41,24 +49,24 @@ public class FindCertificateBuilder {
      * @return built sql find all certificates statement that defined by passed parameters map
      */
     public String buildSql(LinkedHashMap<String, String> findParameters) {
-        String tagName = findParameters.get("tagName");
-        String partOfName = findParameters.get("partOfName");
-        String partOfDescription = findParameters.get("partOfDescription");
+        String tagName = findParameters.get(TAG_NAME_KEY);
+        String partOfName = findParameters.get(PART_OF_NAME_KEY);
+        String partOfDescription = findParameters.get(PART_OF_DESCRIPTION_KEY);
         Set<Map.Entry<String, String>> entries = findParameters.entrySet();
-        FindCertificateBuilder builder = findAll()
+        FindCertificatesSqlBuilder builder = findAll()
                 .whereTagName(tagName)
                 .wherePartOfName(partOfName)
                 .wherePartOfDescription(partOfDescription);
         for (Map.Entry<String, String> entry : entries) {
             String key = entry.getKey();
             String value = entry.getValue();
-            builder = key.equals("sortByName") ? builder.orderByName(value) : builder;
-            builder = key.equals("sortByDate") ? builder.orderByDate(value) : builder;
+            builder = key.equals(SORT_BY_NAME_KEY) ? builder.orderByName(value) : builder;
+            builder = key.equals(SORT_BY_DATE_KEY) ? builder.orderByDate(value) : builder;
         }
         return builder.build();
     }
 
-    private FindCertificateBuilder findAll() {
+    private FindCertificatesSqlBuilder findAll() {
         finalQuery = BASE_SQL;
         return this;
     }
@@ -71,15 +79,15 @@ public class FindCertificateBuilder {
      * @return list of find parameters values
      */
     public List<String> getSqlValues(LinkedHashMap<String, String> findParameters) {
-        String tagName = findParameters.get("tagName");
-        String partOfName = findParameters.get("partOfName");
-        String partOfDescription = findParameters.get("partOfDescription");
+        String tagName = findParameters.get(TAG_NAME_KEY);
+        String partOfName = findParameters.get(PART_OF_NAME_KEY);
+        String partOfDescription = findParameters.get(PART_OF_DESCRIPTION_KEY);
         List<String> values = new ArrayList<>();
         if (partOfName != null) {
-            partOfName = String.format("%%%s%%", partOfName);
+            partOfName = String.format(PATTERN_FOR_LIKE_QUERY, partOfName);
         }
         if (partOfDescription != null) {
-            partOfDescription = String.format("%%%s%%", partOfDescription);
+            partOfDescription = String.format(PATTERN_FOR_LIKE_QUERY, partOfDescription);
         }
         values.add(tagName);
         values.add(partOfName);
@@ -88,7 +96,7 @@ public class FindCertificateBuilder {
         return values;
     }
 
-    private FindCertificateBuilder whereTagName(String tagName) {
+    private FindCertificatesSqlBuilder whereTagName(String tagName) {
         if (tagName == null || tagName.isEmpty()) {
             return this;
         }
@@ -96,7 +104,7 @@ public class FindCertificateBuilder {
         return this;
     }
 
-    private FindCertificateBuilder wherePartOfName(String partOfName) {
+    private FindCertificatesSqlBuilder wherePartOfName(String partOfName) {
         if (partOfName == null || partOfName.isEmpty()) {
             return this;
         }
@@ -104,7 +112,7 @@ public class FindCertificateBuilder {
         return this;
     }
 
-    private FindCertificateBuilder wherePartOfDescription(String partOfDescription) {
+    private FindCertificatesSqlBuilder wherePartOfDescription(String partOfDescription) {
         if (partOfDescription == null || partOfDescription.isEmpty()) {
             return this;
         }
@@ -112,28 +120,28 @@ public class FindCertificateBuilder {
         return this;
     }
 
-    private FindCertificateBuilder orderByName(String order) {
+    private FindCertificatesSqlBuilder orderByName(String order) {
         if (order == null || order.isEmpty()) {
             return this;
         }
-        if (order.equals("asc")) {
+        if (order.equals(ACCEDING_ORDER)) {
             finalQuery = finalQuery.contains(ORDER_BY) ? finalQuery + THEN_ORDER : finalQuery + ORDER_BY;
             finalQuery += NAME_ASC;
-        } else if (order.equals("desc")) {
+        } else if (order.equals(DESCENDING_ORDER)) {
             finalQuery = finalQuery.contains(ORDER_BY) ? finalQuery + THEN_ORDER : finalQuery + ORDER_BY;
             finalQuery += NAME_DESC;
         }
         return this;
     }
 
-    private FindCertificateBuilder orderByDate(String order) {
+    private FindCertificatesSqlBuilder orderByDate(String order) {
         if (order == null || order.isEmpty()) {
             return this;
         }
-        if (order.equals("asc")) {
+        if (order.equals(ACCEDING_ORDER)) {
             finalQuery = finalQuery.contains(ORDER_BY) ? finalQuery + THEN_ORDER : finalQuery + ORDER_BY;
             finalQuery += DATE_ASC;
-        } else if (order.equals("desc")) {
+        } else if (order.equals(DESCENDING_ORDER)) {
             finalQuery = finalQuery.contains(ORDER_BY) ? finalQuery + THEN_ORDER : finalQuery + ORDER_BY;
             finalQuery += DATE_DESC;
         }
