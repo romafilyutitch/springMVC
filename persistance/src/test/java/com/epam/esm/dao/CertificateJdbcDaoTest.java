@@ -2,7 +2,6 @@ package com.epam.esm.dao;
 
 import com.epam.esm.config.PersistanceConfig;
 import com.epam.esm.model.Certificate;
-import com.epam.esm.model.Tag;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 @ContextConfiguration(classes = PersistanceConfig.class)
 @ActiveProfiles("dev")
 @SpringJUnitConfig(classes = PersistanceConfig.class)

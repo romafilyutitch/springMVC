@@ -29,7 +29,7 @@ class CertificateRestServiceTest {
 
     @BeforeEach
     public void setUp() {
-        certificate = new Certificate(1L, "test", "test", 1.1, 2, LocalDateTime.now(), LocalDateTime.now());
+        certificate = new Certificate("test", "test", 1.1, 2);
         certificateDao = mock(CertificateDao.class);
         tagDao = mock(TagDao.class);
         certificateFieldsValidator = mock(CertificateValidator.class);
@@ -109,7 +109,7 @@ class CertificateRestServiceTest {
 
 
     @Test
-    public void update_shouldUpdateCertificate() throws CertificateNotFoundException, InvalidCertificateException {
+    public void update_shouldUpdateCertificate() throws CertificateNotFoundException {
         when(certificateDao.findById(1L)).thenReturn(Optional.of(certificate));
         certificate.setName("updated");
         when(certificateDao.update(certificate)).thenReturn(certificate);

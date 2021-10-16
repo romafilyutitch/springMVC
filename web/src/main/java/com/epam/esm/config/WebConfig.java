@@ -15,9 +15,7 @@ import javax.sql.DataSource;
 @Configuration
 @EnableWebMvc
 @ComponentScan("com.epam.esm")
-public class WebConfig extends WebMvcConfigurerAdapter {
-
-
+public class WebConfig  {
 
     @Bean
     public MessageSource messageSource() {
@@ -26,6 +24,8 @@ public class WebConfig extends WebMvcConfigurerAdapter {
         messageSource.setDefaultEncoding("UTF-8");
         return messageSource;
     }
+
+
 
 
 }
