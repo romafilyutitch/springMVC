@@ -91,6 +91,7 @@ public class CertificateRestService implements CertificateService {
      * Sets certificate create time to current time
      *
      * @param certificate that need to be saved
+     * @throws InvalidCertificateException if passed certificate is invalid
      * @return saved certificate
      */
     @Override
@@ -106,10 +107,11 @@ public class CertificateRestService implements CertificateService {
      * Updates certificate in database. and save certificate
      * last update time to current time
      *
-     * @param id          certificate that need to be updated
+     * @param id certificate that need to be updated
      * @param certificate data that need to be write
      * @return updated certificate
      * @throws CertificateNotFoundException if there is not certificate wit passed id
+     * @throws InvalidCertificateException if passed certificate is invalid
      */
     @Override
     public Certificate update(Long id, Certificate certificate) throws CertificateNotFoundException, InvalidCertificateException {
@@ -160,6 +162,7 @@ public class CertificateRestService implements CertificateService {
      * @param tags          list of tags that need to be added to certificate
      * @return certificate with added tags
      * @throws CertificateNotFoundException if there is not certificate with passed id
+     * @throws InvalidTagException tags list element is invalid
      */
     @Override
     public Certificate addTags(Long certificateId, List<Tag> tags) throws CertificateNotFoundException, InvalidTagException {

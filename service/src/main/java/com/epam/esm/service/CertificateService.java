@@ -41,6 +41,7 @@ public interface CertificateService {
     /**
      * Performs save certificate operation. Saved only certificates with unique names
      * @param certificate that need to be saved
+     * @throws InvalidCertificateException if passed certificate is invalid
      * @return saved certificate
      */
     Certificate save(Certificate certificate) throws InvalidCertificateException;
@@ -52,6 +53,7 @@ public interface CertificateService {
      * @param certificate data that need to be write
      * @return updated certificate
      * @throws CertificateNotFoundException if there is not certificated with passed id
+     * @throws InvalidCertificateException if passed certificate is invalid
      */
     Certificate update(Long id, Certificate certificate) throws CertificateNotFoundException, InvalidCertificateException;
 
@@ -68,6 +70,7 @@ public interface CertificateService {
      * @param tags list of tags that need to be added to certificate
      * @return certificate with added tags
      * @throws CertificateNotFoundException if there is not certificate with passed id
+     * @throws InvalidTagException if passed tag is invalid
      */
     Certificate addTags(Long certificateId, List<Tag> tags) throws CertificateNotFoundException, InvalidTagException;
 
