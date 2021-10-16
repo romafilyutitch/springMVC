@@ -4,12 +4,21 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 
+/**
+ * Builder class is used to build fina all sql query to find certificate.
+ * Determines sql query by passed parameters such as tag name,
+ * part of name, part of description. Also can add certificate
+ * order by name or data parameters. All parameters can be used in conjunction.
+ * For example if passed parameters contains parameters to find certificate
+ * by part of name and order by name and date, then all sql query to find all
+ * certificates that contains passed parameter value as part of name
+ * with order by name and then by name sql query will be built
+ */
 @Component
 public class FindCertificateBuilder {
     private static final String BASE_SQL = "select gift_certificate.*, tag.* from gift_certificate " +
             "left join certificate_tag on certificate_tag.certificate_id = gift_certificate.id " +
             "left join tag on certificate_tag.tag_id = tag.id ";
-    private static final String BY_ID = "where gift_certificate.id = ?";
     private static final String BY_TAG_NAME = "tag.name = ?";
     private static final String BY_PART_OF_NAME = "gift_certificate.name like ?";
     private static final String BY_PART_OF_DESCRIPTION = "gift_certificate.description like ?";
@@ -24,6 +33,13 @@ public class FindCertificateBuilder {
 
     private String finalQuery;
 
+    /**
+     * Build sql find all query that by passed parameters. argument map contains
+     * keys that define parameter then appropriate sql query will be built.
+     * If parameters map contains keys for order then sql will be build with order statement
+     * @param findParameters parameters map that define find certificate parameters
+     * @return built sql find all certificates statement that defined by passed parameters map
+     */
     public String buildSql(LinkedHashMap<String, String> findParameters) {
         String tagName = findParameters.get("tagName");
         String partOfName = findParameters.get("partOfName");
@@ -47,6 +63,13 @@ public class FindCertificateBuilder {
         return this;
     }
 
+    /**
+     * Reads passed find certificates parameters map and make
+     * parameters values list. That need to pass sql values to Prepared statement
+     * as PreparedStatement query values so PreparedStatement can execute query
+     * @param findParameters find all certificates parameters map
+     * @return list of find parameters values
+     */
     public List<String> getSqlValues(LinkedHashMap<String, String> findParameters) {
         String tagName = findParameters.get("tagName");
         String partOfName = findParameters.get("partOfName");
@@ -119,15 +142,5 @@ public class FindCertificateBuilder {
 
     private String build() {
         return finalQuery;
-    }
-
-    public static void main(String[] args) {
-        FindCertificateBuilder findCertificateBuilder = new FindCertificateBuilder();
-        LinkedHashMap<String, String> map = new LinkedHashMap<>();
-        map.put("tagName", "tag");
-        String sql = findCertificateBuilder.buildSql(map);
-        List<String> sqlValues = findCertificateBuilder.getSqlValues(map);
-        System.out.println(sql);
-        System.out.println(sqlValues);
     }
 }
