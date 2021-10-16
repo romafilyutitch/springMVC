@@ -26,6 +26,14 @@ public class Certificate extends Entity {
         this.lastUpdateDate = lastUpdateDate;
     }
 
+    public Certificate(String name, String description, Double price, Integer duration) {
+        super(null);
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.duration = duration;
+    }
+
     public Certificate(String name, String description, Double price, Integer duration, LocalDateTime createDate, LocalDateTime lastUpdateDate) {
         this(null, name, description, price, duration, createDate, lastUpdateDate);
     }
