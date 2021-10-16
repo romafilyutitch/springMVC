@@ -1,18 +1,16 @@
 package com.epam.esm.dao;
 
-import com.epam.esm.builder.FindCertificateBuilder;
+import com.epam.esm.builder.FindCertificatesSqlBuilder;
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Realisation of abstract dao for certificate that use gift_certificate table to
@@ -37,20 +35,32 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     private static final String FIND_CERTIFICATE_TAG_BY_CERTIFICATE_ID = "select id, certificate_id, tag_id from certificate_tag where certificate_tag.certificate_id = ?";
     private static final String FIND_CERTIFICATE_TAG_BY_CERTIFICATE_ID_AND_TAG_ID = "select id, certificate_id, tag_id from certificate_tag where certificate_id = ? and tag_id = ?";
     private static final String SAVE_CERTIFICATE_TAG = "insert into certificate_tag (certificate_id, tag_id) values (?, ?)";
-    private final FindCertificateBuilder findCertificateBuilder;
+    private static final String TAG_ID_COLUMN = "tag_id";
+
+    private final FindCertificatesSqlBuilder findCertificatesSqlBuilder;
     private final TagDao tagDao;
 
     @Autowired
-    public CertificateJdbcDao(FindCertificateBuilder findCertificateBuilder, TagDao tagDao) {
+    public CertificateJdbcDao(FindCertificatesSqlBuilder findCertificatesSqlBuilder, TagDao tagDao) {
         super(TABLE_NAME, COLUMNS, MAPPER);
-        this.findCertificateBuilder = findCertificateBuilder;
+        this.findCertificatesSqlBuilder = findCertificatesSqlBuilder;
         this.tagDao = tagDao;
     }
 
+    /**
+     * Finds all certificates that matches passed parameters such as tag name,
+     * part of name, part of description. Also performs sort certificates operation
+     * if there is sort parameters in passed map. Can be extended if it needs to add new find parameter later.
+     * Uses FindCertificateSqlBuilder that make all work to build right sql query and find parameter values.
+     * Certificate tags are linked with certificate with many-to-many relationship so method uses intermediate
+     * table that links entities together (certificate_tag) and tag dao to link tags with certificate.
+     * @param findParameters find certificates parameters
+     * @return Certificates that matches passed find parameters
+     */
     @Override
     public List<Certificate> findWithParameters(LinkedHashMap<String, String> findParameters) {
-        String findSql = findCertificateBuilder.buildSql(findParameters);
-        List<String> findCertificateParametersValues = findCertificateBuilder.getSqlValues(findParameters);
+        String findSql = findCertificatesSqlBuilder.buildSql(findParameters);
+        List<String> findCertificateParametersValues = findCertificatesSqlBuilder.getSqlValues(findParameters);
         List<Certificate> allCertificates = template.query(findSql, MAPPER, findCertificateParametersValues.toArray());
         allCertificates.forEach(this::addTagsToCertificate);
         LinkedHashMap<Long, Certificate> certificatesMap = new LinkedHashMap<>();
@@ -58,6 +68,13 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         return new ArrayList<>(certificatesMap.values());
     }
 
+    /**
+     * Finds and returns all certificates from database. Don't use find parameters.
+     * If it's need to find certificates that matches some parameters use windWithParameters methods.
+     * Certificate tag are linked with certificate with many-to-many relationship so method uses intermediate
+     * table that links entities together (certificate_tag) and tag dao to link tags with certificate.
+     * @return list of all certificates from database
+     */
     @Override
     public List<Certificate> findAll() {
         List<Certificate> allCertificates = super.findAll();
@@ -65,6 +82,15 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         return allCertificates;
     }
 
+    /**
+     * Finds certificate from database that has passed id.
+     * May return empty optional if there is no certificate with passed id in database.
+     * Certificate tag  are linked with certificate with many-to-many relationship so method uses intermediate
+     * table that links entities together (certificate_tag) and tag dao to link tags with certificate
+     * @param id id of entity that need to be found.
+     * @return Optional with certificate with passed id if certificate is found or
+     * empty optional otherwise
+     */
     @Override
     public Optional<Certificate> findById(Long id) {
         Optional<Certificate> certificate = super.findById(id);
@@ -72,6 +98,14 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         return certificate;
     }
 
+    /**
+     * Saves passed certificate in database and returns certificate with id
+     * generated by database.
+     * Certificate tag are linked with certificate with many-to-many relationship so methods uses intermediate
+     * tables that links entities together (certificate_tag) and tag dao to save certificate tags and link them together
+     * @param entity entity that need to be saved.
+     * @return Saved certificate with assigned id generated by database
+     */
     @Override
     public Certificate save(Certificate entity) {
         Certificate savedCertificate = super.save(entity);
@@ -80,6 +114,14 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         return findById(savedCertificate.getId()).orElseThrow(DaoException::new);
     }
 
+    /**
+     * Updates passed certificate in database and returns updated certificate.
+     * Certificate tags are linked with certificates with many-to-many relationship so method uses intermediate
+     * table that links entities together(certificate_tag) and tag dao to save unsaved tags and link saved tags with
+     * certificate.
+     * @param entity entity that need to be updated
+     * @return updated certificate
+     */
     @Override
     public Certificate update(Certificate entity) {
         Certificate updatedCertificate = super.update(entity);
@@ -88,6 +130,13 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         return findById(updatedCertificate.getId()).orElseThrow(DaoException::new);
     }
 
+    /**
+     * Sets certificate fields values to PreparedStatement to right save object values in
+     * database certificate table
+     * @param saveStatement PreparedStatement that need to be set entity values for save
+     * @param entity entity that need to be saved
+     * @throws SQLException if exception with database occurs
+     */
     @Override
     protected void setSaveValues(PreparedStatement saveStatement, Certificate entity) throws SQLException {
         saveStatement.setString(1, entity.getName());
@@ -98,6 +147,13 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         saveStatement.setObject(6, entity.getLastUpdateDate());
     }
 
+    /**
+     * Sets certificate fields values to PreparedStatement to right update object values
+     * in database certificate table
+     * @param updateStatement Prepared statement that need to be set entity values for update
+     * @param entity entity that need to be updated
+     * @throws SQLException if exception with database occurs
+     */
     @Override
     protected void setUpdateValues(PreparedStatement updateStatement, Certificate entity) throws SQLException {
         updateStatement.setString(1, entity.getName());
@@ -110,7 +166,7 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     }
 
     private void addTagsToCertificate(Certificate certificate) {
-        List<Long> certificateTagsIds = template.query(FIND_CERTIFICATE_TAG_BY_CERTIFICATE_ID, (rs, rowNum) -> rs.getLong("tag_id"), certificate.getId());
+        List<Long> certificateTagsIds = template.query(FIND_CERTIFICATE_TAG_BY_CERTIFICATE_ID, (rs, rowNum) -> rs.getLong(TAG_ID_COLUMN), certificate.getId());
         certificateTagsIds.forEach(tagId -> certificate.getTags().add(tagDao.findById(tagId).orElseThrow(DaoException::new)));
     }
 

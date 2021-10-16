@@ -26,23 +26,42 @@ public class TagJdbcDao extends AbstractDao<Tag> implements TagDao {
         return new Tag(id, name);
     };
 
-    private static final String FIND_BY_NAME_SQL = "select * from tag where name = ?";
+    private static final String FIND_BY_NAME_SQL = "select id, name from tag where name = ?";
 
     public TagJdbcDao() {
         super(TABLE_NAME, COLUMNS, MAPPER);
     }
 
+    /**
+     * Sets Tag entity fields values to PreparedStatement to save entity in database.
+     * @param saveStatement PreparedStatement that need to be set entity values for save
+     * @param entity entity that need to be saved
+     * @throws SQLException if exception with database occurs
+     */
     @Override
     protected void setSaveValues(PreparedStatement saveStatement, Tag entity) throws SQLException {
         saveStatement.setString(1, entity.getName());
     }
 
+    /**
+     * Sets Tag entity values to PreparedStatement to update entity in database.
+     * @param updateStatement Prepared statement that need to be set entity values for update
+     * @param entity entity that need to be updated
+     * @throws SQLException if exception with database occurs
+     */
     @Override
     protected void setUpdateValues(PreparedStatement updateStatement, Tag entity) throws SQLException {
         updateStatement.setString(1, entity.getName());
         updateStatement.setLong(2, entity.getId());
     }
 
+    /**
+     * Finds Tag in database by passed name. May return empty
+     * Optional if there is no tag with passed name
+     * @param name of tag that need to be found
+     * @return Optional with Tag if there is Tag with passed name in database or
+     * empry Optional otherwise
+     */
     @Override
     public Optional<Tag> findByName(String name) {
         List<Tag> foundTag = template.query(FIND_BY_NAME_SQL, MAPPER, name);
