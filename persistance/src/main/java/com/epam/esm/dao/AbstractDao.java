@@ -34,11 +34,11 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
     private final List<String> columns;
     private final RowMapper<T> rowMapper;
 
-    private final String findAllSql;
-    private final String findByIdSql;
-    private final String saveSql;
-    private final String updateSql;
-    private final String deleteSql;
+    protected final String findAllSql;
+    protected final String findByIdSql;
+    protected final String saveSql;
+    protected final String updateSql;
+    protected final String deleteSql;
 
 
     public AbstractDao(String tableName, List<String> columns, RowMapper<T> rowMapper) {
@@ -51,7 +51,7 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
         columns.forEach(column -> saveJoiner.add("?"));
         saveSql = String.format("insert into %s (%s) values (%s)", tableName, String.join(",", columns), saveJoiner);
         StringJoiner updateJoiner = new StringJoiner(",");
-        columns.forEach(column -> updateJoiner.add(column).add("=").add("?"));
+        columns.forEach(column -> updateJoiner.add(column + "=?"));
         updateSql = String.format("update %s set %s where id = ?", tableName, updateJoiner);
         deleteSql = String.format("delete from %s where id = ?", tableName);
     }
@@ -62,7 +62,7 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
      */
     @Override
     public List<T> findAll() {
-        return template.query(findAllSql, rowMapper, tableName);
+        return template.query(findAllSql, rowMapper);
     }
 
     /**
@@ -74,7 +74,7 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
      */
     @Override
     public Optional<T> findById(Long id) {
-        List<T> query = template.query(findByIdSql, rowMapper, tableName, id);
+        List<T> query = template.query(findByIdSql, rowMapper, id);
         return query.isEmpty() ? Optional.empty() : Optional.of(query.get(0));
     }
 
@@ -87,8 +87,7 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
             return saveStatement;
         }, keyHolder);
         long id = keyHolder.getKey().longValue();
-        entity.setId(id);
-        return entity;
+        return findById(id).orElseThrow(DaoException::new);
     }
 
     @Override
@@ -103,7 +102,7 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
      */
     @Override
     public void delete(Long id) {
-        template.update(deleteSql, tableName, id);
+        template.update(deleteSql, id);
     }
 
     protected abstract void setSaveValues(PreparedStatement saveStatement, T entity) throws SQLException;

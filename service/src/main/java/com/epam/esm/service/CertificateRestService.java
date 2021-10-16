@@ -111,11 +111,9 @@ public class CertificateRestService implements CertificateService {
      * @param certificate data that need to be write
      * @return updated certificate
      * @throws CertificateNotFoundException if there is not certificate wit passed id
-     * @throws InvalidCertificateException if passed certificate is invalid
      */
     @Override
-    public Certificate update(Long id, Certificate certificate) throws CertificateNotFoundException, InvalidCertificateException {
-        certificateFieldsValidator.validate(certificate);
+    public Certificate update(Long id, Certificate certificate) throws CertificateNotFoundException {
         Optional<Certificate> certificateFromDb = certificateDao.findById(id);
         if (certificateFromDb.isPresent()) {
             Certificate modifiedCertificate = modifyForUpdate(certificateFromDb.get(), certificate);
@@ -131,8 +129,9 @@ public class CertificateRestService implements CertificateService {
     private Certificate modifyForUpdate(Certificate fromDb, Certificate fromRequest) {
         fromDb.setName(fromRequest.getName() == null ? fromDb.getName() : fromRequest.getName());
         fromDb.setDescription(fromRequest.getDescription() == null ? fromDb.getDescription() : fromRequest.getDescription());
-        fromDb.setPrice(fromRequest.getPrice() == null ? fromDb.getPrice() : fromRequest.getPrice());
-        fromDb.setDuration(fromRequest.getDuration() == null ? fromDb.getDuration() : fromRequest.getDuration());
+        fromDb.setPrice(fromRequest.getPrice() == null || fromRequest.getPrice() < 0? fromDb.getPrice() : fromRequest.getPrice());
+        fromDb.setDuration(fromRequest.getDuration() == null || fromRequest.getDuration() < 0 ? fromDb.getDuration() : fromRequest.getDuration());
+        fromDb.getTags().addAll(fromRequest.getTags());
         return fromDb;
     }
 
