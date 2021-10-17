@@ -25,7 +25,6 @@ public class PersistanceConfig {
     @Autowired
     private Environment env;
 
-
     @Bean
     @Profile("prod")
     public DataSource dataSource() {
