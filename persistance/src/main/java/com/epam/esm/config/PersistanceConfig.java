@@ -10,6 +10,11 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.annotation.TransactionManagementConfigurer;
+import org.springframework.transaction.config.TransactionManagementConfigUtils;
 
 import javax.sql.DataSource;
 
@@ -19,7 +24,6 @@ public class PersistanceConfig {
 
     @Autowired
     private Environment env;
-
 
     @Bean
     public DataSource dataSource() {
