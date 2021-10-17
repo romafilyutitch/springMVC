@@ -18,7 +18,7 @@ CREATE TABLE certificate_tag (
     certificate_id INT NOT NULL,
     tag_id INT NOT NULL,
     CONSTRAINT certificate_fk FOREIGN KEY (certificate_id)
-    REFERENCES gift_certificate (id),
+    REFERENCES gift_certificate (id) ON DELETE CASCADE,
     CONSTRAINT tag_fk FOREIGN KEY (tag_id)
-    REFERENCES tag (id)
+    REFERENCES tag (id) ON DELETE CASCADE
 );

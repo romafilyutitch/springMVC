@@ -42,7 +42,7 @@ class TagJdbcDaoTest {
         Tag second = allTags.get(1);
         Tag third = allTags.get(2);
         assertEquals(1, first.getId());
-        assertEquals("sport", first.getName());
+        assertEquals("spotify", first.getName());
         assertEquals(2, second.getId());
         assertEquals("music", second.getName());
         assertEquals(3, third.getId());
@@ -56,7 +56,7 @@ class TagJdbcDaoTest {
         assertTrue(optionalTag.isPresent());
         Tag foundTag = optionalTag.get();
         assertEquals(1, foundTag.getId());
-        assertEquals("sport", foundTag.getName());
+        assertEquals("spotify", foundTag.getName());
     }
 
     @Test
@@ -68,12 +68,12 @@ class TagJdbcDaoTest {
 
     @Test
     public void findByName_shouldReturnTagIfTagWithNameSaved() {
-        Optional<Tag> optionalTag = dao.findByName("sport");
+        Optional<Tag> optionalTag = dao.findByName("spotify");
 
         assertTrue(optionalTag.isPresent());
         Tag foundTag = optionalTag.get();
         assertEquals(1L, foundTag.getId());
-        assertEquals("sport", foundTag.getName());
+        assertEquals("spotify", foundTag.getName());
     }
 
     @Test
@@ -90,7 +90,7 @@ class TagJdbcDaoTest {
         tag.setName("health");
         Tag updated = dao.update(tag);
 
-        assertEquals(tag, updated);
+        assertEquals("health", updated.getName());
     }
 
     @Test
