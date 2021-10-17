@@ -1,14 +1,12 @@
 package com.epam.esm.dao;
 
 import com.epam.esm.config.PersistanceConfig;
-
 import com.epam.esm.model.Tag;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.util.List;
@@ -18,83 +16,88 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ContextConfiguration(classes = PersistanceConfig.class)
 @ActiveProfiles("dev")
+@Sql(scripts = "classpath:data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "classpath:delete.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @SpringJUnitConfig(classes = PersistanceConfig.class)
 class TagJdbcDaoTest {
 
     @Autowired
     private TagJdbcDao dao;
 
-    private Tag tag;
-
-    @BeforeEach
-    void setUp() {
-        tag = new Tag("tag");
-        tag = dao.save(tag);
-    }
-
-    @AfterEach
-    void tearDown() {
-        dao.delete(tag.getId());
-    }
-
     @Test
     public void save_shouldReturnTagWithId() {
-        assertNotNull(tag.getId());
+        Tag tag = new Tag("tag");
+        Tag savedTag = dao.save(tag);
+
+        assertNotNull(savedTag.getId());
+        assertEquals(tag.getName(), savedTag.getName());
     }
 
     @Test
     public void findAll_shouldReturnAllTags() {
         List<Tag> allTags = dao.findAll();
 
-        assertTrue(allTags.contains(tag));
+        assertEquals(3, allTags.size());
+        Tag first = allTags.get(0);
+        Tag second = allTags.get(1);
+        Tag third = allTags.get(2);
+        assertEquals(1, first.getId());
+        assertEquals("sport", first.getName());
+        assertEquals(2, second.getId());
+        assertEquals("music", second.getName());
+        assertEquals(3, third.getId());
+        assertEquals("art", third.getName());
     }
 
     @Test
     public void findById_shouldReturnTagIfTagSaved() {
-        Optional<Tag> foundTag = dao.findById(tag.getId());
+        Optional<Tag> optionalTag = dao.findById(1L);
 
-        assertTrue(foundTag.isPresent());;
-        assertEquals(tag, foundTag.get());
+        assertTrue(optionalTag.isPresent());
+        Tag foundTag = optionalTag.get();
+        assertEquals(1, foundTag.getId());
+        assertEquals("sport", foundTag.getName());
     }
 
     @Test
     public void findById_shouldReturnEmptyOptionalIfThereIsNoTag() {
-        dao.delete(tag.getId());
-        Optional<Tag> foundTag = dao.findById(tag.getId());
+        Optional<Tag> optionalTag = dao.findById(10L);
 
-        assertFalse(foundTag.isPresent());
+        assertFalse(optionalTag.isPresent());
     }
 
     @Test
     public void findByName_shouldReturnTagIfTagWithNameSaved() {
-        Optional<Tag> foundTag = dao.findByName(tag.getName());
+        Optional<Tag> optionalTag = dao.findByName("sport");
 
-        assertTrue(foundTag.isPresent());
-        assertEquals(tag, foundTag.get());
+        assertTrue(optionalTag.isPresent());
+        Tag foundTag = optionalTag.get();
+        assertEquals(1L, foundTag.getId());
+        assertEquals("sport", foundTag.getName());
     }
 
     @Test
     public void findByName_shouldReturnEmptyOptionalIfThereIsNoTagWithName() {
-        dao.delete(tag.getId());
-        Optional<Tag> foundTag = dao.findByName(tag.getName());
+        Optional<Tag> optionalTag = dao.findByName("health");
 
-        assertFalse(foundTag.isPresent());
+        assertFalse(optionalTag.isPresent());
     }
 
     @Test
     public void update_shouldUpdateSavedTag() {
-        tag.setName("updated");
+        Optional<Tag> optionalTag = dao.findById(1L);
+        Tag tag = optionalTag.get();
+        tag.setName("health");
         Tag updated = dao.update(tag);
 
         assertEquals(tag, updated);
-        assertEquals("updated", updated.getName());
     }
 
     @Test
     public void delete_shouldDeleteSavedTag() {
-        dao.delete(tag.getId());
-        Optional<Tag> foundTag = dao.findById(tag.getId());
+        dao.delete(1L);
+        Optional<Tag> optionalTag = dao.findById(1L);
 
-        assertFalse(foundTag.isPresent());
+        assertFalse(optionalTag.isPresent());
     }
 }
