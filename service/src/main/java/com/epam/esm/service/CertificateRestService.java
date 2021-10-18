@@ -113,10 +113,11 @@ public class CertificateRestService implements CertificateService {
      * @throws CertificateNotFoundException if there is not certificate wit passed id
      */
     @Override
-    public Certificate update(Long id, Certificate certificate) throws CertificateNotFoundException {
+    public Certificate update(Long id, Certificate certificate) throws CertificateNotFoundException, InvalidCertificateException {
         Optional<Certificate> certificateFromDb = certificateDao.findById(id);
         if (certificateFromDb.isPresent()) {
             Certificate modifiedCertificate = modifyForUpdate(certificateFromDb.get(), certificate);
+            certificateFieldsValidator.validate(modifiedCertificate);
             Certificate updatedCertificate = certificateDao.update(modifiedCertificate);
             logger.info("Certificate was validated and updated successfully " + updatedCertificate);
             return updatedCertificate;

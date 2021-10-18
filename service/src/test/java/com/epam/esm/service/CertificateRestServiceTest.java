@@ -115,7 +115,7 @@ class CertificateRestServiceTest {
 
 
     @Test
-    public void update_shouldUpdateCertificate() throws CertificateNotFoundException {
+    public void update_shouldUpdateCertificate() throws CertificateNotFoundException, InvalidCertificateException {
         when(certificateDao.findById(1L)).thenReturn(Optional.of(certificate));
         certificate.setName("updated");
         when(certificateDao.update(certificate)).thenReturn(certificate);
