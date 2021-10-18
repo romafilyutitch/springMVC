@@ -5,7 +5,7 @@ package com.epam.esm.service;
  * to find certificate but certificate with passed id not exists in database
  */
 public class CertificateNotFoundException extends Exception {
-    private final String code ="01";
+    private final String code = "01";
     private final long certificateId;
 
     public CertificateNotFoundException(long certificateId) {

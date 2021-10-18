@@ -4,7 +4,6 @@ import com.epam.esm.model.Certificate;
 
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Dao layer interface that defines additional operations
