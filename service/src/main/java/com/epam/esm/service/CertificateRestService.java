@@ -11,7 +11,6 @@ import com.epam.esm.validation.TagValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashMap;
@@ -92,8 +91,8 @@ public class CertificateRestService implements CertificateService {
      * Sets certificate create time to current time
      *
      * @param certificate that need to be saved
-     * @throws InvalidCertificateException if passed certificate is invalid
      * @return saved certificate
+     * @throws InvalidCertificateException if passed certificate is invalid
      */
     @Override
     public Certificate save(Certificate certificate) throws InvalidCertificateException {
@@ -108,7 +107,7 @@ public class CertificateRestService implements CertificateService {
      * Updates certificate in database. and save certificate
      * last update time to current time
      *
-     * @param id certificate that need to be updated
+     * @param id          certificate that need to be updated
      * @param certificate data that need to be write
      * @return updated certificate
      * @throws CertificateNotFoundException if there is not certificate wit passed id
@@ -130,7 +129,7 @@ public class CertificateRestService implements CertificateService {
     private Certificate modifyForUpdate(Certificate fromDb, Certificate fromRequest) {
         fromDb.setName(fromRequest.getName() == null ? fromDb.getName() : fromRequest.getName());
         fromDb.setDescription(fromRequest.getDescription() == null ? fromDb.getDescription() : fromRequest.getDescription());
-        fromDb.setPrice(fromRequest.getPrice() == null || fromRequest.getPrice() < 0? fromDb.getPrice() : fromRequest.getPrice());
+        fromDb.setPrice(fromRequest.getPrice() == null || fromRequest.getPrice() < 0 ? fromDb.getPrice() : fromRequest.getPrice());
         fromDb.setDuration(fromRequest.getDuration() == null || fromRequest.getDuration() < 0 ? fromDb.getDuration() : fromRequest.getDuration());
         fromDb.getTags().addAll(fromRequest.getTags());
         return fromDb;
@@ -162,7 +161,7 @@ public class CertificateRestService implements CertificateService {
      * @param tags          list of tags that need to be added to certificate
      * @return certificate with added tags
      * @throws CertificateNotFoundException if there is not certificate with passed id
-     * @throws InvalidTagException tags list element is invalid
+     * @throws InvalidTagException          tags list element is invalid
      */
     @Override
     public Certificate addTags(Long certificateId, List<Tag> tags) throws CertificateNotFoundException, InvalidTagException {

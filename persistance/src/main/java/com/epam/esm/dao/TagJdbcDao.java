@@ -5,9 +5,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -34,8 +32,9 @@ public class TagJdbcDao extends AbstractDao<Tag> implements TagDao {
 
     /**
      * Sets Tag entity fields values to PreparedStatement to save entity in database.
+     *
      * @param saveStatement PreparedStatement that need to be set entity values for save
-     * @param entity entity that need to be saved
+     * @param entity        entity that need to be saved
      * @throws SQLException if exception with database occurs
      */
     @Override
@@ -45,8 +44,9 @@ public class TagJdbcDao extends AbstractDao<Tag> implements TagDao {
 
     /**
      * Sets Tag entity values to PreparedStatement to update entity in database.
+     *
      * @param updateStatement Prepared statement that need to be set entity values for update
-     * @param entity entity that need to be updated
+     * @param entity          entity that need to be updated
      * @throws SQLException if exception with database occurs
      */
     @Override
@@ -58,6 +58,7 @@ public class TagJdbcDao extends AbstractDao<Tag> implements TagDao {
     /**
      * Finds Tag in database by passed name. May return empty
      * Optional if there is no tag with passed name
+     *
      * @param name of tag that need to be found
      * @return Optional with Tag if there is Tag with passed name in database or
      * empry Optional otherwise

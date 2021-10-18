@@ -4,12 +4,18 @@ import com.epam.esm.dao.CertificateDao;
 import com.epam.esm.dao.TagDao;
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
-import com.epam.esm.validation.*;
+import com.epam.esm.validation.CertificateValidator;
+import com.epam.esm.validation.InvalidCertificateException;
+import com.epam.esm.validation.InvalidTagException;
+import com.epam.esm.validation.TagValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -195,7 +201,7 @@ class CertificateRestServiceTest {
     }
 
     @Test
-    public void deleteCertificateTag_shouldThrowExceptionWhenCertificateNotFound(){
+    public void deleteCertificateTag_shouldThrowExceptionWhenCertificateNotFound() {
         when(certificateDao.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(CertificateNotFoundException.class, () -> service.deleteCertificateTag(1L, 1L));

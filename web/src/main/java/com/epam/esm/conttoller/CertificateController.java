@@ -3,14 +3,23 @@ package com.epam.esm.conttoller;
 import com.epam.esm.conttoller.exception.Error;
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
-import com.epam.esm.service.*;
+import com.epam.esm.service.CertificateNotFoundException;
+import com.epam.esm.service.CertificateService;
+import com.epam.esm.service.TagNotFoundException;
 import com.epam.esm.validation.InvalidCertificateException;
 import com.epam.esm.validation.InvalidTagException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -37,6 +46,7 @@ public class CertificateController {
      * Handles GET certificates request and shows all certificates.
      * If passed name param then finds certificates by part of name.
      * If passed tagName param then finds certificates by tag name
+     *
      * @param findParams find parameters.
      * @return controller response in JSON format and OK or NOT FOUND status code
      */
@@ -48,6 +58,7 @@ public class CertificateController {
 
     /**
      * Handles GET certificate with passed id request
+     *
      * @param id if of certificate that need to be found
      * @return controller response in JSON format and OK status code
      * @throws CertificateNotFoundException if there is not certificate with passed id
@@ -59,6 +70,7 @@ public class CertificateController {
 
     /**
      * Handles POST certificate request and saves posted certificate
+     *
      * @param certificate certificate that need to be saved
      * @return controller response in JSON format and CREATED status code
      */
@@ -69,7 +81,8 @@ public class CertificateController {
 
     /**
      * Handles POST certificate with passed id request and updates certificate
-     * @param id id of certificate that need to be updated
+     *
+     * @param id          id of certificate that need to be updated
      * @param certificate certificate data that need to update
      * @return controller response in JSON format and OK status code
      * @throws CertificateNotFoundException if certificate with passed id not found
@@ -81,6 +94,7 @@ public class CertificateController {
 
     /**
      * Handles DELETE certificate with passed id and deletes it
+     *
      * @param id if of certificate that need to be deleted
      * @return NO CONTENT status code
      * @throws CertificateNotFoundException if there is not certificate with passed id
@@ -93,6 +107,7 @@ public class CertificateController {
 
     /**
      * Handles GET certificate tags request and show tags
+     *
      * @param id certificate whose tags need to be found
      * @return controller response in JSON format and OK or NOT FOUND status code
      * @throws CertificateNotFoundException if there is not certificate with passed id
@@ -110,11 +125,12 @@ public class CertificateController {
 
     /**
      * Handles GET certificate tag and show certificate tag
-     * @param id if of certificate that need to be found
+     *
+     * @param id    if of certificate that need to be found
      * @param tagId if of certificate tag that need to be found
      * @return controller response in JSON format and OK status code
      * @throws CertificateNotFoundException if there is no certificate with passed id
-     * @throws TagNotFoundException if there is not tag with passed id
+     * @throws TagNotFoundException         if there is not tag with passed id
      */
     @RequestMapping(value = "/{id}/tags/{tagId}", method = RequestMethod.GET)
     public ResponseEntity<Tag> showCertificateTag(@PathVariable("id") long id, @PathVariable("tagId") long tagId) throws CertificateNotFoundException, TagNotFoundException {
@@ -123,7 +139,8 @@ public class CertificateController {
 
     /**
      * Handles POST certificate tags request and add new tags to certificate
-     * @param id if of certificate to which need to add new tags
+     *
+     * @param id   if of certificate to which need to add new tags
      * @param tags list of tags that need to be added to certificate
      * @return controller response in JSON format and OK status code
      * @throws CertificateNotFoundException if there is no certificate with passed id
@@ -135,9 +152,10 @@ public class CertificateController {
 
     /**
      * Handles DELETE certificate tag request and deletes certificate tag
-     * @param id if of certificate that contains needed tag
+     *
+     * @param id    if of certificate that contains needed tag
      * @param tagId id of tag that need to be deleted
-     * @throws TagNotFoundException if there is no tag with passed id
+     * @throws TagNotFoundException         if there is no tag with passed id
      * @throws CertificateNotFoundException if there is no certificate with passed id
      */
     @RequestMapping(value = "/{id}/tags/{tagId}", method = RequestMethod.DELETE)
@@ -149,8 +167,9 @@ public class CertificateController {
     /**
      * Exception handlers methods that handles CertificateNotFoundException if
      * exception occurs in other methods and response with localized message
+     *
      * @param exception exception that occur in controller
-     * @param locale client locale
+     * @param locale    client locale
      * @return controller custom localized error response in JSON format
      */
     @ExceptionHandler(CertificateNotFoundException.class)
@@ -164,8 +183,9 @@ public class CertificateController {
     /**
      * Exception handlers methods that handles TagNotFoundException if
      * exception occurs in other methods and response with localized message
+     *
      * @param exception exception that occur in controller
-     * @param locale client locale
+     * @param locale    client locale
      * @return controller custom localized error response in JSON format
      */
     @ExceptionHandler(TagNotFoundException.class)
@@ -179,8 +199,9 @@ public class CertificateController {
     /**
      * Exception handler method to handle InvalidCertificateException if
      * exception occurs in other methods and response with localized message.
+     *
      * @param exception exception that occur in controller
-     * @param locale client locale
+     * @param locale    client locale
      * @return controller custom localized error response in JSON format
      */
     @ExceptionHandler(InvalidCertificateException.class)
@@ -194,8 +215,9 @@ public class CertificateController {
     /**
      * Exception handler methods to handle InvalidTagException if
      * exception occurs in other methods and response with localized message.
+     *
      * @param exception exception that occur in controller
-     * @param locale client locale
+     * @param locale    client locale
      * @return controller custom localized response in JSON format
      */
     @ExceptionHandler(InvalidTagException.class)

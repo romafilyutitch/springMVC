@@ -2,7 +2,13 @@ package com.epam.esm.builder;
 
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+
 
 /**
  * Builder class is used to build fina all sql query to find certificate.
