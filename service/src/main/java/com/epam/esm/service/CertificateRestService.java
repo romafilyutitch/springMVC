@@ -130,8 +130,8 @@ public class CertificateRestService implements CertificateService {
     private Certificate modifyForUpdate(Certificate fromDb, Certificate fromRequest) {
         fromDb.setName(fromRequest.getName() == null ? fromDb.getName() : fromRequest.getName());
         fromDb.setDescription(fromRequest.getDescription() == null ? fromDb.getDescription() : fromRequest.getDescription());
-        fromDb.setPrice(fromRequest.getPrice() == null || fromRequest.getPrice() < 0 ? fromDb.getPrice() : fromRequest.getPrice());
-        fromDb.setDuration(fromRequest.getDuration() == null || fromRequest.getDuration() < 0 ? fromDb.getDuration() : fromRequest.getDuration());
+        fromDb.setPrice(fromRequest.getPrice() == null ? fromDb.getPrice() : fromRequest.getPrice());
+        fromDb.setDuration(fromRequest.getDuration() == null ? fromDb.getDuration() : fromRequest.getDuration());
         fromDb.getTags().addAll(fromRequest.getTags());
         return fromDb;
     }
