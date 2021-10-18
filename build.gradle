@@ -3,6 +3,8 @@ plugins {
     id 'war'
 }
 
+def tomcatWebApps = "D://apache-tomcat-9.0.54/webapps"
+
 repositories {
     mavenCentral()
 }
@@ -17,4 +19,12 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+task deployLocal {
+    copy {
+        from "${buildDir}\\libs"
+        into "${tomcatWebApps}"
+        include "Rest.war"
+    }
 }
