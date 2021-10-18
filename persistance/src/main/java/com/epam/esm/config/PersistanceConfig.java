@@ -22,6 +22,7 @@ public class PersistanceConfig {
     private Environment env;
 
     @Bean
+    @Profile("prod")
     public DataSource dataSource() {
         BasicDataSource dataSource = new BasicDataSource();
         dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");

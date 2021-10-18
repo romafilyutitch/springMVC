@@ -103,7 +103,7 @@ public class FindCertificatesSqlBuilder {
     }
 
     private FindCertificatesSqlBuilder whereTagName(String tagName) {
-        if (tagName == null || tagName.isEmpty()) {
+        if (isNullOrEmptyParameter(tagName)) {
             return this;
         }
         finalQuery = finalQuery.contains(WHERE) ? finalQuery + AND + BY_TAG_NAME : finalQuery + WHERE + BY_TAG_NAME ;
@@ -111,7 +111,7 @@ public class FindCertificatesSqlBuilder {
     }
 
     private FindCertificatesSqlBuilder wherePartOfName(String partOfName) {
-        if (partOfName == null || partOfName.isEmpty()) {
+        if (isNullOrEmptyParameter(partOfName)) {
             return this;
         }
         finalQuery = finalQuery.contains(WHERE) ? finalQuery + AND + BY_PART_OF_NAME : finalQuery + WHERE + BY_PART_OF_NAME ;
@@ -119,7 +119,7 @@ public class FindCertificatesSqlBuilder {
     }
 
     private FindCertificatesSqlBuilder wherePartOfDescription(String partOfDescription) {
-        if (partOfDescription == null || partOfDescription.isEmpty()) {
+        if (isNullOrEmptyParameter(partOfDescription)) {
             return this;
         }
         finalQuery = finalQuery.contains(WHERE) ? finalQuery + AND + BY_PART_OF_DESCRIPTION : finalQuery + WHERE + BY_PART_OF_DESCRIPTION;
@@ -127,7 +127,7 @@ public class FindCertificatesSqlBuilder {
     }
 
     private FindCertificatesSqlBuilder orderByName(String order) {
-        if (order == null || order.isEmpty()) {
+        if (isNullOrEmptyParameter(order)) {
             return this;
         }
         if (order.equals(ACCEDING_ORDER)) {
@@ -141,7 +141,7 @@ public class FindCertificatesSqlBuilder {
     }
 
     private FindCertificatesSqlBuilder orderByDate(String order) {
-        if (order == null || order.isEmpty()) {
+        if (isNullOrEmptyParameter(order)) {
             return this;
         }
         if (order.equals(ACCEDING_ORDER)) {
@@ -152,6 +152,10 @@ public class FindCertificatesSqlBuilder {
             finalQuery += DATE_DESC;
         }
         return this;
+    }
+
+    private boolean isNullOrEmptyParameter(String parameter) {
+        return parameter == null || parameter.isEmpty();
     }
 
     private String build() {

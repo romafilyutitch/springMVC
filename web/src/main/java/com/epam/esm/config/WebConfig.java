@@ -19,6 +19,4 @@ public class WebConfig {
         messageSource.setDefaultEncoding("UTF-8");
         return messageSource;
     }
-
-
 }
