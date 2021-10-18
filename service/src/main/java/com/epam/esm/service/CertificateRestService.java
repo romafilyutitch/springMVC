@@ -12,6 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -21,7 +22,7 @@ import java.util.Optional;
  * Service layer certificate certificate service implementation
  * of Service interface
  */
-@Component
+@Service
 public class CertificateRestService implements CertificateService {
     private static final Logger logger = LogManager.getLogger(CertificateRestService.class);
     private final CertificateDao certificateDao;
