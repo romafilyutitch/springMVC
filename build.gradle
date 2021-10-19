@@ -4,6 +4,7 @@ plugins {
 }
 
 def tomcatWebApps = "D://apache-tomcat-9.0.54/webapps"
+def tomcatBin = "D://apache-tomcat-9.0.54/bin"
 
 repositories {
     mavenCentral()
@@ -28,3 +29,21 @@ task deployLocal {
         include "Rest.war"
     }
 }
+deployLocal.dependsOn(war)
+
+task startTomcat(type: Exec) {
+    workingDir "${tomcatBin}"
+    commandLine 'cmd', '/c', 'startup.bat'
+}
+
+startTomcat.dependsOn(deployLocal)
+
+task stopTomcat(type: Exec) {
+    workingDir "${tomcatBin}"
+    commandLine 'cmd', '/c', 'shutdown.bat'
+}
+
+task deleteWar(type: Delete) {
+    delete "${tomcatWebApps}/Rest", "${tomcatWebApps}/Rest.war"
+}
+
