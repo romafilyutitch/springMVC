@@ -1,6 +1,6 @@
-package com.epam.esm.conttoller;
+package com.epam.esm;
 
-import com.epam.esm.conttoller.exception.Error;
+import com.epam.esm.Error;
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
 import com.epam.esm.service.CertificateNotFoundException;

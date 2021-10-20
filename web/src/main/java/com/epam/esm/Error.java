@@ -1,4 +1,4 @@
-package com.epam.esm.conttoller.exception;
+package com.epam.esm;
 
 /**
  * Custom error class to display
