@@ -1,10 +1,12 @@
 package com.epam.esm.dao;
 
-import com.epam.esm.config.PersistanceConfig;
+import com.epam.esm.config.DevConfig;
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
@@ -16,9 +18,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@ContextConfiguration(classes = PersistanceConfig.class)
+@SpringBootTest(classes = DevConfig.class)
 @ActiveProfiles("dev")
-@SpringJUnitConfig(classes = PersistanceConfig.class)
 @Sql(scripts = "classpath:data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(scripts = "classpath:delete.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 class CertificateJdbcDaoTest {
