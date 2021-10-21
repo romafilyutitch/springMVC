@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
@@ -16,6 +17,7 @@ import javax.sql.DataSource;
 
 @Configuration
 @ComponentScan("com.epam.esm")
+@PropertySource("classpath:db.properties")
 public class PersistanceConfig {
 
     @Autowired
@@ -25,12 +27,12 @@ public class PersistanceConfig {
     @Profile("prod")
     public DataSource dataSource() {
         BasicDataSource dataSource = new BasicDataSource();
-        dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
-        dataSource.setUrl("jdbc:mysql://localhost:3306/restdb");
-        dataSource.setUsername("root");
-        dataSource.setPassword("050399");
-        dataSource.setInitialSize(5);
-        dataSource.setMaxTotal(10);
+        dataSource.setDriverClassName(env.getRequiredProperty("db.driverClassName"));
+        dataSource.setUrl(env.getRequiredProperty("db.url"));
+        dataSource.setUsername(env.getRequiredProperty("db.username"));
+        dataSource.setPassword(env.getRequiredProperty("db.password"));
+        dataSource.setInitialSize(env.getRequiredProperty("db.initialSize", Integer.class));
+        dataSource.setMaxTotal(env.getRequiredProperty("db.maxSize", Integer.class));
         return dataSource;
     }
 
