@@ -1,22 +1,15 @@
 package com.epam.esm.conttoller;
 
-import com.epam.esm.config.RootConfig;
-import com.epam.esm.config.WebConfig;
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Collections;
 import java.util.List;
@@ -26,22 +19,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@ContextConfiguration(classes = {WebConfig.class, RootConfig.class})
-@SpringJUnitConfig(classes = {WebConfig.class, RootConfig.class})
+@SpringBootTest
 @ActiveProfiles("dev")
-@WebAppConfiguration
 @Sql(scripts = "classpath:data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(scripts = "classpath:delete.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 class CertificateControllerTest {
-    private MockMvc mockMvc;
-
     @Autowired
-    private WebApplicationContext context;
-
-    @BeforeEach
-    void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
-    }
+    private MockMvc mockMvc;
 
     @Test
     public void showCertificates_shouldReturnFoundCertificates() throws Exception {
