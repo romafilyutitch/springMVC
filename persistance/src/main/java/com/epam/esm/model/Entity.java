@@ -1,8 +1,10 @@
 package com.epam.esm.model;
 
+import org.springframework.hateoas.RepresentationModel;
+
 import java.util.Objects;
 
-public abstract class Entity {
+public abstract class Entity extends RepresentationModel<Entity> {
     private Long id;
 
     public Entity(Long id) {
