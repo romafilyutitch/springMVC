@@ -10,6 +10,7 @@ repositories {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-jdbc:2.5.5'
+    implementation 'org.springframework.boot:spring-boot-starter-hateoas:2.5.5'
     testImplementation 'org.springframework.boot:spring-boot-starter-test:2.5.5'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.13.0'

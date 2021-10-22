@@ -10,10 +10,16 @@ import com.epam.esm.validation.InvalidCertificateException;
 import com.epam.esm.validation.InvalidTagException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -24,6 +30,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
  * Certificate REST controller.
@@ -50,10 +59,17 @@ public class CertificateController {
      * @param findParams find parameters.
      * @return controller response in JSON format and OK or NOT FOUND status code
      */
-    @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<Certificate>> showCertificates(@RequestParam(required = false) LinkedHashMap<String, String> findParams) {
+    @GetMapping
+    public CollectionModel<Certificate> showCertificates(@RequestParam(required = false) LinkedHashMap<String, String> findParams) throws CertificateNotFoundException, TagNotFoundException {
         List<Certificate> certificates = findParams.isEmpty() ? certificateService.findAll() : certificateService.findAllWithParameters(findParams);
-        return certificates.isEmpty() ? new ResponseEntity<>(HttpStatus.NOT_FOUND) : new ResponseEntity<>(certificates, HttpStatus.OK);
+        for (Certificate certificate : certificates) {
+            if (certificate.getTags().size() > 0) {
+                Link tagsLink = linkTo(methodOn(CertificateController.class).showCertificateTags(certificate.getId())).withRel("tags");
+                certificate.add(tagsLink);
+            }
+        }
+        Link selfLink = linkTo(methodOn(CertificateController.class).showCertificates(findParams)).withSelfRel();
+        return certificates.isEmpty() ? CollectionModel.empty(selfLink) : CollectionModel.of(certificates, selfLink);
     }
 
     /**
@@ -63,9 +79,16 @@ public class CertificateController {
      * @return controller response in JSON format and OK status code
      * @throws CertificateNotFoundException if there is not certificate with passed id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    public ResponseEntity<Certificate> showCertificate(@PathVariable("id") long id) throws CertificateNotFoundException {
-        return new ResponseEntity<>(certificateService.findById(id), HttpStatus.OK);
+    @GetMapping("/{id}")
+    public Certificate showCertificate(@PathVariable("id") long id) throws CertificateNotFoundException, TagNotFoundException {
+        Certificate foundCertificate = certificateService.findById(id);
+        Link selfLink = linkTo(methodOn(CertificateController.class).showCertificate(id)).withSelfRel();
+        foundCertificate.add(selfLink);
+        if (foundCertificate.getTags().size() > 0) {
+            Link tagsLink = linkTo(methodOn(CertificateController.class).showCertificateTags(id)).withRel("tags");
+            foundCertificate.add(tagsLink);
+        }
+        return foundCertificate;
     }
 
     /**
@@ -74,9 +97,17 @@ public class CertificateController {
      * @param certificate certificate that need to be saved
      * @return controller response in JSON format and CREATED status code
      */
-    @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<Certificate> saveCertificate(@RequestBody Certificate certificate) throws InvalidCertificateException {
-        return new ResponseEntity<>(certificateService.save(certificate), HttpStatus.CREATED);
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public Certificate saveCertificate(@RequestBody Certificate certificate) throws InvalidCertificateException, CertificateNotFoundException, TagNotFoundException {
+        Certificate savedCertificate = certificateService.save(certificate);
+        Link selfLink = linkTo(methodOn(CertificateController.class).showCertificate(savedCertificate.getId())).withRel("saved");
+        savedCertificate.add(selfLink);
+        if (savedCertificate.getTags().size() > 0) {
+            Link tagLink = linkTo(methodOn(CertificateController.class).showCertificateTags(savedCertificate.getId())).withRel("tags");
+            savedCertificate.add(tagLink);
+        }
+        return savedCertificate;
     }
 
     /**
@@ -87,9 +118,15 @@ public class CertificateController {
      * @return controller response in JSON format and OK status code
      * @throws CertificateNotFoundException if certificate with passed id not found
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.POST)
-    public ResponseEntity<Certificate> updateCertificate(@PathVariable("id") long id, @RequestBody Certificate certificate) throws CertificateNotFoundException, InvalidCertificateException {
-        return new ResponseEntity<>(certificateService.update(id, certificate), HttpStatus.OK);
+    @PostMapping("/{id}")
+    public Certificate updateCertificate(@PathVariable("id") long id, @RequestBody Certificate certificate) throws CertificateNotFoundException, InvalidCertificateException, TagNotFoundException {
+        Certificate updatedCertificate = certificateService.update(id, certificate);
+        Link selfLink = linkTo(methodOn(CertificateController.class).showCertificate(id)).withSelfRel();
+        if (updatedCertificate.getTags().size() > 0) {
+            Link tagsLink = linkTo(methodOn(CertificateController.class).showCertificateTags(id)).withRel("tags");
+            updatedCertificate.add(tagsLink);
+        }
+        return certificate;
     }
 
     /**
@@ -99,10 +136,10 @@ public class CertificateController {
      * @return NO CONTENT status code
      * @throws CertificateNotFoundException if there is not certificate with passed id
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    public ResponseEntity<?> deleteCertificate(@PathVariable("id") long id) throws CertificateNotFoundException {
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCertificate(@PathVariable("id") long id) throws CertificateNotFoundException {
         certificateService.delete(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /**
@@ -112,15 +149,16 @@ public class CertificateController {
      * @return controller response in JSON format and OK or NOT FOUND status code
      * @throws CertificateNotFoundException if there is not certificate with passed id
      */
-    @RequestMapping(value = "/{id}/tags", method = RequestMethod.GET)
-    public ResponseEntity<List<Tag>> showCertificateTags(@PathVariable("id") long id) throws CertificateNotFoundException {
+    @GetMapping("/{id}/tags")
+    public CollectionModel<Tag> showCertificateTags(@PathVariable("id") long id) throws CertificateNotFoundException, TagNotFoundException {
         Certificate foundCertificate = certificateService.findById(id);
         List<Tag> tags = foundCertificate.getTags();
-        if (tags.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } else {
-            return new ResponseEntity<>(tags, HttpStatus.OK);
+        for (Tag tag : tags) {
+            Link tagLink = linkTo(methodOn(CertificateController.class).showCertificateTag(foundCertificate.getId(), tag.getId())).withRel("tag");
+            tag.add(tagLink);
         }
+        Link selfLink = linkTo(methodOn(CertificateController.class).showCertificateTags(id)).withSelfRel();
+        return tags.isEmpty() ? CollectionModel.empty(selfLink) : CollectionModel.of(tags, selfLink);
     }
 
     /**
@@ -132,9 +170,12 @@ public class CertificateController {
      * @throws CertificateNotFoundException if there is no certificate with passed id
      * @throws TagNotFoundException         if there is not tag with passed id
      */
-    @RequestMapping(value = "/{id}/tags/{tagId}", method = RequestMethod.GET)
-    public ResponseEntity<Tag> showCertificateTag(@PathVariable("id") long id, @PathVariable("tagId") long tagId) throws CertificateNotFoundException, TagNotFoundException {
-        return new ResponseEntity<>(certificateService.findCertificateTag(id, tagId), HttpStatus.OK);
+    @GetMapping("/{id}/tags/{tagId}")
+    public Tag showCertificateTag(@PathVariable("id") long id, @PathVariable("tagId") long tagId) throws CertificateNotFoundException, TagNotFoundException {
+        Tag foundTag = certificateService.findCertificateTag(id, tagId);
+        Link selfLink = linkTo(methodOn(CertificateController.class).showCertificateTag(id, tagId)).withSelfRel();
+        foundTag.add(selfLink);
+        return foundTag;
     }
 
     /**
@@ -145,9 +186,16 @@ public class CertificateController {
      * @return controller response in JSON format and OK status code
      * @throws CertificateNotFoundException if there is no certificate with passed id
      */
-    @RequestMapping(value = "/{id}/tags", method = RequestMethod.POST)
-    public ResponseEntity<Certificate> addTagToCertificate(@PathVariable("id") long id, @RequestBody List<Tag> tags) throws CertificateNotFoundException, InvalidTagException {
-        return new ResponseEntity<>(certificateService.addTags(id, tags), HttpStatus.OK);
+    @PostMapping("/{id}/tags")
+    public Certificate addTagToCertificate(@PathVariable("id") long id, @RequestBody List<Tag> tags) throws CertificateNotFoundException, InvalidTagException, TagNotFoundException {
+        Certificate updatedCertificate = certificateService.addTags(id, tags);
+        Link selfLink = linkTo(methodOn(CertificateController.class).showCertificate(updatedCertificate.getId())).withSelfRel();
+        updatedCertificate.add(selfLink);
+        if (updatedCertificate.getTags().size() > 0) {
+            Link tagsLink = linkTo(methodOn(CertificateController.class).showCertificateTags(id)).withRel("tags");
+            updatedCertificate.add(tagsLink);
+        }
+        return updatedCertificate;
     }
 
     /**
@@ -158,7 +206,7 @@ public class CertificateController {
      * @throws TagNotFoundException         if there is no tag with passed id
      * @throws CertificateNotFoundException if there is no certificate with passed id
      */
-    @RequestMapping(value = "/{id}/tags/{tagId}", method = RequestMethod.DELETE)
+    @DeleteMapping("/{id}/tags/{tagId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCertificateTag(@PathVariable("id") long id, @PathVariable("tagId") long tagId) throws TagNotFoundException, CertificateNotFoundException {
         certificateService.deleteCertificateTag(id, tagId);
