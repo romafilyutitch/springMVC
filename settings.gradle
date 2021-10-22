@@ -1,2 +1,5 @@
-rootProject.name = 'Web'
+rootProject.name = 'Rest'
+include 'persistance'
+include 'service'
+include 'web'
 

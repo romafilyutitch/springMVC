@@ -3,8 +3,8 @@ plugins {
     id 'war'
 }
 
-group 'org.example'
-version '1.0-SNAPSHOT'
+def tomcatWebApps = "D://apache-tomcat-9.0.54/webapps"
+def tomcatBin = "D://apache-tomcat-9.0.54/bin"
 
 repositories {
     mavenCentral()
@@ -13,13 +13,37 @@ repositories {
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
-    implementation 'org.springframework:spring-webmvc:5.3.10'
-    compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
-    testImplementation 'org.springframework:spring-test:5.3.10'
-    implementation group: 'javax.servlet', name: 'jstl', version: '1.2'
-    implementation 'org.hibernate.validator:hibernate-validator:6.2.0.Final'
+    implementation project(':persistance')
+    implementation project(':service')
+    implementation project(':web')
 }
 
 test {
     useJUnitPlatform()
 }
+
+task deployLocal {
+    copy {
+        from "${buildDir}\\libs"
+        into "${tomcatWebApps}"
+        include "Rest.war"
+    }
+}
+deployLocal.dependsOn(war)
+
+task startTomcat(type: Exec) {
+    workingDir "${tomcatBin}"
+    commandLine 'cmd', '/c', 'startup.bat'
+}
+
+startTomcat.dependsOn(deployLocal)
+
+task stopTomcat(type: Exec) {
+    workingDir "${tomcatBin}"
+    commandLine 'cmd', '/c', 'shutdown.bat'
+}
+
+task deleteWar(type: Delete) {
+    delete "${tomcatWebApps}/Rest", "${tomcatWebApps}/Rest.war"
+}
+
