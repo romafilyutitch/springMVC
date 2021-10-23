@@ -32,20 +32,14 @@ public class UserJdbcDao extends AbstractDao<User> {
     @Override
     public List<User> findAll() {
         List<User> allUsers = super.findAll();
-        allUsers.forEach(user -> {
-            List<Order> userOrders = orderDao.findByUserId(user.getId());
-            user.setOrders(userOrders);
-        });
+        allUsers.forEach(this::addOrdersToUser);
         return allUsers;
     }
 
     @Override
     public Optional<User> findById(Long id) {
         Optional<User> optionalUser = super.findById(id);
-        optionalUser.ifPresent(user -> {
-            List<Order> userOrders = orderDao.findByUserId(user.getId());
-            user.setOrders(userOrders);
-        });
+        optionalUser.ifPresent(this::addOrdersToUser);
         return optionalUser;
     }
 
@@ -60,5 +54,10 @@ public class UserJdbcDao extends AbstractDao<User> {
         updateStatement.setString(1, entity.getName());
         updateStatement.setString(2, entity.getSurname());
         updateStatement.setLong(3, entity.getId());
+    }
+
+    private void addOrdersToUser(User user) {
+        List<Order> userOrders = orderDao.findByUserId(user.getId());
+        user.setOrders(userOrders);
     }
 }
