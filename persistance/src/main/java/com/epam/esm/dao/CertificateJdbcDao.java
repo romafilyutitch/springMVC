@@ -37,11 +37,9 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         LocalDateTime lastUpdateDate = rs.getObject("gift_certificate.last_update_date", LocalDateTime.class);
         return new Certificate(id, name, description, price, duration, createDate, lastUpdateDate);
     };
-    private static final String FIND_CERTIFICATE_TAG_BY_CERTIFICATE_ID = "select id, certificate_id, tag_id from certificate_tag where certificate_tag.certificate_id = ?";
     private static final String FIND_CERTIFICATE_TAG_BY_CERTIFICATE_ID_AND_TAG_ID = "select id, certificate_id, tag_id from certificate_tag where certificate_id = ? and tag_id = ?";
     private static final String SAVE_CERTIFICATE_TAG = "insert into certificate_tag (certificate_id, tag_id) values (?, ?)";
-    private static final String TAG_ID_COLUMN = "tag_id";
-
+    private static final String FIND_CERTIFICATE_BY_ORDER_ID = "select id, name, description, price, duration, create_date, last_update_date where order_id = ?";
     private final FindCertificatesSqlBuilder findCertificatesSqlBuilder;
     private final TagDao tagDao;
 
@@ -140,6 +138,13 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         return findById(updatedCertificate.getId()).orElseThrow(DaoException::new);
     }
 
+    @Override
+    public List<Certificate> findByOrderId(Long orderId) {
+        List<Certificate> foundCertificates = template.query(FIND_CERTIFICATE_BY_ORDER_ID, MAPPER, orderId);
+        foundCertificates.forEach(this::addTagsToCertificate);
+        return foundCertificates;
+    }
+
     /**
      * Sets certificate fields values to PreparedStatement to right save object values in
      * database certificate table
@@ -178,8 +183,8 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     }
 
     private void addTagsToCertificate(Certificate certificate) {
-        List<Long> certificateTagsIds = template.query(FIND_CERTIFICATE_TAG_BY_CERTIFICATE_ID, (rs, rowNum) -> rs.getLong(TAG_ID_COLUMN), certificate.getId());
-        certificateTagsIds.forEach(tagId -> certificate.getTags().add(tagDao.findById(tagId).orElseThrow(DaoException::new)));
+        List<Tag> certificateTags = tagDao.findByCertificateId(certificate.getId());
+        certificate.setTags(certificateTags);
     }
 
     private void saveAndLinkTagsWithCertificate(Certificate entity) {

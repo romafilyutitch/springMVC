@@ -1,18 +1,18 @@
 package com.epam.esm.model;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 public class Order extends Entity {
     private double cost;
     private LocalDateTime orderDate;
-    private Certificate certificate;
+    private List<Certificate> certificates;
 
-    public Order(Long id, double cost, LocalDateTime orderDate, Certificate certificate) {
+    public Order(Long id, double cost, LocalDateTime orderDate) {
         super(id);
         this.cost = cost;
         this.orderDate = orderDate;
-        this.certificate = certificate;
     }
 
     public double getCost() {
@@ -31,13 +31,14 @@ public class Order extends Entity {
         this.orderDate = orderDate;
     }
 
-    public Certificate getCertificate() {
-        return certificate;
+    public List<Certificate> getCertificates() {
+        return certificates;
     }
 
-    public void setCertificate(Certificate certificate) {
-        this.certificate = certificate;
+    public void setCertificates(List<Certificate> certificates) {
+        this.certificates = certificates;
     }
+
 
     @Override
     public boolean equals(Object o) {
@@ -45,12 +46,12 @@ public class Order extends Entity {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         Order order = (Order) o;
-        return Double.compare(order.cost, cost) == 0 && Objects.equals(orderDate, order.orderDate) && Objects.equals(certificate, order.certificate);
+        return Double.compare(order.cost, cost) == 0 && Objects.equals(orderDate, order.orderDate) && Objects.equals(certificates, order.certificates);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), cost, orderDate, certificate);
+        return Objects.hash(super.hashCode(), cost, orderDate, certificates);
     }
 
     @Override
@@ -58,7 +59,7 @@ public class Order extends Entity {
         return "Order{" +
                 "cost=" + cost +
                 ", orderDate=" + orderDate +
-                ", certificate=" + certificate +
+                ", certificates=" + certificates +
                 '}';
     }
 }

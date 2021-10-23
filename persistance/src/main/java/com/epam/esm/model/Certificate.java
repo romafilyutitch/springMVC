@@ -38,6 +38,10 @@ public class Certificate extends Entity {
         this(null, name, description, price, duration, createDate, lastUpdateDate);
     }
 
+    public Certificate(Long id) {
+        super(id);
+    }
+
     public Certificate() {
         super(null);
     }

@@ -2,6 +2,7 @@ package com.epam.esm.dao;
 
 import com.epam.esm.model.Tag;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -18,4 +19,6 @@ public interface TagDao extends Dao<Tag> {
      * or empty tag otherwise
      */
     Optional<Tag> findByName(String name);
+
+    List<Tag> findByCertificateId(Long userId);
 }

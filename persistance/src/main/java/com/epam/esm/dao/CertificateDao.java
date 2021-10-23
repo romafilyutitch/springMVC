@@ -12,4 +12,6 @@ import java.util.List;
 public interface CertificateDao extends Dao<Certificate> {
 
     List<Certificate> findWithParameters(LinkedHashMap<String, String> findParameters);
+
+    List<Certificate> findByOrderId(Long orderId);
 }
