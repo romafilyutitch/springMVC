@@ -23,8 +23,8 @@ public class TagJdbcDao extends AbstractDao<Tag> implements TagDao {
         String name = rs.getString("name");
         return new Tag(id, name);
     };
-
     private static final String FIND_BY_NAME_SQL = "select id, name from tag where name = ?";
+    private static final String FIND_TAGS_BY_USER_ID = "select tag.id, tag.name from tag left join certificate_tag on certificate_tag.id = tag.id where certificate_tag.certificate_id = ?";
 
     public TagJdbcDao() {
         super(TABLE_NAME, COLUMNS, MAPPER);
@@ -67,5 +67,10 @@ public class TagJdbcDao extends AbstractDao<Tag> implements TagDao {
     public Optional<Tag> findByName(String name) {
         List<Tag> foundTag = template.query(FIND_BY_NAME_SQL, MAPPER, name);
         return foundTag.isEmpty() ? Optional.empty() : Optional.of(foundTag.get(0));
+    }
+
+    @Override
+    public List<Tag> findByCertificateId(Long userId) {
+        return template.query(FIND_TAGS_BY_USER_ID, MAPPER, userId);
     }
 }
