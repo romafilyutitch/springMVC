@@ -5,6 +5,7 @@ import com.epam.esm.model.Order;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -14,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Component
+@Repository
 public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
     private static final String TABLE_NAME = "certificate_order";
     private static final List<String> COLUMNS = Arrays.asList("cost", "date");
@@ -24,7 +25,7 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
         LocalDateTime date = rs.getObject("date", LocalDateTime.class);
         return new Order(id, cost, date);
     };
-    private static final String FIND_ORDERS_BY_USER_ID_SQL = "select id, cost, date, certificate_id from certificate_order where user_id = ?";
+    private static final String FIND_ORDERS_BY_USER_ID_SQL = "select id, cost, date from certificate_order where user_id = ?";
 
     private final CertificateDao certificateDao;
 

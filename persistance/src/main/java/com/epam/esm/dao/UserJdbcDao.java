@@ -4,6 +4,8 @@ import com.epam.esm.model.Order;
 import com.epam.esm.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -11,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public class UserJdbcDao extends AbstractDao<User> {
     private static final String TABLE_NAME = "user";
     private static final List<String> COLUMNS = Arrays.asList("name", "surname");
