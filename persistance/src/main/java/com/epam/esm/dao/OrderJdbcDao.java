@@ -85,7 +85,7 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
 
     @Override
     public Optional<Order> findByCertificateId(Long certificateId) {
-        List<Order> orders = template.query("select cost, date, certificate_id from certificate_order where certificate_id = ?", MAPPER, certificateId);
+        List<Order> orders = template.query("select id, cost, date, certificate_id from certificate_order where certificate_id = ?", MAPPER, certificateId);
         orders.forEach(this::addCertificateToOrder);
         return orders.isEmpty() ? Optional.empty() : Optional.of(orders.get(0));
     }

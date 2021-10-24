@@ -220,8 +220,8 @@ public class CertificateController {
     }
 
     @GetMapping("/{id}/order")
-    public Order showCertificateOrder(@PathVariable Long certificateId) {
-        return orderService.findCertificateOrder(certificateId);
+    public Order showCertificateOrder(@PathVariable Long id) {
+        return orderService.findCertificateOrder(id);
     }
 
     @PostMapping("/{id}/order")
