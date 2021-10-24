@@ -5,6 +5,7 @@ import com.epam.esm.dao.OrderDao;
 import com.epam.esm.dao.UserDao;
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Order;
+import com.epam.esm.model.Tag;
 import com.epam.esm.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -50,5 +51,15 @@ public class UserRestService implements UserService {
         Order savedOrder = orderDao.makeUserOrder(user.getId(), order);
         Optional<User> foundUser = userDao.findById(userId);
         return foundUser.get();
+    }
+
+    @Override
+    public User findRichestUser() {
+        return userDao.findRichestUser();
+    }
+
+    @Override
+    public Tag findRichestUserPopularTag() {
+        return userDao.findRichestUserPopularTag();
     }
 }
