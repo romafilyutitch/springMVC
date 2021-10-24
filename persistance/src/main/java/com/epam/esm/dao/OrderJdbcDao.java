@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -71,7 +72,7 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
     public Order makeUserOrder(Long userId, Order order) {
         GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
         template.update(creator -> {
-            PreparedStatement saveStatement = creator.prepareStatement("insert into certificate_order (cost, certificate_id, user_id) values (?, ?, ?)");
+            PreparedStatement saveStatement = creator.prepareStatement("insert into certificate_order (cost, certificate_id, user_id) values (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             saveStatement.setDouble(1, order.getCost());
             saveStatement.setLong(2, order.getCertificate().getId());
             saveStatement.setLong(3, userId);
@@ -80,6 +81,13 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
         long id = generatedKeyHolder.getKey().longValue();
         order.setId(id);
         return order;
+    }
+
+    @Override
+    public Optional<Order> findByCertificateId(Long certificateId) {
+        List<Order> orders = template.query("select cost, date, certificate_id from certificate_order where certificate_id = ?", MAPPER, certificateId);
+        orders.forEach(this::addCertificateToOrder);
+        return orders.isEmpty() ? Optional.empty() : Optional.of(orders.get(0));
     }
 
     @Override

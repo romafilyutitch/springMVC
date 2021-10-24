@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class UserJdbcDao extends AbstractDao<User> {
+public class UserJdbcDao extends AbstractDao<User> implements UserDao {
     private static final String TABLE_NAME = "user";
     private static final List<String> COLUMNS = Arrays.asList("name", "surname");
     private static final RowMapper<User> MAPPER = (rs, rowNum) -> {
@@ -43,6 +43,13 @@ public class UserJdbcDao extends AbstractDao<User> {
         Optional<User> optionalUser = super.findById(id);
         optionalUser.ifPresent(this::addOrdersToUser);
         return optionalUser;
+    }
+
+    @Override
+    public Optional<User> findByName(String name) {
+        List<User> users = template.query("select id, name, surname from user where name = ?", MAPPER, name);
+        users.forEach(this::addOrdersToUser);
+        return users.isEmpty() ? Optional.empty() : Optional.of(users.get(0));
     }
 
     @Override

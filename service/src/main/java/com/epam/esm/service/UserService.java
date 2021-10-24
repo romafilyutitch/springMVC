@@ -10,5 +10,7 @@ public interface UserService {
 
     Optional<User> findById(Long id);
 
+    User findByName(String name);
+
     User makeOrder(Long userId, Long certificateId);
 }

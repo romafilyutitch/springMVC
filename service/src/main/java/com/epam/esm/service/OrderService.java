@@ -11,4 +11,8 @@ public interface OrderService {
    List<Order> findAll();
 
    Order findById(Long id);
+
+   Order findCertificateOrder(Long certificateId);
+
+   Order makeOrder(Long id, Long userId);
 }

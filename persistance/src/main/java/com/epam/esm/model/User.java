@@ -14,6 +14,14 @@ public class User extends Entity {
         this.surname = surname;
     }
 
+    public User(Long id) {
+        super(id);
+    }
+
+    public User() {
+        super(null);
+    }
+
     public String getName() {
         return name;
     }

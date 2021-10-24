@@ -2,10 +2,14 @@ package com.epam.esm;
 
 import com.epam.esm.Error;
 import com.epam.esm.model.Certificate;
+import com.epam.esm.model.Order;
 import com.epam.esm.model.Tag;
+import com.epam.esm.model.User;
 import com.epam.esm.service.CertificateNotFoundException;
 import com.epam.esm.service.CertificateService;
+import com.epam.esm.service.OrderService;
 import com.epam.esm.service.TagNotFoundException;
+import com.epam.esm.service.UserService;
 import com.epam.esm.validation.InvalidCertificateException;
 import com.epam.esm.validation.InvalidTagException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,11 +47,14 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequestMapping("/certificates")
 public class CertificateController {
     private final CertificateService certificateService;
+    private final OrderService orderService;
+    private final UserService userService;
     private final MessageSource messageSource;
 
-    @Autowired
-    public CertificateController(CertificateService certificateService, MessageSource messageSource) {
+    public CertificateController(CertificateService certificateService, OrderService orderService, UserService userService, MessageSource messageSource) {
         this.certificateService = certificateService;
+        this.orderService = orderService;
+        this.userService = userService;
         this.messageSource = messageSource;
     }
 
@@ -210,6 +217,18 @@ public class CertificateController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCertificateTag(@PathVariable("id") long id, @PathVariable("tagId") long tagId) throws TagNotFoundException, CertificateNotFoundException {
         certificateService.deleteCertificateTag(id, tagId);
+    }
+
+    @GetMapping("/{id}/order")
+    public Order showCertificateOrder(@PathVariable Long certificateId) {
+        return orderService.findCertificateOrder(certificateId);
+    }
+
+    @PostMapping("/{id}/order")
+    public Order makeOrder(@PathVariable Long id, @RequestBody User user) {
+        System.out.println(user.getName());
+        User userServiceByName = userService.findByName(user.getName());
+        return orderService.makeOrder(id, userServiceByName.getId());
     }
 
     /**
