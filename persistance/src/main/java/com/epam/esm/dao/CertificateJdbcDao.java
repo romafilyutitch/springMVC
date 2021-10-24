@@ -139,10 +139,10 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     }
 
     @Override
-    public List<Certificate> findByOrderId(Long orderId) {
+    public Optional<Certificate> findByOrderId(Long orderId) {
         List<Certificate> foundCertificates = template.query(FIND_CERTIFICATE_BY_ORDER_ID, MAPPER, orderId);
         foundCertificates.forEach(this::addTagsToCertificate);
-        return foundCertificates;
+        return foundCertificates.isEmpty() ? Optional.empty() : Optional.of(foundCertificates.get(0));
     }
 
     /**

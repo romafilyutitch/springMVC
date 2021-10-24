@@ -4,7 +4,6 @@ import com.epam.esm.model.Order;
 import com.epam.esm.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;

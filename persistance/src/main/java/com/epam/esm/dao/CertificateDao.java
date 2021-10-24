@@ -4,6 +4,7 @@ import com.epam.esm.model.Certificate;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Dao layer interface that defines additional operations
@@ -13,5 +14,5 @@ public interface CertificateDao extends Dao<Certificate> {
 
     List<Certificate> findWithParameters(LinkedHashMap<String, String> findParameters);
 
-    List<Certificate> findByOrderId(Long orderId);
+    Optional<Certificate> findByOrderId(Long orderId);
 }
