@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @Repository
 public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
     private static final String TABLE_NAME = "certificate_order";
-    private static final List<String> COLUMNS = Arrays.asList("cost", "date");
+    private static final List<String> COLUMNS = Arrays.asList("cost", "date", "user_id", "certificate_id");
     private static final RowMapper<Order> MAPPER = (rs, rowNum) -> {
         long id = rs.getLong("id");
         double cost = rs.getDouble("cost");
