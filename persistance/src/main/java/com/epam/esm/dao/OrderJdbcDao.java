@@ -4,6 +4,7 @@ import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Order;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
@@ -64,6 +65,21 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
         List<Order> foundOrders = template.query(FIND_ORDERS_BY_USER_ID_SQL, MAPPER, userId);
         foundOrders.forEach(this::addCertificateToOrder);
         return foundOrders;
+    }
+
+    @Override
+    public Order makeUserOrder(Long userId, Order order) {
+        GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
+        template.update(creator -> {
+            PreparedStatement saveStatement = creator.prepareStatement("insert into certificate_order (cost, certificate_id, user_id) values (?, ?, ?)");
+            saveStatement.setDouble(1, order.getCost());
+            saveStatement.setLong(2, order.getCertificate().getId());
+            saveStatement.setLong(3, userId);
+            return saveStatement;
+        }, generatedKeyHolder);
+        long id = generatedKeyHolder.getKey().longValue();
+        order.setId(id);
+        return order;
     }
 
     @Override

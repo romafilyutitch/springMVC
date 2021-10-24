@@ -36,8 +36,14 @@ public class UserRestService implements UserService {
     }
 
     @Override
-    public User makeOrder(Long certificateId) {
-        return null;
+    public User makeOrder(Long userId, Long certificateId) {
+        Optional<Certificate> optionalCertificate = certificateDao.findById(certificateId);
+        Certificate certificate = optionalCertificate.get();
+        Optional<User> optionalUser = userJdbcDao.findById(userId);
+        User user = optionalUser.get();
+        Order order = new Order(certificate.getPrice(), certificate);
+        Order savedOrder = orderDao.makeUserOrder(user.getId(), order);
+        Optional<User> foundUser = userJdbcDao.findById(userId);
+        return foundUser.get();
     }
-
 }

@@ -10,5 +10,5 @@ public interface UserService {
 
     Optional<User> findById(Long id);
 
-    User makeOrder(Long certificateId);
+    User makeOrder(Long userId, Long certificateId);
 }
