@@ -5,21 +5,28 @@ import java.util.List;
 import java.util.Objects;
 
 public class Order extends Entity {
-    private double cost;
+    private Double cost;
     private LocalDateTime orderDate;
-    private List<Certificate> certificates;
+    private Certificate certificate;
 
-    public Order(Long id, double cost, LocalDateTime orderDate) {
+    public Order(Double cost, Certificate certificate) {
+        super(null);
+        this.cost = cost;
+        this.certificate = certificate;
+    }
+
+    public Order(Long id, Double cost, LocalDateTime orderDate, Certificate certificate) {
         super(id);
         this.cost = cost;
         this.orderDate = orderDate;
+        this.certificate = certificate;
     }
 
-    public double getCost() {
+    public Double getCost() {
         return cost;
     }
 
-    public void setCost(double cost) {
+    public void setCost(Double cost) {
         this.cost = cost;
     }
 
@@ -31,14 +38,13 @@ public class Order extends Entity {
         this.orderDate = orderDate;
     }
 
-    public List<Certificate> getCertificates() {
-        return certificates;
+    public Certificate getCertificate() {
+        return certificate;
     }
 
-    public void setCertificates(List<Certificate> certificates) {
-        this.certificates = certificates;
+    public void setCertificate(Certificate certificate) {
+        this.certificate = certificate;
     }
-
 
     @Override
     public boolean equals(Object o) {
@@ -46,12 +52,12 @@ public class Order extends Entity {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         Order order = (Order) o;
-        return Double.compare(order.cost, cost) == 0 && Objects.equals(orderDate, order.orderDate) && Objects.equals(certificates, order.certificates);
+        return Objects.equals(cost, order.cost) && Objects.equals(orderDate, order.orderDate) && Objects.equals(certificate, order.certificate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), cost, orderDate, certificates);
+        return Objects.hash(super.hashCode(), cost, orderDate, certificate);
     }
 
     @Override
@@ -59,7 +65,7 @@ public class Order extends Entity {
         return "Order{" +
                 "cost=" + cost +
                 ", orderDate=" + orderDate +
-                ", certificates=" + certificates +
+                ", certificate=" + certificate +
                 '}';
     }
 }

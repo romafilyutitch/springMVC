@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface OrderDao extends Dao<Order> {
     List<Order> findByUserId(Long userId);
+
+    Order makeUserOrder(Long userId, Order order);
 }

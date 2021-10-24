@@ -39,7 +39,7 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     };
     private static final String FIND_CERTIFICATE_TAG_BY_CERTIFICATE_ID_AND_TAG_ID = "select id, certificate_id, tag_id from certificate_tag where certificate_id = ? and tag_id = ?";
     private static final String SAVE_CERTIFICATE_TAG = "insert into certificate_tag (certificate_id, tag_id) values (?, ?)";
-    private static final String FIND_CERTIFICATE_BY_ORDER_ID = "select id, name, description, price, duration, create_date, last_update_date where order_id = ?";
+    private static final String FIND_CERTIFICATE_BY_ORDER_ID = "select id, name, description, price, duration, create_date, last_update_date from gift_certificate where order_id = ?";
     private final FindCertificatesSqlBuilder findCertificatesSqlBuilder;
     private final TagDao tagDao;
 
@@ -139,10 +139,10 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     }
 
     @Override
-    public List<Certificate> findByOrderId(Long orderId) {
+    public Optional<Certificate> findByOrderId(Long orderId) {
         List<Certificate> foundCertificates = template.query(FIND_CERTIFICATE_BY_ORDER_ID, MAPPER, orderId);
         foundCertificates.forEach(this::addTagsToCertificate);
-        return foundCertificates;
+        return foundCertificates.isEmpty() ? Optional.empty() : Optional.of(foundCertificates.get(0));
     }
 
     /**
