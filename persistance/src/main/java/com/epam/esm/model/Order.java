@@ -15,10 +15,11 @@ public class Order extends Entity {
         this.certificate = certificate;
     }
 
-    public Order(Long id, Double cost, LocalDateTime orderDate) {
+    public Order(Long id, Double cost, LocalDateTime orderDate, Certificate certificate) {
         super(id);
         this.cost = cost;
         this.orderDate = orderDate;
+        this.certificate = certificate;
     }
 
     public Double getCost() {

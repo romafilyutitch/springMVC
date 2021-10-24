@@ -22,9 +22,11 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
         long id = rs.getLong("id");
         double cost = rs.getDouble("cost");
         LocalDateTime date = rs.getObject("date", LocalDateTime.class);
-        return new Order(id, cost, date);
+        long certificateId = rs.getLong("certificate_id");
+        Certificate certificate = new Certificate(certificateId);
+        return new Order(id, cost, date, certificate);
     };
-    private static final String FIND_ORDERS_BY_USER_ID_SQL = "select id, cost, date from certificate_order where user_id = ?";
+    private static final String FIND_ORDERS_BY_USER_ID_SQL = "select id, cost, date, certificate_id from certificate_order where user_id = ?";
 
     private final CertificateDao certificateDao;
 
@@ -78,7 +80,7 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
     }
 
     private void addCertificateToOrder(Order order) {
-        Optional<Certificate> orderCertificates = certificateDao.findByOrderId(order.getId());
-        order.setCertificate(orderCertificates.get());
+        Optional<Certificate> optionalCertificate = certificateDao.findById(order.getCertificate().getId());
+        order.setCertificate(optionalCertificate.orElseThrow(DaoException::new));
     }
 }
