@@ -22,7 +22,7 @@ public class OrderRestService implements OrderService {
     }
 
     @Override
-    public List<Order> findAll(int page) {
+    public List<Order> findAll(long page) {
         return orderDao.findAll(page);
     }
 
@@ -42,5 +42,15 @@ public class OrderRestService implements OrderService {
         Certificate certificate = optionalCertificate.get();
         Order order = new Order(certificate.getPrice(), certificate);
         return orderDao.makeUserOrder(userId, order);
+    }
+
+    @Override
+    public long getTotalElements() {
+        return orderDao.getTotalElements();
+    }
+
+    @Override
+    public long getTotalPages() {
+        return orderDao.getTotalPages();
     }
 }

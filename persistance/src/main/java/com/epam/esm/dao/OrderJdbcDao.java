@@ -39,7 +39,7 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
     }
 
     @Override
-    public List<Order> findAll(int page) {
+    public List<Order> findAll(long page) {
         List<Order> allOrders = super.findAll(page);
         allOrders.forEach(this::addCertificateToOrder);
         return allOrders;

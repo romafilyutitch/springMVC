@@ -8,11 +8,15 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 public interface OrderService {
-   List<Order> findAll(int page);
+   List<Order> findAll(long page);
 
    Order findById(Long id);
 
    Order findCertificateOrder(Long certificateId);
 
    Order makeOrder(Long id, Long userId);
+
+   long getTotalElements();
+
+   long getTotalPages();
 }

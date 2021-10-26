@@ -19,7 +19,7 @@ public interface Dao<T extends Entity> {
      *
      * @return list of entities from database
      */
-    List<T> findAll(int page);
+    List<T> findAll(long page);
 
     /**
      * Finds and returns entity that have passed id

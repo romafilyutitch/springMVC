@@ -66,7 +66,7 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
      * @return list of all entities from database table
      */
     @Override
-    public List<T> findAll(int page) {
+    public List<T> findAll(long page) {
         return template.query(findAllSql, rowMapper, (5 * page) - 5);
     }
 
