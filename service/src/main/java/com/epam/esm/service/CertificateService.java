@@ -102,9 +102,13 @@ public interface CertificateService {
      */
     Tag findCertificateTag(Long certificateId, Long tagId) throws CertificateNotFoundException, TagNotFoundException;
 
-    int getPagesAmount();
-
     List<Tag> findCertificateTags(Certificate foundCertificate, int page);
 
-    int getTagsPagesAmount(Certificate certificate);
+    int getCertificateTagsTotalPages(Certificate certificate);
+
+    long getTotalElements();
+
+    long getTotalPages();
+
+    long getCertificateTagsTotalElements(Certificate certificate);
 }

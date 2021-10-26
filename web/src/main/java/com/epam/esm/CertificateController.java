@@ -14,6 +14,7 @@ import com.epam.esm.validation.InvalidTagException;
 import org.springframework.context.MessageSource;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -64,8 +65,8 @@ public class CertificateController {
      * @return controller response in JSON format and OK or NOT FOUND status code
      */
     @GetMapping
-    public CollectionModel<Certificate> showCertificates(
-            @RequestParam(value = "page", defaultValue = "1") int page,
+    public PagedModel<Certificate> showCertificates(
+            @RequestParam(value = "page", defaultValue = "1") long page,
             @RequestParam(required = false) LinkedHashMap<String, String> findParams) throws CertificateNotFoundException, TagNotFoundException {
         List<Certificate> certificates = findParams.isEmpty() ? certificateService.findAll() : certificateService.findAllWithParameters(findParams);
         findParams.remove("page");
@@ -80,7 +81,7 @@ public class CertificateController {
         ArrayList<Link> links = new ArrayList<>();
         Link selfLink = linkTo(methodOn(CertificateController.class).showCertificates(page, findParams)).withSelfRel();
         Link firstPageLink = linkTo(methodOn(CertificateController.class).showCertificates(1, findParams)).withRel("firstPage");
-        Link lastPageLink = linkTo(methodOn(CertificateController.class).showCertificates(certificateService.getPagesAmount(), findParams)).withRel("lastPage");
+        Link lastPageLink = linkTo(methodOn(CertificateController.class).showCertificates(certificateService.getTotalPages(), findParams)).withRel("lastPage");
         Link nextPageLink = linkTo(methodOn(CertificateController.class).showCertificates(page + 1, findParams)).withRel("nextPage");
         Link previousPageLink = linkTo(methodOn(CertificateController.class).showCertificates(page - 1, findParams)).withRel("previousPage");
         links.add(selfLink);
@@ -90,10 +91,11 @@ public class CertificateController {
         links.add(previousPageLink);
         if (page == 1) {
             links.remove(previousPageLink);
-        } else if (page == certificateService.getPagesAmount()) {
+        } else if (page == certificateService.getTotalPages()) {
             links.remove(nextPageLink);
         }
-        return certificates.isEmpty() ? CollectionModel.empty(selfLink) : CollectionModel.of(certificates, links);
+        PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(certificates.size(), page, certificateService.getTotalElements(), certificateService.getTotalPages());
+        return certificates.isEmpty() ? PagedModel.empty(metadata) : PagedModel.of(certificates, metadata, links);
     }
 
     /**
@@ -174,7 +176,7 @@ public class CertificateController {
      * @throws CertificateNotFoundException if there is not certificate with passed id
      */
     @GetMapping("/{id}/tags")
-    public CollectionModel<Tag> showCertificateTags(@PathVariable("id") long id, @RequestParam(defaultValue = "1") int page) throws CertificateNotFoundException, TagNotFoundException {
+    public PagedModel<Tag> showCertificateTags(@PathVariable("id") long id, @RequestParam(defaultValue = "1") int page) throws CertificateNotFoundException, TagNotFoundException {
         Certificate foundCertificate = certificateService.findById(id);
         List<Tag> tags = certificateService.findCertificateTags(foundCertificate, page);
         for (Tag tag : tags) {
@@ -183,7 +185,7 @@ public class CertificateController {
         }
         Link selfLink = linkTo(methodOn(CertificateController.class).showCertificateTags(id, page)).withSelfRel();
         Link firstPage = linkTo(methodOn(CertificateController.class).showCertificateTags(id, 1)).withRel("firstPage");
-        Link lastPage = linkTo(methodOn(CertificateController.class).showCertificateTags(id, certificateService.getTagsPagesAmount(foundCertificate))).withRel("lastPage");
+        Link lastPage = linkTo(methodOn(CertificateController.class).showCertificateTags(id, certificateService.getCertificateTagsTotalPages(foundCertificate))).withRel("lastPage");
         Link previousPage = linkTo(methodOn(CertificateController.class).showCertificateTags(id, page - 1)).withRel("previousPage");
         Link nextPage = linkTo(methodOn(CertificateController.class).showCertificateTags(id, page + 1)).withRel("nextPage");
         List<Link> links = new ArrayList<>();
@@ -194,10 +196,11 @@ public class CertificateController {
         links.add(nextPage);
         if (page == 1) {
             links.remove(previousPage);
-        } else if (page == certificateService.getTagsPagesAmount(foundCertificate)) {
+        } else if (page == certificateService.getCertificateTagsTotalPages(foundCertificate)) {
             links.remove(nextPage);
         }
-        return tags.isEmpty() ? CollectionModel.empty(selfLink) : CollectionModel.of(tags, links);
+        PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(tags.size(), page, certificateService.getCertificateTagsTotalElements(foundCertificate), certificateService.getCertificateTagsTotalPages(foundCertificate));
+        return tags.isEmpty() ? PagedModel.empty(metadata) : PagedModel.of(tags, metadata);
     }
 
     /**

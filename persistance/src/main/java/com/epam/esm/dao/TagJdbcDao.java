@@ -1,5 +1,6 @@
 package com.epam.esm.dao;
 
+import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -80,9 +81,14 @@ public class TagJdbcDao extends AbstractDao<Tag> implements TagDao {
     }
 
     @Override
-    public int findCertificateTagsPagesAmount(Long certificateId) {
+    public int getCertificateTagsTotalPages(Long certificateId) {
         Integer rows = template.queryForObject("select count(*) from tag left join certificate_tag on certificate_tag.tag_id = tag.id where certificate_tag.certificate_id = ?",
                 (rs, rowNum) -> rs.getInt("count(*)"), certificateId);
-        return (rows / PAGE_SIZE) + 1;
+        return (rows / ROWS_PER_PAGE) + 1;
+    }
+
+    @Override
+    public long getCertificateTagsTotalElements(Certificate certificate) {
+        return template.queryForObject("select count(*) from tag left join certificate_tag on certificate_tag.tag_id = tag.id where certificate_tag.certificate_id = ?", (rs, rowNum) -> rs.getLong("count(*)"), certificate.getId());
     }
 }

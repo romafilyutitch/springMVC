@@ -243,17 +243,27 @@ public class CertificateRestService implements CertificateService {
     }
 
     @Override
-    public int getPagesAmount() {
-        return certificateDao.getPagesAmount();
-    }
-
-    @Override
     public List<Tag> findCertificateTags(Certificate foundCertificate, int page) {
         return tagDao.findByCertificateId(foundCertificate.getId(), page);
     }
 
     @Override
-    public int getTagsPagesAmount(Certificate certificate) {
-        return tagDao.findCertificateTagsPagesAmount(certificate.getId());
+    public int getCertificateTagsTotalPages(Certificate certificate) {
+        return tagDao.getCertificateTagsTotalPages(certificate.getId());
+    }
+
+    @Override
+    public long getCertificateTagsTotalElements(Certificate certificate) {
+        return tagDao.getCertificateTagsTotalElements(certificate);
+    }
+
+    @Override
+    public long getTotalElements() {
+        return certificateDao.getTotalElements();
+    }
+
+    @Override
+    public long getTotalPages() {
+        return certificateDao.getTotalPages();
     }
 }

@@ -53,9 +53,7 @@ public interface Dao<T extends Entity> {
      */
     void delete(Long id);
 
-    int getPagesAmount();
+    long getTotalElements();
 
-    int getCount();
-
-    int getPageSize();
+    long getTotalPages();
 }

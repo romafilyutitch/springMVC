@@ -37,7 +37,7 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
     private static final String QUESTION_MARK = "?";
     private static final String EQUALS_MARK = "=";
 
-    protected static final int PAGE_SIZE = 5;
+    protected static final int ROWS_PER_PAGE = 5;
     protected final String tableName;
     protected final String findAllSql;
     protected final String findByIdSql;
@@ -125,20 +125,14 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
     }
 
     @Override
-    public int getPagesAmount() {
-        Integer rows = template.queryForObject(String.format("select count(*) from %s", tableName), (rs, rowNum) -> rs.getInt("count(*)"));
-        return (rows / PAGE_SIZE) + 1;
+    public long getTotalPages() {
+        Long rows = template.queryForObject(String.format("select count(*) from %s", tableName), (rs, rowNum) -> rs.getLong("count(*)"));
+        return (rows / ROWS_PER_PAGE) + 1;
     }
 
     @Override
-    public int getCount() {
-        List<Integer> query = template.query(String.format("select count(*) from %s", tableName), (rs, rowNum) -> rs.getInt("count(*)"));
-        return query.get(0);
-    }
-
-    @Override
-    public int getPageSize() {
-        return PAGE_SIZE;
+    public long getTotalElements() {
+        return template.queryForObject(String.format("select count(*) from %s", tableName), (rs, rowNum) -> rs.getLong("count(*)"));
     }
 
     /**
