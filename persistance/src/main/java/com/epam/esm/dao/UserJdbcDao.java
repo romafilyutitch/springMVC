@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -79,6 +80,26 @@ public class UserJdbcDao extends AbstractDao<User> implements UserDao {
             String name = rs.getString("tag.name");
             return new Tag(id, name);
         });
+    }
+
+    @Override
+    public List<Order> findUserOrders(Long userId, long page) {
+        template.query("select order.id, order.cost, order.date where order.user_id = ?", (rs, rowNum) -> {
+            long id = rs.getLong("order.id");
+            double cost = rs.getDouble("order.cost");
+            LocalDateTime dateTime = rs.getObject("order.date", LocalDateTime.class);
+            return new Order(id, cost, dateTime);
+        })
+    }
+
+    @Override
+    public long findUserOrdersTotalPages() {
+        return 0;
+    }
+
+    @Override
+    public long findUserOrdersTotalElements() {
+        return 0;
     }
 
     @Override
