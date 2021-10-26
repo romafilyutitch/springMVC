@@ -2,6 +2,7 @@ package com.epam.esm.service;
 
 import com.epam.esm.dao.OrderDao;
 import com.epam.esm.model.Order;
+import com.epam.esm.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,4 +20,10 @@ public interface OrderService {
    long getTotalElements();
 
    long getTotalPages();
+
+   List<Order> findUserOrders(User user, long page);
+
+   long getUserOrdersTotalPages(User user);
+
+   long getUserOrdersTotalElements(User user);
 }

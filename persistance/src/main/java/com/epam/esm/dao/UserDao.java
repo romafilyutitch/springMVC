@@ -14,9 +14,4 @@ public interface UserDao extends Dao<User> {
 
     Tag findRichestUserPopularTag();
 
-    List<Order> findUserOrders(Long userId, long page);
-
-    long findUserOrdersTotalPages();
-
-    long findUserOrdersTotalElements();
 }

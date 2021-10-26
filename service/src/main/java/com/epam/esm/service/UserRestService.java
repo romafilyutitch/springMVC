@@ -72,19 +72,4 @@ public class UserRestService implements UserService {
     public long getTotalPages() {
         return userDao.getTotalPages();
     }
-
-    @Override
-    public List<Order> findUserOrders(User user, long page) {
-        return orderDao.findByUserId(user.getId(), page);
-    }
-
-    @Override
-    public long getUserOrdersTotalPages(User user) {
-        return orderDao.findUserOrdersTotalPages(user.getId());
-    }
-
-    @Override
-    public long getUsersOrdersTotalElements(User user) {
-        return orderDao.findUserOrdersTotalElements(user.getId());
-    }
 }

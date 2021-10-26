@@ -91,6 +91,24 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
     }
 
     @Override
+    public List<Order> findUserOrders(Long userId, long page) {
+        List<Order> orders = template.query("select id, cost, date, certificate_id from certificate_order where user_id = ? limit ?, 5", MAPPER, userId, (ROWS_PER_PAGE * page) - ROWS_PER_PAGE);
+        orders.forEach(this::addCertificateToOrder);
+        return orders;
+    }
+
+    @Override
+    public long getUserOrdersTotalPages(Long userId) {
+        long rows =  template.queryForObject("select count(*) from certificate_order where user_id = ?", (rs, rowNum) -> rs.getLong("count(*)"), userId);
+        return (rows / ROWS_PER_PAGE) + 1;
+    }
+
+    @Override
+    public long getUserOrdersTotalElements(Long userId) {
+        return template.queryForObject("select count(*) from certificate_order where user_id = ?", (rs, rowNum) -> rs.getLong("count(*)"), userId);
+    }
+
+    @Override
     protected void setSaveValues(PreparedStatement saveStatement, Order entity) throws SQLException {
         saveStatement.setDouble(1, entity.getCost());
         saveStatement.setObject(2, entity.getOrderDate());

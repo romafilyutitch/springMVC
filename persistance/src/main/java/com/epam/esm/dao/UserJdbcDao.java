@@ -83,26 +83,6 @@ public class UserJdbcDao extends AbstractDao<User> implements UserDao {
     }
 
     @Override
-    public List<Order> findUserOrders(Long userId, long page) {
-        template.query("select order.id, order.cost, order.date where order.user_id = ?", (rs, rowNum) -> {
-            long id = rs.getLong("order.id");
-            double cost = rs.getDouble("order.cost");
-            LocalDateTime dateTime = rs.getObject("order.date", LocalDateTime.class);
-            return new Order(id, cost, dateTime);
-        })
-    }
-
-    @Override
-    public long findUserOrdersTotalPages() {
-        return 0;
-    }
-
-    @Override
-    public long findUserOrdersTotalElements() {
-        return 0;
-    }
-
-    @Override
     protected void setSaveValues(PreparedStatement saveStatement, User entity) throws SQLException {
         saveStatement.setString(1, entity.getName());
         saveStatement.setString(2, entity.getSurname());

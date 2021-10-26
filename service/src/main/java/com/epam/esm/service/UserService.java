@@ -23,10 +23,4 @@ public interface UserService {
     long getTotalElements();
 
     long getTotalPages();
-
-    List<Order> findUserOrders(User user, long page);
-
-    long getUserOrdersTotalPages();
-
-    long getUsersOrdersTotalElements();
 }

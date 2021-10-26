@@ -4,6 +4,7 @@ import com.epam.esm.dao.CertificateDao;
 import com.epam.esm.dao.OrderDao;
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Order;
+import com.epam.esm.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -52,5 +53,20 @@ public class OrderRestService implements OrderService {
     @Override
     public long getTotalPages() {
         return orderDao.getTotalPages();
+    }
+
+    @Override
+    public List<Order> findUserOrders(User user, long page) {
+        return orderDao.findUserOrders(user.getId(), page);
+    }
+
+    @Override
+    public long getUserOrdersTotalPages(User user) {
+        return orderDao.getUserOrdersTotalPages(user.getId());
+    }
+
+    @Override
+    public long getUserOrdersTotalElements(User user) {
+        return orderDao.getUserOrdersTotalElements(user.getId());
     }
 }

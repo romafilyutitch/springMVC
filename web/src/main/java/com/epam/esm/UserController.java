@@ -4,6 +4,7 @@ import com.epam.esm.model.Order;
 import com.epam.esm.model.Tag;
 import com.epam.esm.model.User;
 import com.epam.esm.service.CertificateNotFoundException;
+import com.epam.esm.service.OrderService;
 import com.epam.esm.service.TagNotFoundException;
 import com.epam.esm.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,17 +27,19 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
+    private final OrderService orderService;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, OrderService orderService) {
         this.userService = userService;
+        this.orderService = orderService;
     }
 
     @GetMapping
-    public PagedModel<User> showUsers(@RequestParam(value = "page", required = false, defaultValue = "1") long page) {
+    public PagedModel<User> showUsers(@RequestParam(value = "page", required = false, defaultValue = "1") long page) throws TagNotFoundException, CertificateNotFoundException {
         List<User> users = userService.findAll(page);
         for (User user : users) {
-            Link ordersLink = linkTo(methodOn(UserController.class).showUserOrders(user.getId())).withRel("orders");
+            Link ordersLink = linkTo(methodOn(UserController.class).showUserOrders(user.getId(), 1)).withRel("orders");
             user.add(ordersLink);
         }
         Link selfLink = linkTo(methodOn(UserController.class).showUsers(page)).withSelfRel();
@@ -60,10 +63,12 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public User showUser(@PathVariable Long userId) {
+    public User showUser(@PathVariable Long userId) throws TagNotFoundException, CertificateNotFoundException {
         User user = userService.findById(userId).get();
         Link selfLink = linkTo(methodOn(UserController.class).showUser(userId)).withSelfRel();
-        Link ordersLink = linkTo(methodOn(UserController.class).showUserOrders())
+        Link ordersLink = linkTo(methodOn(UserController.class).showUserOrders(user.getId(), 1)).withRel("orders");
+        user.add(selfLink, ordersLink);
+        return user;
     }
 
     @GetMapping("/{userId}/orders")
@@ -71,14 +76,14 @@ public class UserController {
                                       @RequestParam(value = "page", required = false, defaultValue = "1") long page) throws TagNotFoundException, CertificateNotFoundException {
         Optional<User> optionalUser = userService.findById(userId);
         User user = optionalUser.get();
-        List<Order> orders = userService.findUserOrders(user, page);
+        List<Order> orders = orderService.findUserOrders(user, page);
         for (Order order : orders) {
             Link certificateLink = linkTo(methodOn(CertificateController.class).showCertificate(order.getCertificate().getId())).withRel("certificate");
             order.add(certificateLink);
         }
         Link selfLink = linkTo(methodOn(UserController.class).showUserOrders(userId, page)).withSelfRel();
         Link firstPage = linkTo(methodOn(UserController.class).showUserOrders(userId, 1)).withRel("firstPage");
-        Link lastPage = linkTo(methodOn(UserController.class).showUserOrders(userId, userService.getUserOrdersTotalPages())).withRel("lastPage");
+        Link lastPage = linkTo(methodOn(UserController.class).showUserOrders(userId, orderService.getUserOrdersTotalPages(user))).withRel("lastPage");
         Link nextPage = linkTo(methodOn(UserController.class).showUserOrders(userId, page + 1)).withRel("nextPage");
         Link previousPage = linkTo(methodOn(UserController.class).showUserOrders(userId, page - 1)).withRel("previousPage");
         List<Link> links = new ArrayList<>();
@@ -89,17 +94,17 @@ public class UserController {
         links.add(previousPage);
         if (page == 1) {
             links.remove(previousPage);
-        } else if (page == userService.getUserOrdersTotalPages()) {
+        } else if (page == orderService.getUserOrdersTotalPages(user)) {
             links.remove(nextPage);
         }
-        PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(orders.size(), page, userService.getUsersOrdersTotalElements(), userService.getUsersOrdersTotalPages());
+        PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(orders.size(), page, orderService.getUserOrdersTotalElements(user), orderService.getUserOrdersTotalPages(user));
         return orders.isEmpty() ? PagedModel.empty(metadata) : PagedModel.of(orders, metadata, links);
     }
 
     @GetMapping("/richest")
-    public User showRichestUser() {
+    public User showRichestUser() throws TagNotFoundException, CertificateNotFoundException {
         User richestUser = userService.findRichestUser();
-        Link userOrdersLink = linkTo(methodOn(UserController.class).showUserOrders(richestUser.getId())).withRel("orders");
+        Link userOrdersLink = linkTo(methodOn(UserController.class).showUserOrders(richestUser.getId(), 1)).withRel("orders");
         Link selfLink = linkTo(methodOn(UserController.class).showRichestUser()).withSelfRel();
         richestUser.add(selfLink);
         richestUser.add(userOrdersLink);
@@ -109,7 +114,7 @@ public class UserController {
     @GetMapping("/richest/popularTag")
     public Tag showRichestUserPopularTag() {
         Tag popularTag = userService.findRichestUserPopularTag();
-        Link selfLink = linkTo(methodOn(UserController.class).showRichestUser()).withSelfRel();
+        Link selfLink = linkTo(methodOn(UserController.class).showRichestUserPopularTag()).withSelfRel();
         popularTag.add(selfLink);
         return popularTag;
     }
