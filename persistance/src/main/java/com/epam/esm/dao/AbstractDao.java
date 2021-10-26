@@ -28,7 +28,7 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
     protected JdbcTemplate template;
     private final RowMapper<T> rowMapper;
 
-    private static final String FIND_ALL_SQL_TEMPLATE = "select id, %s from %s";
+    private static final String FIND_ALL_SQL_TEMPLATE = "select id, %s from %s limit ?, 5";
     private static final String FIND_BY_ID_SQL_TEMPLATE = "select id, %s from %s where id = ?";
     private static final String SAVE_SQL_TEMPLATE = "insert into %s (%s) values (%s)";
     private static final String UPDATE_SQL_TEMPLATE = "update %s set %s where id = ?";
@@ -37,7 +37,8 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
     private static final String QUESTION_MARK = "?";
     private static final String EQUALS_MARK = "=";
 
-
+    protected static final int PAGE_SIZE = 5;
+    protected final String tableName;
     protected final String findAllSql;
     protected final String findByIdSql;
     protected final String saveSql;
@@ -46,6 +47,7 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
 
 
     public AbstractDao(String tableName, List<String> columns, RowMapper<T> rowMapper) {
+        this.tableName = tableName;
         this.rowMapper = rowMapper;
         findAllSql = String.format(FIND_ALL_SQL_TEMPLATE, String.join(COMMA_DELIMITER, columns), tableName);
         findByIdSql = String.format(FIND_BY_ID_SQL_TEMPLATE, String.join(COMMA_DELIMITER, columns), tableName);
@@ -64,8 +66,8 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
      * @return list of all entities from database table
      */
     @Override
-    public List<T> findAll() {
-        return template.query(findAllSql, rowMapper);
+    public List<T> findAll(int page) {
+        return template.query(findAllSql, rowMapper, (5 * page) - 5);
     }
 
     /**
@@ -120,6 +122,23 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
     @Override
     public void delete(Long id) {
         template.update(deleteSql, id);
+    }
+
+    @Override
+    public int getPagesAmount() {
+        Integer rows = template.queryForObject(String.format("select count(*) from %s", tableName), (rs, rowNum) -> rs.getInt("count(*)"));
+        return (rows / PAGE_SIZE) + 1;
+    }
+
+    @Override
+    public int getCount() {
+        List<Integer> query = template.query(String.format("select count(*) from %s", tableName), (rs, rowNum) -> rs.getInt("count(*)"));
+        return query.get(0);
+    }
+
+    @Override
+    public int getPageSize() {
+        return PAGE_SIZE;
     }
 
     /**

@@ -28,7 +28,7 @@ public class UserRestService implements UserService {
 
     @Override
     public List<User> findAll() {
-        return userDao.findAll();
+        return userDao.findAll(1);
     }
 
     @Override

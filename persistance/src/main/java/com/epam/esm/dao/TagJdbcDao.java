@@ -24,7 +24,7 @@ public class TagJdbcDao extends AbstractDao<Tag> implements TagDao {
         return new Tag(id, name);
     };
     private static final String FIND_BY_NAME_SQL = "select id, name from tag where name = ?";
-    private static final String FIND_TAGS_BY_USER_ID = "select tag.id, tag.name from tag left join certificate_tag on certificate_tag.tag_id = tag.id where certificate_tag.certificate_id = ?";
+    private static final String FIND_TAGS_BY_USER_ID = "select tag.id, tag.name from tag left join certificate_tag on certificate_tag.tag_id = tag.id where certificate_tag.certificate_id = ? limit ?, 5";
 
     public TagJdbcDao() {
         super(TABLE_NAME, COLUMNS, MAPPER);
@@ -70,7 +70,19 @@ public class TagJdbcDao extends AbstractDao<Tag> implements TagDao {
     }
 
     @Override
-    public List<Tag> findByCertificateId(Long userId) {
-        return template.query(FIND_TAGS_BY_USER_ID, MAPPER, userId);
+    public List<Tag> findByCertificateId(Long userId, int page) {
+        return template.query(FIND_TAGS_BY_USER_ID, MAPPER, userId, (5 * page) - 5);
+    }
+
+    @Override
+    public List<Tag> findAllByCertificateId(Long certificateId) {
+        return template.query("select tag.id, tag.name from tag left join certificate_tag on certificate_tag.tag_id = tag.id where certificate_tag.certificate_id = ?", MAPPER, certificateId);
+    }
+
+    @Override
+    public int findCertificateTagsPagesAmount(Long certificateId) {
+        Integer rows = template.queryForObject("select count(*) from tag left join certificate_tag on certificate_tag.tag_id = tag.id where certificate_tag.certificate_id = ?",
+                (rs, rowNum) -> rs.getInt("count(*)"), certificateId);
+        return (rows / PAGE_SIZE) + 1;
     }
 }

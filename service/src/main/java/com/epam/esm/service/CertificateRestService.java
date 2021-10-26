@@ -45,7 +45,7 @@ public class CertificateRestService implements CertificateService {
      */
     @Override
     public List<Certificate> findAll() {
-        List<Certificate> allCertificates = certificateDao.findAll();
+        List<Certificate> allCertificates = certificateDao.findAll(1);
         logger.info("all certificates were found " + allCertificates);
         return allCertificates;
     }
@@ -240,5 +240,20 @@ public class CertificateRestService implements CertificateService {
             logger.error("Certificate wasn't found by id " + certificateId);
             throw new CertificateNotFoundException(certificateId);
         }
+    }
+
+    @Override
+    public int getPagesAmount() {
+        return certificateDao.getPagesAmount();
+    }
+
+    @Override
+    public List<Tag> findCertificateTags(Certificate foundCertificate, int page) {
+        return tagDao.findByCertificateId(foundCertificate.getId(), page);
+    }
+
+    @Override
+    public int getTagsPagesAmount(Certificate certificate) {
+        return tagDao.findCertificateTagsPagesAmount(certificate.getId());
     }
 }

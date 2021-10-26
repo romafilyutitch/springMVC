@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 public interface OrderService {
-   List<Order> findAll();
+   List<Order> findAll(int page);
 
    Order findById(Long id);
 

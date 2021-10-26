@@ -22,8 +22,8 @@ public class OrderRestService implements OrderService {
     }
 
     @Override
-    public List<Order> findAll() {
-        return orderDao.findAll();
+    public List<Order> findAll(int page) {
+        return orderDao.findAll(page);
     }
 
     @Override

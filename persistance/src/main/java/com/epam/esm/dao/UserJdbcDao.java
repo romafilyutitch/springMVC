@@ -45,8 +45,8 @@ public class UserJdbcDao extends AbstractDao<User> implements UserDao {
     }
 
     @Override
-    public List<User> findAll() {
-        List<User> allUsers = super.findAll();
+    public List<User> findAll(int page) {
+        List<User> allUsers = super.findAll(page);
         allUsers.forEach(this::addOrdersToUser);
         return allUsers;
     }

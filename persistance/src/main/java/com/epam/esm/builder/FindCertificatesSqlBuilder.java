@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -84,7 +85,7 @@ public class FindCertificatesSqlBuilder {
             return this;
         }
         int pageNumber = Integer.parseInt(page);
-        finalQuery += String.format("limit %d,%d", 0 + ((5 * pageNumber) - 5) , 5);
+        finalQuery += String.format("limit %d,%d", ((5 * pageNumber) - 5), 5);
         return this;
     }
 
@@ -99,7 +100,7 @@ public class FindCertificatesSqlBuilder {
     }
 
     private FindCertificatesSqlBuilder groupByCertificateId() {
-        finalQuery += " group by certificate_id ";
+        finalQuery += " group by gift_certificate.id ";
         return this;
     }
 
@@ -201,6 +202,16 @@ public class FindCertificatesSqlBuilder {
 
     private String build() {
         return finalQuery;
+    }
+
+    public static void main(String[] args) {
+        LinkedHashMap<String, String> map = new LinkedHashMap<>();
+        map.put("page", "1");
+        FindCertificatesSqlBuilder findCertificatesSqlBuilder = new FindCertificatesSqlBuilder();
+        String s = findCertificatesSqlBuilder.buildSql(map);
+        List<String> sqlValues = findCertificatesSqlBuilder.getSqlValues(map);
+        System.out.println(s);
+        System.out.println(sqlValues);
     }
 
 }

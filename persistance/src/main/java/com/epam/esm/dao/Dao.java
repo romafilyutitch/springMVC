@@ -19,7 +19,7 @@ public interface Dao<T extends Entity> {
      *
      * @return list of entities from database
      */
-    List<T> findAll();
+    List<T> findAll(int page);
 
     /**
      * Finds and returns entity that have passed id
@@ -52,4 +52,10 @@ public interface Dao<T extends Entity> {
      * @param id id of entity that need to be deleted
      */
     void delete(Long id);
+
+    int getPagesAmount();
+
+    int getCount();
+
+    int getPageSize();
 }
