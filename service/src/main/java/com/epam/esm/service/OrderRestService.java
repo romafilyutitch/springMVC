@@ -24,7 +24,7 @@ public class OrderRestService implements OrderService {
 
     @Override
     public List<Order> findAll(long page) {
-        return orderDao.findAll(page);
+        return orderDao.findPage(page);
     }
 
     @Override
@@ -57,7 +57,7 @@ public class OrderRestService implements OrderService {
 
     @Override
     public List<Order> findUserOrders(User user, long page) {
-        return orderDao.findUserOrders(user.getId(), page);
+        return orderDao.findUserOrdersPage(user.getId(), page);
     }
 
     @Override

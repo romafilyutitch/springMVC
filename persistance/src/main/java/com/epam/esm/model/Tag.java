@@ -5,17 +5,16 @@ import java.util.Objects;
 public class Tag extends Entity {
     private String name;
 
-    public Tag(Long id, String name) {
+    public Tag() {
+    }
+
+    public Tag(long id, String name) {
         super(id);
         this.name = name;
     }
 
-    public Tag() {
-        super(null);
-    }
-
     public Tag(String name) {
-        this(null, name);
+        this.name = name;
     }
 
     public String getName() {

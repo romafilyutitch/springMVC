@@ -33,21 +33,20 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
     private static final String SAVE_SQL_TEMPLATE = "insert into %s (%s) values (%s)";
     private static final String UPDATE_SQL_TEMPLATE = "update %s set %s where id = ?";
     private static final String DELETE_SQL_TEMPLATE = "delete from %s where id = ?";
+    private static final String COUNT_SQL_TEMPLATE = "select count(*) from %s";
     private static final String COMMA_DELIMITER = ",";
     private static final String QUESTION_MARK = "?";
     private static final String EQUALS_MARK = "=";
+    public static final int ROWS_PER_PAGE = 5;
 
-    protected static final int ROWS_PER_PAGE = 5;
-    protected final String tableName;
-    protected final String findAllSql;
-    protected final String findByIdSql;
-    protected final String saveSql;
-    protected final String updateSql;
-    protected final String deleteSql;
-
+    private final String findAllSql;
+    private final String findByIdSql;
+    private final String saveSql;
+    private final String updateSql;
+    private final String deleteSql;
+    private final String countSql;
 
     public AbstractDao(String tableName, List<String> columns, RowMapper<T> rowMapper) {
-        this.tableName = tableName;
         this.rowMapper = rowMapper;
         findAllSql = String.format(FIND_ALL_SQL_TEMPLATE, String.join(COMMA_DELIMITER, columns), tableName);
         findByIdSql = String.format(FIND_BY_ID_SQL_TEMPLATE, String.join(COMMA_DELIMITER, columns), tableName);
@@ -58,6 +57,7 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
         columns.forEach(column -> updateJoiner.add(column + EQUALS_MARK + QUESTION_MARK));
         updateSql = String.format(UPDATE_SQL_TEMPLATE, tableName, updateJoiner);
         deleteSql = String.format(DELETE_SQL_TEMPLATE, tableName);
+        countSql = String.format(COUNT_SQL_TEMPLATE, tableName);
     }
 
     /**
@@ -66,8 +66,8 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
      * @return list of all entities from database table
      */
     @Override
-    public List<T> findAll(long page) {
-        return template.query(findAllSql, rowMapper, (5 * page) - 5);
+    public List<T> findPage(long page) {
+        return template.query(findAllSql, rowMapper, (ROWS_PER_PAGE * page) - ROWS_PER_PAGE);
     }
 
     /**
@@ -126,13 +126,14 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
 
     @Override
     public long getTotalPages() {
-        Long rows = template.queryForObject(String.format("select count(*) from %s", tableName), (rs, rowNum) -> rs.getLong("count(*)"));
-        return (rows / ROWS_PER_PAGE) + 1;
+        Long rows = template.queryForObject(countSql, (rs, rowNum) -> rs.getLong("count(*)"));
+        long pages = (rows / ROWS_PER_PAGE);
+        return rows % ROWS_PER_PAGE == 0 ? pages : ++pages;
     }
 
     @Override
     public long getTotalElements() {
-        return template.queryForObject(String.format("select count(*) from %s", tableName), (rs, rowNum) -> rs.getLong("count(*)"));
+        return template.queryForObject(countSql, (rs, rowNum) -> rs.getLong("count(*)"));
     }
 
     /**

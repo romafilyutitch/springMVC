@@ -6,9 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +33,7 @@ class TagJdbcDaoTest {
 
     @Test
     public void findAll_shouldReturnAllTags() {
-        List<Tag> allTags = dao.findAll();
+        List<Tag> allTags = dao.findPage();
 
         assertEquals(3, allTags.size());
         Tag first = allTags.get(0);

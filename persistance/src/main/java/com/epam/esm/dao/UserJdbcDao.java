@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -37,6 +36,7 @@ public class UserJdbcDao extends AbstractDao<User> implements UserDao {
             "where certificate_order.user_id = " +
             "(select user.id from user group by user.id order by sum(certificate_order.cost) desc limit 0, 1) " +
             "group by tag.name order by count(tag.name) desc limit 0,1 ";
+    private static final String FIND_BY_NAME_SQL = "select id, name, surname from user where name = ?";
     private final OrderDao orderDao;
 
     @Autowired
@@ -46,8 +46,8 @@ public class UserJdbcDao extends AbstractDao<User> implements UserDao {
     }
 
     @Override
-    public List<User> findAll(long page) {
-        List<User> allUsers = super.findAll(page);
+    public List<User> findPage(long page) {
+        List<User> allUsers = super.findPage(page);
         allUsers.forEach(this::addOrdersToUser);
         return allUsers;
     }
@@ -61,7 +61,7 @@ public class UserJdbcDao extends AbstractDao<User> implements UserDao {
 
     @Override
     public Optional<User> findByName(String name) {
-        List<User> users = template.query("select id, name, surname from user where name = ?", MAPPER, name);
+        List<User> users = template.query(FIND_BY_NAME_SQL, MAPPER, name);
         users.forEach(this::addOrdersToUser);
         return users.isEmpty() ? Optional.empty() : Optional.of(users.get(0));
     }
@@ -96,7 +96,7 @@ public class UserJdbcDao extends AbstractDao<User> implements UserDao {
     }
 
     private void addOrdersToUser(User user) {
-        List<Order> userOrders = orderDao.findByUserId(user.getId());
+        List<Order> userOrders = orderDao.findAllUserOrders(user.getId());
         user.setOrders(userOrders);
     }
 }

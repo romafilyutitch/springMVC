@@ -5,12 +5,9 @@ import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -29,7 +26,7 @@ class CertificateJdbcDaoTest {
 
     @Test
     public void findAll_shouldReturnSavedAllSavedCertificates() {
-        List<Certificate> allCertificates = dao.findAll();
+        List<Certificate> allCertificates = dao.findPage();
 
         assertEquals(1, allCertificates.size());
         Certificate certificate = allCertificates.get(0);
