@@ -101,4 +101,14 @@ public interface CertificateService {
      * @throws TagNotFoundException         if there is no tag with passed id
      */
     Tag findCertificateTag(Long certificateId, Long tagId) throws CertificateNotFoundException, TagNotFoundException;
+
+    List<Tag> findCertificateTags(Certificate foundCertificate, int page);
+
+    int getCertificateTagsTotalPages(Certificate certificate);
+
+    long getTotalElements();
+
+    long getTotalPages();
+
+    long getCertificateTagsTotalElements(Certificate certificate);
 }

@@ -1,5 +1,6 @@
 package com.epam.esm.dao;
 
+import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
 
 import java.util.List;
@@ -20,5 +21,11 @@ public interface TagDao extends Dao<Tag> {
      */
     Optional<Tag> findByName(String name);
 
-    List<Tag> findByCertificateId(Long userId);
+    List<Tag> findByCertificateId(Long userId, int page);
+
+    int getCertificateTagsTotalPages(Long certificateId);
+
+    long getCertificateTagsTotalElements(Certificate certificate);
+
+    List<Tag> findAllByCertificateId(Long certificateId);
 }

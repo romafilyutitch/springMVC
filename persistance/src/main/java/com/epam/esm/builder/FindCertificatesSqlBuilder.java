@@ -1,10 +1,12 @@
 package com.epam.esm.builder;
 
+import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -57,17 +59,18 @@ public class FindCertificatesSqlBuilder {
      * @return built sql find all certificates statement that defined by passed parameters map
      */
     public String buildSql(LinkedHashMap<String, String> findParameters) {
+        String page = findParameters.get("page");
         String tagNames = findParameters.get(TAG_NAME_KEY);
         String partOfName = findParameters.get(PART_OF_NAME_KEY);
         String partOfDescription = findParameters.get(PART_OF_DESCRIPTION_KEY);
-        String[] names = tagNames.split(",");
         Set<Map.Entry<String, String>> entries = findParameters.entrySet();
         FindCertificatesSqlBuilder builder = findAll()
-                .whereTagName(names)
+                .whereTagName(tagNames)
                 .wherePartOfName(partOfName)
                 .wherePartOfDescription(partOfDescription)
                 .groupByCertificateId()
-                .havingIdCountEquals(names.length);
+                .havingIdCountEquals(tagNames)
+                .page(page);
         for (Map.Entry<String, String> entry : entries) {
             String key = entry.getKey();
             String value = entry.getValue();
@@ -77,14 +80,27 @@ public class FindCertificatesSqlBuilder {
         return builder.build();
     }
 
-    private FindCertificatesSqlBuilder havingIdCountEquals(int certificateIdCount) {
+    private FindCertificatesSqlBuilder page(String page) {
+        if (isNullOrEmptyParameter(page)) {
+            return this;
+        }
+        int pageNumber = Integer.parseInt(page);
+        finalQuery += String.format("limit %d,%d", ((5 * pageNumber) - 5), 5);
+        return this;
+    }
+
+    private FindCertificatesSqlBuilder havingIdCountEquals(String tagNames) {
+        if(isNullOrEmptyParameter(tagNames)) {
+            return this;
+        }
+        String[] names = tagNames.split(",");
         finalQuery += "having count(certificate_id) = ";
-        finalQuery += certificateIdCount;
+        finalQuery += names.length;
         return this;
     }
 
     private FindCertificatesSqlBuilder groupByCertificateId() {
-        finalQuery += " group by certificate_id ";
+        finalQuery += " group by gift_certificate.id ";
         return this;
     }
 
@@ -102,7 +118,6 @@ public class FindCertificatesSqlBuilder {
      */
     public List<String> getSqlValues(LinkedHashMap<String, String> findParameters) {
         String tagNames = findParameters.get(TAG_NAME_KEY);
-        String[] names = tagNames.split(",");
         String partOfName = findParameters.get(PART_OF_NAME_KEY);
         String partOfDescription = findParameters.get(PART_OF_DESCRIPTION_KEY);
         if (partOfName != null) {
@@ -111,21 +126,26 @@ public class FindCertificatesSqlBuilder {
         if (partOfDescription != null) {
             partOfDescription = String.format(PATTERN_FOR_LIKE_QUERY, partOfDescription);
         }
-        List<String> values = new ArrayList<>(Arrays.asList(names));
+        List<String> values = new ArrayList<>();
+        if (tagNames != null) {
+            String[] names = tagNames.split(",");
+            values.addAll(Arrays.asList(names));
+        }
         values.add(partOfName);
         values.add(partOfDescription);
         values.removeIf(Objects::isNull);
         return values;
     }
 
-    private FindCertificatesSqlBuilder whereTagName(String[] tagNames) {
-        if (tagNames.length == 0) {
+    private FindCertificatesSqlBuilder whereTagName(String tagNames) {
+        if (isNullOrEmptyParameter(tagNames)) {
             return this;
         }
+        String[] names = tagNames.split(",");
         finalQuery = finalQuery.contains(WHERE) ? finalQuery + AND : finalQuery + WHERE;
         finalQuery += TAG_ID_IN;
         StringJoiner joiner = new StringJoiner(" or ", "(select tag.id from tag where ", ") ");
-        for (String name : tagNames) {
+        for (String name : names) {
             joiner.add("tag.name = ?");
         }
         finalQuery += joiner;
@@ -186,12 +206,12 @@ public class FindCertificatesSqlBuilder {
 
     public static void main(String[] args) {
         LinkedHashMap<String, String> map = new LinkedHashMap<>();
-        map.put("tagName", "tag,sport,tag");
-        map.put("partOfName", "certificate");
+        map.put("page", "1");
         FindCertificatesSqlBuilder findCertificatesSqlBuilder = new FindCertificatesSqlBuilder();
-        String sql = findCertificatesSqlBuilder.buildSql(map);
+        String s = findCertificatesSqlBuilder.buildSql(map);
         List<String> sqlValues = findCertificatesSqlBuilder.getSqlValues(map);
-        System.out.println(sql);
+        System.out.println(s);
         System.out.println(sqlValues);
     }
+
 }

@@ -27,8 +27,8 @@ public class UserRestService implements UserService {
     }
 
     @Override
-    public List<User> findAll() {
-        return userDao.findAll();
+    public List<User> findAll(long page) {
+        return userDao.findAll(page);
     }
 
     @Override
@@ -61,5 +61,15 @@ public class UserRestService implements UserService {
     @Override
     public Tag findRichestUserPopularTag() {
         return userDao.findRichestUserPopularTag();
+    }
+
+    @Override
+    public long getTotalElements() {
+        return userDao.getTotalElements();
+    }
+
+    @Override
+    public long getTotalPages() {
+        return userDao.getTotalPages();
     }
 }

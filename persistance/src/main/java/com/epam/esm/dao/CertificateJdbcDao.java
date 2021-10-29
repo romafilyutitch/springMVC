@@ -81,8 +81,8 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
      * @return list of all certificates from database
      */
     @Override
-    public List<Certificate> findAll() {
-        List<Certificate> allCertificates = super.findAll();
+    public List<Certificate> findAll(long page) {
+        List<Certificate> allCertificates = super.findAll(page);
         allCertificates.forEach(this::addTagsToCertificate);
         return allCertificates;
     }
@@ -183,7 +183,7 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     }
 
     private void addTagsToCertificate(Certificate certificate) {
-        List<Tag> certificateTags = tagDao.findByCertificateId(certificate.getId());
+        List<Tag> certificateTags = tagDao.findAllByCertificateId(certificate.getId());
         certificate.setTags(certificateTags);
     }
 

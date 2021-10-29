@@ -39,8 +39,8 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
     }
 
     @Override
-    public List<Order> findAll() {
-        List<Order> allOrders = super.findAll();
+    public List<Order> findAll(long page) {
+        List<Order> allOrders = super.findAll(page);
         allOrders.forEach(this::addCertificateToOrder);
         return allOrders;
     }
@@ -88,6 +88,24 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
         List<Order> orders = template.query("select id, cost, date, certificate_id from certificate_order where certificate_id = ?", MAPPER, certificateId);
         orders.forEach(this::addCertificateToOrder);
         return orders.isEmpty() ? Optional.empty() : Optional.of(orders.get(0));
+    }
+
+    @Override
+    public List<Order> findUserOrders(Long userId, long page) {
+        List<Order> orders = template.query("select id, cost, date, certificate_id from certificate_order where user_id = ? limit ?, 5", MAPPER, userId, (ROWS_PER_PAGE * page) - ROWS_PER_PAGE);
+        orders.forEach(this::addCertificateToOrder);
+        return orders;
+    }
+
+    @Override
+    public long getUserOrdersTotalPages(Long userId) {
+        long rows =  template.queryForObject("select count(*) from certificate_order where user_id = ?", (rs, rowNum) -> rs.getLong("count(*)"), userId);
+        return (rows / ROWS_PER_PAGE) + 1;
+    }
+
+    @Override
+    public long getUserOrdersTotalElements(Long userId) {
+        return template.queryForObject("select count(*) from certificate_order where user_id = ?", (rs, rowNum) -> rs.getLong("count(*)"), userId);
     }
 
     @Override

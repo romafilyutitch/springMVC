@@ -11,4 +11,10 @@ public interface OrderDao extends Dao<Order> {
     Order makeUserOrder(Long userId, Order order);
 
     Optional<Order> findByCertificateId(Long certificateId);
+
+    List<Order> findUserOrders(Long userId, long page);
+
+    long getUserOrdersTotalPages(Long userId);
+
+    long getUserOrdersTotalElements(Long userId);
 }
