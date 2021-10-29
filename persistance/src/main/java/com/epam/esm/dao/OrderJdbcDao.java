@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Repository
 public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
@@ -24,11 +23,14 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
         long id = rs.getLong("id");
         double cost = rs.getDouble("cost");
         LocalDateTime date = rs.getObject("date", LocalDateTime.class);
-        long certificateId = rs.getLong("certificate_id");
-        Certificate certificate = new Certificate(certificateId);
-        return new Order(id, cost, date, certificate);
+        return new Order(id, cost, date);
     };
-    private static final String FIND_ORDERS_BY_USER_ID_SQL = "select id, cost, date, certificate_id from certificate_order where user_id = ?";
+    private static final String FIND_ALL_USER_ORDERS_SQL = "select id, cost, date, certificate_id from certificate_order where user_id = ?";
+    private static final String SAVE_CERTIFICATE_ORDER_SQL = "insert into certificate_order (cost, certificate_id, user_id) values (?, ?, ?)";
+    private static final String FIND_ORDER_BY_CERTIFICATE_ID_SQL = "select id, cost, date, certificate_id from certificate_order where certificate_id = ?";
+    private static final String FIND_USER_ORDERS_PAGE_SQL = "select id, cost, date, certificate_id from certificate_order where user_id = ? limit ?, 5";
+    private static final String COUNT_USER_ORDERS_SQL = "select count(*) from certificate_order where user_id = ?";
+    private static final String COUNT_COLUMN = "count(*)";
 
     private final CertificateDao certificateDao;
 
@@ -39,8 +41,8 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
     }
 
     @Override
-    public List<Order> findAll(long page) {
-        List<Order> allOrders = super.findAll(page);
+    public List<Order> findPage(long page) {
+        List<Order> allOrders = super.findPage(page);
         allOrders.forEach(this::addCertificateToOrder);
         return allOrders;
     }
@@ -62,8 +64,8 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
     }
 
     @Override
-    public List<Order> findByUserId(Long userId) {
-        List<Order> foundOrders = template.query(FIND_ORDERS_BY_USER_ID_SQL, MAPPER, userId);
+    public List<Order> findAllUserOrders(Long userId) {
+        List<Order> foundOrders = template.query(FIND_ALL_USER_ORDERS_SQL, MAPPER, userId);
         foundOrders.forEach(this::addCertificateToOrder);
         return foundOrders;
     }
@@ -72,7 +74,7 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
     public Order makeUserOrder(Long userId, Order order) {
         GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
         template.update(creator -> {
-            PreparedStatement saveStatement = creator.prepareStatement("insert into certificate_order (cost, certificate_id, user_id) values (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement saveStatement = creator.prepareStatement(SAVE_CERTIFICATE_ORDER_SQL, Statement.RETURN_GENERATED_KEYS);
             saveStatement.setDouble(1, order.getCost());
             saveStatement.setLong(2, order.getCertificate().getId());
             saveStatement.setLong(3, userId);
@@ -85,27 +87,28 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
 
     @Override
     public Optional<Order> findByCertificateId(Long certificateId) {
-        List<Order> orders = template.query("select id, cost, date, certificate_id from certificate_order where certificate_id = ?", MAPPER, certificateId);
+        List<Order> orders = template.query(FIND_ORDER_BY_CERTIFICATE_ID_SQL, MAPPER, certificateId);
         orders.forEach(this::addCertificateToOrder);
         return orders.isEmpty() ? Optional.empty() : Optional.of(orders.get(0));
     }
 
     @Override
-    public List<Order> findUserOrders(Long userId, long page) {
-        List<Order> orders = template.query("select id, cost, date, certificate_id from certificate_order where user_id = ? limit ?, 5", MAPPER, userId, (ROWS_PER_PAGE * page) - ROWS_PER_PAGE);
+    public List<Order> findUserOrdersPage(Long userId, long page) {
+        List<Order> orders = template.query(FIND_USER_ORDERS_PAGE_SQL, MAPPER, userId, (ROWS_PER_PAGE * page) - ROWS_PER_PAGE);
         orders.forEach(this::addCertificateToOrder);
         return orders;
     }
 
     @Override
     public long getUserOrdersTotalPages(Long userId) {
-        long rows =  template.queryForObject("select count(*) from certificate_order where user_id = ?", (rs, rowNum) -> rs.getLong("count(*)"), userId);
-        return (rows / ROWS_PER_PAGE) + 1;
+        long rows =  template.queryForObject(COUNT_USER_ORDERS_SQL, (rs, rowNum) -> rs.getLong(COUNT_COLUMN), userId);
+        long pages =  (rows / ROWS_PER_PAGE);
+        return rows % ROWS_PER_PAGE == 0 ? pages : ++pages;
     }
 
     @Override
     public long getUserOrdersTotalElements(Long userId) {
-        return template.queryForObject("select count(*) from certificate_order where user_id = ?", (rs, rowNum) -> rs.getLong("count(*)"), userId);
+        return template.queryForObject(COUNT_USER_ORDERS_SQL, (rs, rowNum) -> rs.getLong(COUNT_COLUMN), userId);
     }
 
     @Override
@@ -122,7 +125,7 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
     }
 
     private void addCertificateToOrder(Order order) {
-        Optional<Certificate> optionalCertificate = certificateDao.findById(order.getCertificate().getId());
+        Optional<Certificate> optionalCertificate = certificateDao.findByOrderId(order.getId());
         order.setCertificate(optionalCertificate.orElseThrow(DaoException::new));
     }
 }

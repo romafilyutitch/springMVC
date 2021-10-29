@@ -1,6 +1,5 @@
 package com.epam.esm.dao;
 
-import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -25,7 +24,10 @@ public class TagJdbcDao extends AbstractDao<Tag> implements TagDao {
         return new Tag(id, name);
     };
     private static final String FIND_BY_NAME_SQL = "select id, name from tag where name = ?";
-    private static final String FIND_TAGS_BY_USER_ID = "select tag.id, tag.name from tag left join certificate_tag on certificate_tag.tag_id = tag.id where certificate_tag.certificate_id = ? limit ?, 5";
+    private static final String FIND_TAGS_PAGE_BY_CERTIFICATE_ID_SQL = "select tag.id, tag.name from tag left join certificate_tag on certificate_tag.tag_id = tag.id where certificate_tag.certificate_id = ? limit ?, 5";
+    private static final String FIND_ALL_CERTIFICATE_TAGS_SQL = "select tag.id, tag.name from tag left join certificate_tag on certificate_tag.tag_id = tag.id where certificate_tag.certificate_id = ?";
+    private static final String COUNT_CERTIFICATE_TAGS_SQL = "select count(*) from tag left join certificate_tag on certificate_tag.tag_id = tag.id where certificate_tag.certificate_id = ?";
+    private static final String COUNT_COLUMN = "count(*)";
 
     public TagJdbcDao() {
         super(TABLE_NAME, COLUMNS, MAPPER);
@@ -71,24 +73,24 @@ public class TagJdbcDao extends AbstractDao<Tag> implements TagDao {
     }
 
     @Override
-    public List<Tag> findByCertificateId(Long userId, int page) {
-        return template.query(FIND_TAGS_BY_USER_ID, MAPPER, userId, (5 * page) - 5);
+    public List<Tag> findCertificateTagsPage(Long certificateId, int page) {
+        return template.query(FIND_TAGS_PAGE_BY_CERTIFICATE_ID_SQL, MAPPER, certificateId, (ROWS_PER_PAGE * page) - ROWS_PER_PAGE);
     }
 
     @Override
-    public List<Tag> findAllByCertificateId(Long certificateId) {
-        return template.query("select tag.id, tag.name from tag left join certificate_tag on certificate_tag.tag_id = tag.id where certificate_tag.certificate_id = ?", MAPPER, certificateId);
+    public List<Tag> findAllCertificateTags(Long certificateId) {
+        return template.query(FIND_ALL_CERTIFICATE_TAGS_SQL, MAPPER, certificateId);
     }
 
     @Override
     public int getCertificateTagsTotalPages(Long certificateId) {
-        Integer rows = template.queryForObject("select count(*) from tag left join certificate_tag on certificate_tag.tag_id = tag.id where certificate_tag.certificate_id = ?",
-                (rs, rowNum) -> rs.getInt("count(*)"), certificateId);
-        return (rows / ROWS_PER_PAGE) + 1;
+        Integer rows = template.queryForObject(COUNT_CERTIFICATE_TAGS_SQL, (rs, rowNum) -> rs.getInt(COUNT_COLUMN), certificateId);
+        int pages = (rows / ROWS_PER_PAGE) + 1;
+        return rows % ROWS_PER_PAGE == 0 ? pages : ++pages;
     }
 
     @Override
-    public long getCertificateTagsTotalElements(Certificate certificate) {
-        return template.queryForObject("select count(*) from tag left join certificate_tag on certificate_tag.tag_id = tag.id where certificate_tag.certificate_id = ?", (rs, rowNum) -> rs.getLong("count(*)"), certificate.getId());
+    public long getCertificateTagsTotalElements(Long certificateId) {
+        return template.queryForObject(COUNT_CERTIFICATE_TAGS_SQL, (rs, rowNum) -> rs.getLong(COUNT_COLUMN), certificateId);
     }
 }

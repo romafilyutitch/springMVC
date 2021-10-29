@@ -47,12 +47,12 @@ class CertificateRestServiceTest {
     @Test
     public void findAll_shouldReturnAllCertificates() {
         List<Certificate> mockCertificates = Collections.singletonList(certificate);
-        when(certificateDao.findAll()).thenReturn(mockCertificates);
+        when(certificateDao.findPage()).thenReturn(mockCertificates);
 
         List<Certificate> allCertificates = service.findAll();
 
         assertEquals(mockCertificates, allCertificates);
-        verify(certificateDao).findAll();
+        verify(certificateDao).findPage();
     }
 
     @Test

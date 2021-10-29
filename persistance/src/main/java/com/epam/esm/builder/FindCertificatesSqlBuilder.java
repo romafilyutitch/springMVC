@@ -1,12 +1,10 @@
 package com.epam.esm.builder;
 
-import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -38,7 +36,7 @@ public class FindCertificatesSqlBuilder {
     private static final String NAME_DESC = "gift_certificate.name desc ";
     private static final String DATE_ASC = "gift_certificate.create_date asc";
     private static final String DATE_DESC = "gift_certificate.create_date desc";
-    private static final String THEN_ORDER = ",";
+    private static final String COMMA = ",";
     private static final String WHERE = " where ";
     private static final String TAG_NAME_KEY = "tagName";
     private static final String PART_OF_NAME_KEY = "partOfName";
@@ -48,6 +46,10 @@ public class FindCertificatesSqlBuilder {
     private static final String ACCEDING_ORDER = "asc";
     private static final String DESCENDING_ORDER = "desc";
     private static final String PATTERN_FOR_LIKE_QUERY = "%%%s%%";
+    private static final String PAGE_KEY = "page";
+    private static final String LIMIT = "limit %d,%d";
+    private static final String GROUP_BY_CERTIFICATE_ID = " group by gift_certificate.id ";
+    private static final String HAVING_CERTIFICATE_ID_COUNT = "having count(certificate_id) = ";
 
     private String finalQuery;
 
@@ -59,7 +61,7 @@ public class FindCertificatesSqlBuilder {
      * @return built sql find all certificates statement that defined by passed parameters map
      */
     public String buildSql(LinkedHashMap<String, String> findParameters) {
-        String page = findParameters.get("page");
+        String page = findParameters.get(PAGE_KEY);
         String tagNames = findParameters.get(TAG_NAME_KEY);
         String partOfName = findParameters.get(PART_OF_NAME_KEY);
         String partOfDescription = findParameters.get(PART_OF_DESCRIPTION_KEY);
@@ -85,7 +87,7 @@ public class FindCertificatesSqlBuilder {
             return this;
         }
         int pageNumber = Integer.parseInt(page);
-        finalQuery += String.format("limit %d,%d", ((5 * pageNumber) - 5), 5);
+        finalQuery += String.format(LIMIT, ((5 * pageNumber) - 5), 5);
         return this;
     }
 
@@ -94,13 +96,13 @@ public class FindCertificatesSqlBuilder {
             return this;
         }
         String[] names = tagNames.split(",");
-        finalQuery += "having count(certificate_id) = ";
+        finalQuery += HAVING_CERTIFICATE_ID_COUNT;
         finalQuery += names.length;
         return this;
     }
 
     private FindCertificatesSqlBuilder groupByCertificateId() {
-        finalQuery += " group by gift_certificate.id ";
+        finalQuery += GROUP_BY_CERTIFICATE_ID;
         return this;
     }
 
@@ -128,7 +130,7 @@ public class FindCertificatesSqlBuilder {
         }
         List<String> values = new ArrayList<>();
         if (tagNames != null) {
-            String[] names = tagNames.split(",");
+            String[] names = tagNames.split(COMMA);
             values.addAll(Arrays.asList(names));
         }
         values.add(partOfName);
@@ -141,7 +143,7 @@ public class FindCertificatesSqlBuilder {
         if (isNullOrEmptyParameter(tagNames)) {
             return this;
         }
-        String[] names = tagNames.split(",");
+        String[] names = tagNames.split(COMMA);
         finalQuery = finalQuery.contains(WHERE) ? finalQuery + AND : finalQuery + WHERE;
         finalQuery += TAG_ID_IN;
         StringJoiner joiner = new StringJoiner(" or ", "(select tag.id from tag where ", ") ");
@@ -173,10 +175,10 @@ public class FindCertificatesSqlBuilder {
             return this;
         }
         if (order.equals(ACCEDING_ORDER)) {
-            finalQuery = finalQuery.contains(ORDER_BY) ? finalQuery + THEN_ORDER : finalQuery + ORDER_BY;
+            finalQuery = finalQuery.contains(ORDER_BY) ? finalQuery + COMMA : finalQuery + ORDER_BY;
             finalQuery += NAME_ASC;
         } else if (order.equals(DESCENDING_ORDER)) {
-            finalQuery = finalQuery.contains(ORDER_BY) ? finalQuery + THEN_ORDER : finalQuery + ORDER_BY;
+            finalQuery = finalQuery.contains(ORDER_BY) ? finalQuery + COMMA : finalQuery + ORDER_BY;
             finalQuery += NAME_DESC;
         }
         return this;
@@ -187,10 +189,10 @@ public class FindCertificatesSqlBuilder {
             return this;
         }
         if (order.equals(ACCEDING_ORDER)) {
-            finalQuery = finalQuery.contains(ORDER_BY) ? finalQuery + THEN_ORDER : finalQuery + ORDER_BY;
+            finalQuery = finalQuery.contains(ORDER_BY) ? finalQuery + COMMA : finalQuery + ORDER_BY;
             finalQuery += DATE_ASC;
         } else if (order.equals(DESCENDING_ORDER)) {
-            finalQuery = finalQuery.contains(ORDER_BY) ? finalQuery + THEN_ORDER : finalQuery + ORDER_BY;
+            finalQuery = finalQuery.contains(ORDER_BY) ? finalQuery + COMMA : finalQuery + ORDER_BY;
             finalQuery += DATE_DESC;
         }
         return this;
@@ -202,16 +204,6 @@ public class FindCertificatesSqlBuilder {
 
     private String build() {
         return finalQuery;
-    }
-
-    public static void main(String[] args) {
-        LinkedHashMap<String, String> map = new LinkedHashMap<>();
-        map.put("page", "1");
-        FindCertificatesSqlBuilder findCertificatesSqlBuilder = new FindCertificatesSqlBuilder();
-        String s = findCertificatesSqlBuilder.buildSql(map);
-        List<String> sqlValues = findCertificatesSqlBuilder.getSqlValues(map);
-        System.out.println(s);
-        System.out.println(sqlValues);
     }
 
 }

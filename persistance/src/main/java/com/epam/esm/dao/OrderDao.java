@@ -6,15 +6,15 @@ import java.util.List;
 import java.util.Optional;
 
 public interface OrderDao extends Dao<Order> {
-    List<Order> findByUserId(Long userId);
+    List<Order> findAllUserOrders(Long userId);
 
-    Order makeUserOrder(Long userId, Order order);
-
-    Optional<Order> findByCertificateId(Long certificateId);
-
-    List<Order> findUserOrders(Long userId, long page);
+    List<Order> findUserOrdersPage(Long userId, long page);
 
     long getUserOrdersTotalPages(Long userId);
 
     long getUserOrdersTotalElements(Long userId);
+
+    Order makeUserOrder(Long userId, Order order);
+
+    Optional<Order> findByCertificateId(Long certificateId);
 }

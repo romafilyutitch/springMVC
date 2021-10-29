@@ -45,7 +45,7 @@ public class CertificateRestService implements CertificateService {
      */
     @Override
     public List<Certificate> findAll() {
-        List<Certificate> allCertificates = certificateDao.findAll(1);
+        List<Certificate> allCertificates = certificateDao.findPage(1);
         logger.info("all certificates were found " + allCertificates);
         return allCertificates;
     }
@@ -244,7 +244,7 @@ public class CertificateRestService implements CertificateService {
 
     @Override
     public List<Tag> findCertificateTags(Certificate foundCertificate, int page) {
-        return tagDao.findByCertificateId(foundCertificate.getId(), page);
+        return tagDao.findCertificateTagsPage(foundCertificate.getId(), page);
     }
 
     @Override

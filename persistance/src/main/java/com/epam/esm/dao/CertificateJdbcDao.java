@@ -37,9 +37,12 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         LocalDateTime lastUpdateDate = rs.getObject("gift_certificate.last_update_date", LocalDateTime.class);
         return new Certificate(id, name, description, price, duration, createDate, lastUpdateDate);
     };
-    private static final String FIND_CERTIFICATE_TAG_BY_CERTIFICATE_ID_AND_TAG_ID = "select id, certificate_id, tag_id from certificate_tag where certificate_id = ? and tag_id = ?";
-    private static final String SAVE_CERTIFICATE_TAG = "insert into certificate_tag (certificate_id, tag_id) values (?, ?)";
-    private static final String FIND_CERTIFICATE_BY_ORDER_ID = "select id, name, description, price, duration, create_date, last_update_date from gift_certificate where order_id = ?";
+    private static final String FIND_CERTIFICATE_TAG_BY_CERTIFICATE_ID_AND_TAG_ID_SQL = "select id, certificate_id, tag_id from certificate_tag where certificate_id = ? and tag_id = ?";
+    private static final String SAVE_CERTIFICATE_TAG_SQL = "insert into certificate_tag (certificate_id, tag_id) values (?, ?)";
+    private static final String FIND_CERTIFICATE_BY_ORDER_ID_SQL = "select id, name, description, price, duration, create_date, last_update_date from gift_certificate " +
+            "left join certificate_order on certificate_order.certificate_id = gift_certificate.id " +
+            "where order_id = ?";
+
     private final FindCertificatesSqlBuilder findCertificatesSqlBuilder;
     private final TagDao tagDao;
 
@@ -81,8 +84,8 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
      * @return list of all certificates from database
      */
     @Override
-    public List<Certificate> findAll(long page) {
-        List<Certificate> allCertificates = super.findAll(page);
+    public List<Certificate> findPage(long page) {
+        List<Certificate> allCertificates = super.findPage(page);
         allCertificates.forEach(this::addTagsToCertificate);
         return allCertificates;
     }
@@ -140,7 +143,7 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
 
     @Override
     public Optional<Certificate> findByOrderId(Long orderId) {
-        List<Certificate> foundCertificates = template.query(FIND_CERTIFICATE_BY_ORDER_ID, MAPPER, orderId);
+        List<Certificate> foundCertificates = template.query(FIND_CERTIFICATE_BY_ORDER_ID_SQL, MAPPER, orderId);
         foundCertificates.forEach(this::addTagsToCertificate);
         return foundCertificates.isEmpty() ? Optional.empty() : Optional.of(foundCertificates.get(0));
     }
@@ -183,7 +186,7 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     }
 
     private void addTagsToCertificate(Certificate certificate) {
-        List<Tag> certificateTags = tagDao.findAllByCertificateId(certificate.getId());
+        List<Tag> certificateTags = tagDao.findAllCertificateTags(certificate.getId());
         certificate.setTags(certificateTags);
     }
 
@@ -192,9 +195,9 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         tags.forEach(tag -> {
             Optional<Tag> optionalTag = tagDao.findByName(tag.getName());
             Tag savedTag = optionalTag.orElseGet(() -> tagDao.save(tag));
-            SqlRowSet sqlRowSet = template.queryForRowSet(FIND_CERTIFICATE_TAG_BY_CERTIFICATE_ID_AND_TAG_ID, entity.getId(), savedTag.getId());
+            SqlRowSet sqlRowSet = template.queryForRowSet(FIND_CERTIFICATE_TAG_BY_CERTIFICATE_ID_AND_TAG_ID_SQL, entity.getId(), savedTag.getId());
             if (sqlRowSet.isLast()) {
-                template.update(SAVE_CERTIFICATE_TAG, entity.getId(), savedTag.getId());
+                template.update(SAVE_CERTIFICATE_TAG_SQL, entity.getId(), savedTag.getId());
             }
             tag.setId(savedTag.getId());
         });
