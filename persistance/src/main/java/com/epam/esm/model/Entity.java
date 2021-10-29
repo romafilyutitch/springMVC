@@ -5,17 +5,20 @@ import org.springframework.hateoas.RepresentationModel;
 import java.util.Objects;
 
 public abstract class Entity extends RepresentationModel<Entity> {
-    private Long id;
+    private long id;
 
-    public Entity(Long id) {
+    public Entity() {
+    }
+
+    public Entity(long id) {
         this.id = id;
     }
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 

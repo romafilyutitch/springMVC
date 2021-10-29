@@ -57,6 +57,7 @@ public class FindCertificatesSqlBuilder {
      * Build sql find all query that by passed parameters. argument map contains
      * keys that define parameter then appropriate sql query will be built.
      * If parameters map contains keys for order then sql will be build with order statement
+     *
      * @param findParameters parameters map that define find certificate parameters
      * @return built sql find all certificates statement that defined by passed parameters map
      */
@@ -92,7 +93,7 @@ public class FindCertificatesSqlBuilder {
     }
 
     private FindCertificatesSqlBuilder havingIdCountEquals(String tagNames) {
-        if(isNullOrEmptyParameter(tagNames)) {
+        if (isNullOrEmptyParameter(tagNames)) {
             return this;
         }
         String[] names = tagNames.split(",");
@@ -115,6 +116,7 @@ public class FindCertificatesSqlBuilder {
      * Reads passed find certificates parameters map and make
      * parameters values list. That need to pass sql values to Prepared statement
      * as PreparedStatement query values so PreparedStatement can execute query
+     *
      * @param findParameters find all certificates parameters map
      * @return list of find parameters values
      */
@@ -158,7 +160,7 @@ public class FindCertificatesSqlBuilder {
         if (isNullOrEmptyParameter(partOfName)) {
             return this;
         }
-        finalQuery = finalQuery.contains(WHERE) ? finalQuery + AND + BY_PART_OF_NAME : finalQuery + WHERE + BY_PART_OF_NAME ;
+        finalQuery = finalQuery.contains(WHERE) ? finalQuery + AND + BY_PART_OF_NAME : finalQuery + WHERE + BY_PART_OF_NAME;
         return this;
     }
 

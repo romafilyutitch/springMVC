@@ -8,18 +8,13 @@ public class User extends Entity {
     private String surname;
     private List<Order> orders;
 
+    public User() {
+    }
+
     public User(Long id, String name, String surname) {
         super(id);
         this.name = name;
         this.surname = surname;
-    }
-
-    public User(Long id) {
-        super(id);
-    }
-
-    public User() {
-        super(null);
     }
 
     public String getName() {

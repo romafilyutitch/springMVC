@@ -10,13 +10,16 @@ import java.util.Objects;
 public class Certificate extends Entity {
     private String name;
     private String description;
-    private Double price;
-    private Integer duration;
+    private double price;
+    private int duration;
     private LocalDateTime createDate;
     private LocalDateTime lastUpdateDate;
     private List<Tag> tags = new ArrayList<>();
 
-    public Certificate(Long id, String name, String description, Double price, Integer duration, LocalDateTime createDate, LocalDateTime lastUpdateDate) {
+    public Certificate() {
+    }
+
+    public Certificate(long id, String name, String description, double price, int duration, LocalDateTime createDate, LocalDateTime lastUpdateDate) {
         super(id);
         this.name = name;
         this.description = description;
@@ -26,24 +29,20 @@ public class Certificate extends Entity {
         this.lastUpdateDate = lastUpdateDate;
     }
 
-    public Certificate(String name, String description, Double price, Integer duration) {
-        super(null);
+    public Certificate(String name, String description, double price, int duration) {
         this.name = name;
         this.description = description;
         this.price = price;
         this.duration = duration;
     }
 
-    public Certificate(String name, String description, Double price, Integer duration, LocalDateTime createDate, LocalDateTime lastUpdateDate) {
-        this(null, name, description, price, duration, createDate, lastUpdateDate);
-    }
-
-    public Certificate(Long id) {
-        super(id);
-    }
-
-    public Certificate() {
-        super(null);
+    public Certificate(String name, String description, double price, int duration, LocalDateTime createDate, LocalDateTime lastUpdateDate) {
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.duration = duration;
+        this.createDate = createDate;
+        this.lastUpdateDate = lastUpdateDate;
     }
 
     public String getName() {
@@ -62,19 +61,19 @@ public class Certificate extends Entity {
         this.description = description;
     }
 
-    public Double getPrice() {
+    public double getPrice() {
         return price;
     }
 
-    public void setPrice(Double price) {
+    public void setPrice(double price) {
         this.price = price;
     }
 
-    public Integer getDuration() {
+    public int getDuration() {
         return duration;
     }
 
-    public void setDuration(Integer duration) {
+    public void setDuration(int duration) {
         this.duration = duration;
     }
 

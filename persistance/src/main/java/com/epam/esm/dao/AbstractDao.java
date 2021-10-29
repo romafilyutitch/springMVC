@@ -127,7 +127,7 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
     @Override
     public long getTotalPages() {
         Long rows = template.queryForObject(countSql, (rs, rowNum) -> rs.getLong("count(*)"));
-        long pages =  (rows / ROWS_PER_PAGE);
+        long pages = (rows / ROWS_PER_PAGE);
         return rows % ROWS_PER_PAGE == 0 ? pages : ++pages;
     }
 

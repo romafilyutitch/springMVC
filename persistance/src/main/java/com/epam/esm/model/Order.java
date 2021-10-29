@@ -1,24 +1,18 @@
 package com.epam.esm.model;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Objects;
 
 public class Order extends Entity {
-    private Double cost;
+    private double cost;
     private LocalDateTime orderDate;
     private Certificate certificate;
 
-    public Order(Double cost, Certificate certificate) {
-        super(null);
-        this.cost = cost;
-        this.certificate = certificate;
+    public Order() {
     }
 
-    public Order(Long id, Double cost, LocalDateTime orderDate, Certificate certificate) {
-        super(id);
+    public Order(double cost, Certificate certificate) {
         this.cost = cost;
-        this.orderDate = orderDate;
         this.certificate = certificate;
     }
 

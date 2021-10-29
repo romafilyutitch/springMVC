@@ -101,8 +101,8 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
 
     @Override
     public long getUserOrdersTotalPages(Long userId) {
-        long rows =  template.queryForObject(COUNT_USER_ORDERS_SQL, (rs, rowNum) -> rs.getLong(COUNT_COLUMN), userId);
-        long pages =  (rows / ROWS_PER_PAGE);
+        long rows = template.queryForObject(COUNT_USER_ORDERS_SQL, (rs, rowNum) -> rs.getLong(COUNT_COLUMN), userId);
+        long pages = (rows / ROWS_PER_PAGE);
         return rows % ROWS_PER_PAGE == 0 ? pages : ++pages;
     }
 
