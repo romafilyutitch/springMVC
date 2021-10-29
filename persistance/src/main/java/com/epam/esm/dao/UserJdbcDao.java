@@ -34,8 +34,10 @@ public class UserJdbcDao extends AbstractDao<User> implements UserDao {
             "left join certificate_tag on gift_certificate.id = certificate_tag.certificate_id " +
             "left join tag on tag.id = certificate_tag.tag_id " +
             "where certificate_order.user_id = " +
-            "(select user.id from user group by user.id order by sum(certificate_order.cost) desc limit 0, 1) " +
-            "group by tag.name order by count(tag.name) desc limit 0,1 ";
+            "(select user.id from user " +
+            "left join certificate_order on certificate_order.user_id = user.id " +
+            "group by user.id order by sum(certificate_order.cost) desc limit 0, 1) " +
+            "group by tag.id order by count(tag.id) desc limit 0,1 ";
     private static final String FIND_BY_NAME_SQL = "select id, name, surname from user where name = ?";
     private final OrderDao orderDao;
 
@@ -46,14 +48,14 @@ public class UserJdbcDao extends AbstractDao<User> implements UserDao {
     }
 
     @Override
-    public List<User> findPage(long page) {
+    public List<User> findPage(int page) {
         List<User> allUsers = super.findPage(page);
         allUsers.forEach(this::addOrdersToUser);
         return allUsers;
     }
 
     @Override
-    public Optional<User> findById(Long id) {
+    public Optional<User> findById(long id) {
         Optional<User> optionalUser = super.findById(id);
         optionalUser.ifPresent(this::addOrdersToUser);
         return optionalUser;

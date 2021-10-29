@@ -41,14 +41,14 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
     }
 
     @Override
-    public List<Order> findPage(long page) {
+    public List<Order> findPage(int page) {
         List<Order> allOrders = super.findPage(page);
         allOrders.forEach(this::addCertificateToOrder);
         return allOrders;
     }
 
     @Override
-    public Optional<Order> findById(Long id) {
+    public Optional<Order> findById(long id) {
         Optional<Order> optionalOrder = super.findById(id);
         optionalOrder.ifPresent(this::addCertificateToOrder);
         return optionalOrder;
@@ -64,14 +64,14 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
     }
 
     @Override
-    public List<Order> findAllUserOrders(Long userId) {
+    public List<Order> findAllUserOrders(long userId) {
         List<Order> foundOrders = template.query(FIND_ALL_USER_ORDERS_SQL, MAPPER, userId);
         foundOrders.forEach(this::addCertificateToOrder);
         return foundOrders;
     }
 
     @Override
-    public Order makeUserOrder(Long userId, Order order) {
+    public Order makeUserOrder(long userId, Order order) {
         GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
         template.update(creator -> {
             PreparedStatement saveStatement = creator.prepareStatement(SAVE_CERTIFICATE_ORDER_SQL, Statement.RETURN_GENERATED_KEYS);
@@ -86,29 +86,29 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
     }
 
     @Override
-    public Optional<Order> findByCertificateId(Long certificateId) {
+    public Optional<Order> findByCertificateId(long certificateId) {
         List<Order> orders = template.query(FIND_ORDER_BY_CERTIFICATE_ID_SQL, MAPPER, certificateId);
         orders.forEach(this::addCertificateToOrder);
         return orders.isEmpty() ? Optional.empty() : Optional.of(orders.get(0));
     }
 
     @Override
-    public List<Order> findUserOrdersPage(Long userId, long page) {
+    public List<Order> findUserOrdersPage(long userId, long page) {
         List<Order> orders = template.query(FIND_USER_ORDERS_PAGE_SQL, MAPPER, userId, (ROWS_PER_PAGE * page) - ROWS_PER_PAGE);
         orders.forEach(this::addCertificateToOrder);
         return orders;
     }
 
     @Override
-    public long getUserOrdersTotalPages(Long userId) {
-        long rows = template.queryForObject(COUNT_USER_ORDERS_SQL, (rs, rowNum) -> rs.getLong(COUNT_COLUMN), userId);
-        long pages = (rows / ROWS_PER_PAGE);
+    public int getUserOrdersTotalPages(long userId) {
+        int rows = template.queryForObject(COUNT_USER_ORDERS_SQL, (rs, rowNum) -> rs.getInt(COUNT_COLUMN), userId);
+        int pages = (rows / ROWS_PER_PAGE);
         return rows % ROWS_PER_PAGE == 0 ? pages : ++pages;
     }
 
     @Override
-    public long getUserOrdersTotalElements(Long userId) {
-        return template.queryForObject(COUNT_USER_ORDERS_SQL, (rs, rowNum) -> rs.getLong(COUNT_COLUMN), userId);
+    public int getUserOrdersTotalElements(long userId) {
+        return template.queryForObject(COUNT_USER_ORDERS_SQL, (rs, rowNum) -> rs.getInt(COUNT_COLUMN), userId);
     }
 
     @Override

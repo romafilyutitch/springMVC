@@ -1,12 +1,13 @@
 package com.epam.esm.service;
 
 import com.epam.esm.dao.CertificateDao;
+import com.epam.esm.dao.OrderDao;
 import com.epam.esm.dao.TagDao;
 import com.epam.esm.model.Certificate;
+import com.epam.esm.model.Order;
 import com.epam.esm.model.Tag;
 import com.epam.esm.validation.CertificateValidator;
-import com.epam.esm.validation.InvalidCertificateException;
-import com.epam.esm.validation.InvalidTagException;
+import com.epam.esm.validation.InvalidResourceException;
 import com.epam.esm.validation.TagValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,15 +25,19 @@ import java.util.Optional;
 @Service
 public class CertificateRestService implements CertificateService {
     private static final Logger logger = LogManager.getLogger(CertificateRestService.class);
+
     private final CertificateDao certificateDao;
     private final TagDao tagDao;
+    private final OrderDao orderDao;
+
     private final CertificateValidator certificateFieldsValidator;
     private final TagValidator tagFieldsValidator;
 
     @Autowired
-    public CertificateRestService(CertificateDao certificateDao, TagDao tagDao, CertificateValidator certificateFieldsValidator, TagValidator tagFieldsValidator) {
+    public CertificateRestService(CertificateDao certificateDao, TagDao tagDao, OrderDao orderDao, CertificateValidator certificateFieldsValidator, TagValidator tagFieldsValidator) {
         this.certificateDao = certificateDao;
         this.tagDao = tagDao;
+        this.orderDao = orderDao;
         this.certificateFieldsValidator = certificateFieldsValidator;
         this.tagFieldsValidator = tagFieldsValidator;
     }
@@ -44,10 +49,13 @@ public class CertificateRestService implements CertificateService {
      * @return list of all certificates.
      */
     @Override
-    public List<Certificate> findAll() {
-        List<Certificate> allCertificates = certificateDao.findPage(1);
-        logger.info("all certificates were found " + allCertificates);
-        return allCertificates;
+    public List<Certificate> findPage(int page) throws PageOutOfBoundsException {
+        if (page < 1 || page > certificateDao.getTotalPages()) {
+            throw new PageOutOfBoundsException(page, certificateDao.getTotalPages(), 1);
+        }
+        List<Certificate> certificatesPage = certificateDao.findPage(page);
+        logger.info(String.format("certificates on page %d was found %s ", page, certificatesPage));
+        return certificatesPage;
     }
 
     /**
@@ -60,191 +68,91 @@ public class CertificateRestService implements CertificateService {
      * @return list of certificates that matches passed parameters
      */
     @Override
-    public List<Certificate> findAllWithParameters(LinkedHashMap<String, String> findParameters) {
+    public List<Certificate> findAllWithParameters(LinkedHashMap<String, String> findParameters) throws PageOutOfBoundsException {
+        String pageValue = findParameters.get("page");
+        int page = Integer.parseInt(pageValue);
+        if (page < 1 || page > certificateDao.getTotalPages()) {
+            throw new PageOutOfBoundsException(page, certificateDao.getTotalPages(), 1);
+        }
         List<Certificate> foundCertificates = certificateDao.findWithParameters(findParameters);
         logger.info("Certificates with parameters were found " + foundCertificates);
         return foundCertificates;
     }
 
-    /**
-     * Finds certificate that has passed id
-     *
-     * @param id of certificate that need to be found
-     * @return certificate that has passed id
-     * @throws CertificateNotFoundException if there is no certificate with passed id
-     */
     @Override
-    public Certificate findById(Long id) throws CertificateNotFoundException {
+    public Certificate findById(long id) throws ResourceNotFoundException {
         Optional<Certificate> optionalCertificate = certificateDao.findById(id);
         if (optionalCertificate.isPresent()) {
             logger.info("Certificate was found by id " + optionalCertificate.get());
             return optionalCertificate.get();
         } else {
             logger.error("Certificate with id wasn't found " + id);
-            throw new CertificateNotFoundException(id);
+            throw new ResourceNotFoundException(id);
         }
     }
 
-    /**
-     * Perform certificate save operation.
-     * Saves certificate in database.
-     * Sets certificate create time to current time
-     *
-     * @param certificate that need to be saved
-     * @return saved certificate
-     * @throws InvalidCertificateException if passed certificate is invalid
-     */
     @Override
-    public Certificate save(Certificate certificate) throws InvalidCertificateException {
+    public Certificate save(Certificate certificate) throws InvalidResourceException {
         certificateFieldsValidator.validate(certificate);
         Certificate savedCertificate = certificateDao.save(certificate);
         logger.info("New certificate was validated and saved successfully " + savedCertificate);
         return savedCertificate;
     }
 
-    /**
-     * Performs update certificate operation.
-     * Updates certificate in database. and save certificate
-     * last update time to current time
-     *
-     * @param id          certificate that need to be updated
-     * @param certificate data that need to be write
-     * @return updated certificate
-     * @throws CertificateNotFoundException if there is not certificate wit passed id
-     */
     @Override
-    public Certificate update(Long id, Certificate certificate) throws CertificateNotFoundException, InvalidCertificateException {
-        Optional<Certificate> certificateFromDb = certificateDao.findById(id);
-        if (certificateFromDb.isPresent()) {
-            Certificate modifiedCertificate = modifyForUpdate(certificateFromDb.get(), certificate);
-            certificateFieldsValidator.validate(modifiedCertificate);
-            Certificate updatedCertificate = certificateDao.update(modifiedCertificate);
-            logger.info("Certificate was validated and updated successfully " + updatedCertificate);
-            return updatedCertificate;
-        } else {
-            logger.error("Certificate with id wasn't found " + id);
-            throw new CertificateNotFoundException(id);
-        }
+    public Certificate update(Certificate certificate) throws InvalidResourceException {
+        certificateFieldsValidator.validate(certificate);
+        Certificate updatedCertificate = certificateDao.update(certificate);
+        logger.info("Certificate was validated and updated successfully " + updatedCertificate);
+        return updatedCertificate;
     }
 
-    private Certificate modifyForUpdate(Certificate fromDb, Certificate fromRequest) {
-        fromDb.setName(fromRequest.getName() == null ? fromDb.getName() : fromRequest.getName());
-        fromDb.setDescription(fromRequest.getDescription() == null ? fromDb.getDescription() : fromRequest.getDescription());
-        fromDb.setPrice(fromRequest.getPrice() == null ? fromDb.getPrice() : fromRequest.getPrice());
-        fromDb.setDuration(fromRequest.getDuration() == null ? fromDb.getDuration() : fromRequest.getDuration());
-        fromDb.getTags().addAll(fromRequest.getTags());
-        return fromDb;
+
+    @Override
+    public void delete(Certificate certificate) {
+        certificateDao.delete(certificate.getId());
+        logger.info(String.format("Certificate was deleted %s", certificate));
     }
 
-    /**
-     * Performs delete certificate operation.
-     * Delete certificate from database.
-     *
-     * @param id of certificate that need to be deleted
-     * @throws CertificateNotFoundException if there is not certificate with passed id
-     */
     @Override
-    public void delete(Long id) throws CertificateNotFoundException {
-        Optional<Certificate> optionalCertificate = certificateDao.findById(id);
-        if (optionalCertificate.isPresent()) {
-            certificateDao.delete(id);
-            logger.info("Certificate with id was deleted " + id);
-        } else {
-            logger.error("Certificate with id wasn't found " + id);
-            throw new CertificateNotFoundException(id);
-        }
-    }
-
-    /**
-     * Finds certificate and add to certificate new tags.
-     *
-     * @param certificateId id of certificate that need to be found
-     * @param tags          list of tags that need to be added to certificate
-     * @return certificate with added tags
-     * @throws CertificateNotFoundException if there is not certificate with passed id
-     * @throws InvalidTagException          tags list element is invalid
-     */
-    @Override
-    public Certificate addTags(Long certificateId, List<Tag> tags) throws CertificateNotFoundException, InvalidTagException {
+    public Certificate addTags(Certificate certificate, List<Tag> tags) throws InvalidResourceException {
         for (Tag tag : tags) {
             tagFieldsValidator.validate(tag);
         }
-        Optional<Certificate> optionalCertificate = certificateDao.findById(certificateId);
-        if (optionalCertificate.isPresent()) {
-            Certificate certificate = optionalCertificate.get();
-            List<Tag> certificateTags = certificate.getTags();
-            certificateTags.addAll(tags);
-            Certificate updatedCertificate = certificateDao.update(certificate);
-            logger.info("Certificate was updated with new tags " + updatedCertificate);
-            return updatedCertificate;
-        } else {
-            logger.error("Certificate with id wasn't found " + certificateId);
-            throw new CertificateNotFoundException(certificateId);
-        }
+        List<Tag> certificateTags = certificate.getTags();
+        certificateTags.addAll(tags);
+        Certificate updatedCertificate = certificateDao.update(certificate);
+        logger.info("Certificate was updated with new tags " + updatedCertificate);
+        return updatedCertificate;
     }
 
-    /**
-     * Performs delete certificate tag operation.
-     * Finds Certificate with passed id and finds tag with passed id.
-     *
-     * @param certificateId id of certificate that need to be found
-     * @param tagId         id of tag that need to be deleted
-     * @throws CertificateNotFoundException if there is not certificate with passed id
-     * @throws TagNotFoundException         if there is not tag with passed id
-     */
     @Override
-    public void deleteCertificateTag(Long certificateId, Long tagId) throws CertificateNotFoundException, TagNotFoundException {
-        Optional<Certificate> optionalCertificate = certificateDao.findById(certificateId);
-        if (optionalCertificate.isPresent()) {
-            Certificate certificate = optionalCertificate.get();
-            List<Tag> tags = certificate.getTags();
-            boolean tagExists = tags.stream().anyMatch(tag -> tag.getId().equals(tagId));
-            if (tagExists) {
-                tagDao.delete(tagId);
-                logger.info("Certificate tag was deleted successfully");
-            } else {
-                logger.error("Certificate tag with id wasn't found by id " + tagId);
-                throw new TagNotFoundException(tagId);
-            }
-        } else {
-            logger.error("Certificate with id wasn't found by id " + certificateId);
-            throw new CertificateNotFoundException(certificateId);
-        }
+    public void deleteCertificateTag(Certificate certificate, Tag tag) {
+        tagDao.delete(tag.getId());
+        logger.info("Certificate tag was deleted successfully");
     }
 
-    /**
-     * Finds certificate tag with passed id.
-     *
-     * @param certificateId id of certificate that need to be found
-     * @param tagId         id of certificate tag that need to be found
-     * @return certificate tag with passed id
-     * @throws CertificateNotFoundException if there is no certificate with passed id
-     * @throws TagNotFoundException         if there is no tag with passed id
-     */
+
     @Override
-    public Tag findCertificateTag(Long certificateId, Long tagId) throws CertificateNotFoundException, TagNotFoundException {
-        Optional<Certificate> optionalCertificate = certificateDao.findById(certificateId);
-        if (optionalCertificate.isPresent()) {
-            Certificate certificate = optionalCertificate.get();
-            List<Tag> tags = certificate.getTags();
-            Optional<Tag> optionalTag = tags.stream().filter(tag -> tag.getId().equals(tagId)).findAny();
-            if (optionalTag.isPresent()) {
-                Tag foundTag = optionalTag.get();
-                logger.info("Certificate tag was found " + foundTag);
-                return foundTag;
-            } else {
-                logger.error("Certificate tag wasn't found by id " + tagId);
-                throw new TagNotFoundException(tagId);
-            }
+    public Tag findCertificateTag(Certificate certificate, Long tagId) throws ResourceNotFoundException {
+        Optional<Tag> optionalTag = tagDao.findCertificateTag(certificate.getId(), tagId);
+        if (optionalTag.isPresent()) {
+            logger.info(String.format("Certificate tag was found %s", optionalTag.get()));
+            return optionalTag.get();
         } else {
-            logger.error("Certificate wasn't found by id " + certificateId);
-            throw new CertificateNotFoundException(certificateId);
+            logger.error(String.format("Certificate tag with id %d wasn't found ", tagId));
+            throw new ResourceNotFoundException(tagId);
         }
     }
 
     @Override
-    public List<Tag> findCertificateTags(Certificate foundCertificate, int page) {
-        return tagDao.findCertificateTagsPage(foundCertificate.getId(), page);
+    public List<Tag> findCertificateTagsPage(Certificate foundCertificate, int page) throws PageOutOfBoundsException {
+        if (page < 1 || page > tagDao.getCertificateTagsTotalPages(foundCertificate.getId())) {
+            throw new PageOutOfBoundsException(page, tagDao.getCertificateTagsTotalPages(foundCertificate.getId()), 1);
+        }
+        List<Tag> tagsPage = tagDao.findCertificateTagsPage(foundCertificate.getId(), page);
+        logger.info(String.format("Certificate tags on page %d were found %s", page, tagsPage));
+        return tagsPage;
     }
 
     @Override
@@ -253,17 +161,29 @@ public class CertificateRestService implements CertificateService {
     }
 
     @Override
-    public long getCertificateTagsTotalElements(Certificate certificate) {
-        return tagDao.getCertificateTagsTotalElements(certificate);
+    public int getCertificateTagsTotalElements(Certificate certificate) {
+        return tagDao.getCertificateTagsTotalElements(certificate.getId());
     }
 
     @Override
-    public long getTotalElements() {
+    public int getTotalElements() {
         return certificateDao.getTotalElements();
     }
 
     @Override
-    public long getTotalPages() {
+    public int getTotalPages() {
         return certificateDao.getTotalPages();
+    }
+
+    @Override
+    public Order findCertificateOrder(Certificate certificate) throws OrderNotFoundException {
+        Optional<Order> optionalOrder = orderDao.findByCertificateId(certificate.getId());
+        if (optionalOrder.isPresent()) {
+            logger.info(String.format("Certificate order was found %s", optionalOrder.get()));
+            return optionalOrder.get();
+        } else {
+            logger.info(String.format("Order for certificate wasn't found %s", certificate));
+            throw new OrderNotFoundException(certificate.getId());
+        }
     }
 }

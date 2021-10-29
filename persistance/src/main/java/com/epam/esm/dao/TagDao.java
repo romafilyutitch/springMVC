@@ -26,5 +26,7 @@ public interface TagDao extends Dao<Tag> {
 
     int getCertificateTagsTotalPages(Long certificateId);
 
-    long getCertificateTagsTotalElements(Long certificateId);
+    int getCertificateTagsTotalElements(Long certificateId);
+
+    Optional<Tag> findCertificateTag(long certificateId, long tagId);
 }
