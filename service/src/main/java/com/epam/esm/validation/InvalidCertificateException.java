@@ -1,9 +1,5 @@
 package com.epam.esm.validation;
 
-public class InvalidCertificateException extends Exception {
-    private final String code = "03";
+public class InvalidCertificateException extends InvalidResourceException {
 
-    public String getCode() {
-        return code;
-    }
 }

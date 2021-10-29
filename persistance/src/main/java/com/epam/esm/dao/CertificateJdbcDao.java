@@ -39,9 +39,16 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     };
     private static final String FIND_CERTIFICATE_TAG_BY_CERTIFICATE_ID_AND_TAG_ID_SQL = "select id, certificate_id, tag_id from certificate_tag where certificate_id = ? and tag_id = ?";
     private static final String SAVE_CERTIFICATE_TAG_SQL = "insert into certificate_tag (certificate_id, tag_id) values (?, ?)";
-    private static final String FIND_CERTIFICATE_BY_ORDER_ID_SQL = "select id, name, description, price, duration, create_date, last_update_date from gift_certificate " +
+    private static final String FIND_CERTIFICATE_BY_ORDER_ID_SQL = "select gift_certificate.id, " +
+            "gift_certificate.name, " +
+            "gift_certificate.description, " +
+            "gift_certificate.price, " +
+            "gift_certificate.duration, " +
+            "gift_certificate.create_date, " +
+            "gift_certificate.last_update_date " +
+            "from gift_certificate " +
             "left join certificate_order on certificate_order.certificate_id = gift_certificate.id " +
-            "where order_id = ?";
+            "where certificate_order.id = ?";
 
     private final FindCertificatesSqlBuilder findCertificatesSqlBuilder;
     private final TagDao tagDao;
@@ -84,7 +91,7 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
      * @return list of all certificates from database
      */
     @Override
-    public List<Certificate> findPage(long page) {
+    public List<Certificate> findPage(int page) {
         List<Certificate> allCertificates = super.findPage(page);
         allCertificates.forEach(this::addTagsToCertificate);
         return allCertificates;
@@ -101,7 +108,7 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
      * empty optional otherwise
      */
     @Override
-    public Optional<Certificate> findById(Long id) {
+    public Optional<Certificate> findById(long id) {
         Optional<Certificate> certificate = super.findById(id);
         certificate.ifPresent(this::addTagsToCertificate);
         return certificate;
@@ -130,19 +137,26 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
      * table that links entities together(certificate_tag) and tag dao to save unsaved tags and link saved tags with
      * certificate.
      *
-     * @param entity entity that need to be updated
+     * @param ceritficate entity that need to be updated
      * @return updated certificate
      */
     @Override
-    public Certificate update(Certificate entity) {
-        Certificate updatedCertificate = super.update(entity);
-        updatedCertificate.getTags().addAll(entity.getTags());
+    public Certificate update(Certificate ceritficate) {
+        Optional<Certificate> optionalCertificate = findById(ceritficate.getId());
+        Certificate certificateFromTable = optionalCertificate.orElseThrow(DaoException::new);
+        certificateFromTable.setName(ceritficate.getName() == null ? certificateFromTable.getName() : ceritficate.getName());
+        certificateFromTable.setDescription(ceritficate.getDescription() == null ? certificateFromTable.getDescription() : ceritficate.getDescription());
+        certificateFromTable.setPrice(ceritficate.getPrice() == 0.0 ? certificateFromTable.getPrice() : ceritficate.getPrice());
+        certificateFromTable.setDuration(ceritficate.getDuration() == 0 ? certificateFromTable.getDuration() : ceritficate.getDuration());
+        certificateFromTable.getTags().addAll(ceritficate.getTags());
+        Certificate updatedCertificate = super.update(certificateFromTable);
+        updatedCertificate.getTags().addAll(ceritficate.getTags());
         saveAndLinkTagsWithCertificate(updatedCertificate);
         return findById(updatedCertificate.getId()).orElseThrow(DaoException::new);
     }
 
     @Override
-    public Optional<Certificate> findByOrderId(Long orderId) {
+    public Optional<Certificate> findByOrderId(long orderId) {
         List<Certificate> foundCertificates = template.query(FIND_CERTIFICATE_BY_ORDER_ID_SQL, MAPPER, orderId);
         foundCertificates.forEach(this::addTagsToCertificate);
         return foundCertificates.isEmpty() ? Optional.empty() : Optional.of(foundCertificates.get(0));

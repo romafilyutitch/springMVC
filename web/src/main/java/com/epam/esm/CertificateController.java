@@ -4,15 +4,15 @@ import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Order;
 import com.epam.esm.model.Tag;
 import com.epam.esm.model.User;
-import com.epam.esm.service.CertificateNotFoundException;
 import com.epam.esm.service.CertificateService;
-import com.epam.esm.service.OrderService;
-import com.epam.esm.service.TagNotFoundException;
+import com.epam.esm.service.OrderNotFoundException;
+import com.epam.esm.service.PageOutOfBoundsException;
+import com.epam.esm.service.ResourceNotFoundException;
 import com.epam.esm.service.UserService;
 import com.epam.esm.validation.InvalidCertificateException;
+import com.epam.esm.validation.InvalidResourceException;
 import com.epam.esm.validation.InvalidTagException;
 import org.springframework.context.MessageSource;
-import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
@@ -45,30 +45,20 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequestMapping("/certificates")
 public class CertificateController {
     private final CertificateService certificateService;
-    private final OrderService orderService;
     private final UserService userService;
     private final MessageSource messageSource;
 
-    public CertificateController(CertificateService certificateService, OrderService orderService, UserService userService, MessageSource messageSource) {
+    public CertificateController(CertificateService certificateService, UserService userService, MessageSource messageSource) {
         this.certificateService = certificateService;
-        this.orderService = orderService;
         this.userService = userService;
         this.messageSource = messageSource;
     }
 
-    /**
-     * Handles GET certificates request and shows all certificates.
-     * If passed name param then finds certificates by part of name.
-     * If passed tagName param then finds certificates by tag name
-     *
-     * @param findParams find parameters.
-     * @return controller response in JSON format and OK or NOT FOUND status code
-     */
     @GetMapping
     public PagedModel<Certificate> showCertificates(
             @RequestParam(value = "page", defaultValue = "1") long page,
-            @RequestParam(required = false) LinkedHashMap<String, String> findParams) throws CertificateNotFoundException, TagNotFoundException {
-        List<Certificate> certificates = findParams.isEmpty() ? certificateService.findAll() : certificateService.findAllWithParameters(findParams);
+            @RequestParam(required = false) LinkedHashMap<String, String> findParams) throws PageOutOfBoundsException, ResourceNotFoundException {
+        List<Certificate> certificates = findParams.isEmpty() ? certificateService.findPage(1) : certificateService.findAllWithParameters(findParams);
         findParams.remove("page");
         for (Certificate certificate : certificates) {
             if (certificate.getTags().size() > 0) {
@@ -98,15 +88,8 @@ public class CertificateController {
         return certificates.isEmpty() ? PagedModel.empty(metadata) : PagedModel.of(certificates, metadata, links);
     }
 
-    /**
-     * Handles GET certificate with passed id request
-     *
-     * @param id if of certificate that need to be found
-     * @return controller response in JSON format and OK status code
-     * @throws CertificateNotFoundException if there is not certificate with passed id
-     */
     @GetMapping("/{id}")
-    public Certificate showCertificate(@PathVariable("id") long id) throws CertificateNotFoundException, TagNotFoundException {
+    public Certificate showCertificate(@PathVariable("id") long id) throws ResourceNotFoundException, PageOutOfBoundsException {
         Certificate foundCertificate = certificateService.findById(id);
         Link selfLink = linkTo(methodOn(CertificateController.class).showCertificate(id)).withSelfRel();
         foundCertificate.add(selfLink);
@@ -125,9 +108,9 @@ public class CertificateController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Certificate saveCertificate(@RequestBody Certificate certificate) throws InvalidCertificateException, CertificateNotFoundException, TagNotFoundException {
+    public Certificate saveCertificate(@RequestBody Certificate certificate) throws InvalidResourceException, ResourceNotFoundException, PageOutOfBoundsException {
         Certificate savedCertificate = certificateService.save(certificate);
-        Link selfLink = linkTo(methodOn(CertificateController.class).showCertificate(savedCertificate.getId())).withRel("saved");
+        Link selfLink = linkTo(methodOn(CertificateController.class).showCertificate(savedCertificate.getId())).withSelfRel();
         savedCertificate.add(selfLink);
         if (savedCertificate.getTags().size() > 0) {
             Link tagLink = linkTo(methodOn(CertificateController.class).showCertificateTags(savedCertificate.getId(), 1)).withRel("tags");
@@ -136,49 +119,31 @@ public class CertificateController {
         return savedCertificate;
     }
 
-    /**
-     * Handles POST certificate with passed id request and updates certificate
-     *
-     * @param id          id of certificate that need to be updated
-     * @param certificate certificate data that need to update
-     * @return controller response in JSON format and OK status code
-     * @throws CertificateNotFoundException if certificate with passed id not found
-     */
     @PostMapping("/{id}")
-    public Certificate updateCertificate(@PathVariable("id") long id, @RequestBody Certificate certificate) throws CertificateNotFoundException, InvalidCertificateException, TagNotFoundException {
-        Certificate updatedCertificate = certificateService.update(id, certificate);
+    public Certificate updateCertificate(@PathVariable("id") long id, @RequestBody Certificate certificate) throws ResourceNotFoundException, InvalidResourceException, PageOutOfBoundsException {
+        Certificate foundCertificate = certificateService.findById(id);
+        certificate.setId(foundCertificate.getId());
+        Certificate updatedCertificate = certificateService.update(certificate);
         Link selfLink = linkTo(methodOn(CertificateController.class).showCertificate(id)).withSelfRel();
+        updatedCertificate.add(selfLink);
         if (updatedCertificate.getTags().size() > 0) {
             Link tagsLink = linkTo(methodOn(CertificateController.class).showCertificateTags(id,1 )).withRel("tags");
             updatedCertificate.add(tagsLink);
         }
-        return certificate;
+        return updatedCertificate;
     }
 
-    /**
-     * Handles DELETE certificate with passed id and deletes it
-     *
-     * @param id if of certificate that need to be deleted
-     * @return NO CONTENT status code
-     * @throws CertificateNotFoundException if there is not certificate with passed id
-     */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCertificate(@PathVariable("id") long id) throws CertificateNotFoundException {
-        certificateService.delete(id);
+    public void deleteCertificate(@PathVariable("id") long id) throws ResourceNotFoundException {
+        Certificate foundCertificate = certificateService.findById(id);
+        certificateService.delete(foundCertificate);
     }
 
-    /**
-     * Handles GET certificate tags request and show tags
-     *
-     * @param id certificate whose tags need to be found
-     * @return controller response in JSON format and OK or NOT FOUND status code
-     * @throws CertificateNotFoundException if there is not certificate with passed id
-     */
     @GetMapping("/{id}/tags")
-    public PagedModel<Tag> showCertificateTags(@PathVariable("id") long id, @RequestParam(defaultValue = "1") int page) throws CertificateNotFoundException, TagNotFoundException {
+    public PagedModel<Tag> showCertificateTags(@PathVariable("id") long id, @RequestParam(defaultValue = "1") int page) throws ResourceNotFoundException, PageOutOfBoundsException {
         Certificate foundCertificate = certificateService.findById(id);
-        List<Tag> tags = certificateService.findCertificateTags(foundCertificate, page);
+        List<Tag> tags = certificateService.findCertificateTagsPage(foundCertificate, page);
         for (Tag tag : tags) {
             Link tagLink = linkTo(methodOn(CertificateController.class).showCertificateTag(id, tag.getId())).withRel("tag");
             tag.add(tagLink);
@@ -203,34 +168,19 @@ public class CertificateController {
         return tags.isEmpty() ? PagedModel.empty(metadata) : PagedModel.of(tags, metadata);
     }
 
-    /**
-     * Handles GET certificate tag and show certificate tag
-     *
-     * @param id    if of certificate that need to be found
-     * @param tagId if of certificate tag that need to be found
-     * @return controller response in JSON format and OK status code
-     * @throws CertificateNotFoundException if there is no certificate with passed id
-     * @throws TagNotFoundException         if there is not tag with passed id
-     */
     @GetMapping("/{id}/tags/{tagId}")
-    public Tag showCertificateTag(@PathVariable("id") long id, @PathVariable("tagId") long tagId) throws CertificateNotFoundException, TagNotFoundException {
-        Tag foundTag = certificateService.findCertificateTag(id, tagId);
+    public Tag showCertificateTag(@PathVariable("id") long id, @PathVariable("tagId") long tagId) throws ResourceNotFoundException {
+        Certificate foundCertificate = certificateService.findById(id);
+        Tag foundTag = certificateService.findCertificateTag(foundCertificate, tagId);
         Link selfLink = linkTo(methodOn(CertificateController.class).showCertificateTag(id, tagId)).withSelfRel();
         foundTag.add(selfLink);
         return foundTag;
     }
 
-    /**
-     * Handles POST certificate tags request and add new tags to certificate
-     *
-     * @param id   if of certificate to which need to add new tags
-     * @param tags list of tags that need to be added to certificate
-     * @return controller response in JSON format and OK status code
-     * @throws CertificateNotFoundException if there is no certificate with passed id
-     */
     @PostMapping("/{id}/tags")
-    public Certificate addTagToCertificate(@PathVariable("id") long id, @RequestBody List<Tag> tags) throws CertificateNotFoundException, InvalidTagException, TagNotFoundException {
-        Certificate updatedCertificate = certificateService.addTags(id, tags);
+    public Certificate addTagToCertificate(@PathVariable("id") long id, @RequestBody List<Tag> tags) throws ResourceNotFoundException, InvalidResourceException, PageOutOfBoundsException {
+        Certificate foundCertificate = certificateService.findById(id);
+        Certificate updatedCertificate = certificateService.addTags(foundCertificate, tags);
         Link selfLink = linkTo(methodOn(CertificateController.class).showCertificate(updatedCertificate.getId())).withSelfRel();
         updatedCertificate.add(selfLink);
         if (updatedCertificate.getTags().size() > 0) {
@@ -240,93 +190,63 @@ public class CertificateController {
         return updatedCertificate;
     }
 
-    /**
-     * Handles DELETE certificate tag request and deletes certificate tag
-     *
-     * @param id    if of certificate that contains needed tag
-     * @param tagId id of tag that need to be deleted
-     * @throws TagNotFoundException         if there is no tag with passed id
-     * @throws CertificateNotFoundException if there is no certificate with passed id
-     */
+
     @DeleteMapping("/{id}/tags/{tagId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCertificateTag(@PathVariable("id") long id, @PathVariable("tagId") long tagId) throws TagNotFoundException, CertificateNotFoundException {
-        certificateService.deleteCertificateTag(id, tagId);
+    public void deleteCertificateTag(@PathVariable("id") long id, @PathVariable("tagId") long tagId) throws ResourceNotFoundException {
+        Certificate foundCertificate = certificateService.findById(id);
+        Tag foundTag = certificateService.findCertificateTag(foundCertificate, tagId);
+        certificateService.deleteCertificateTag(foundCertificate, foundTag);
     }
 
     @GetMapping("/{id}/order")
-    public Order showCertificateOrder(@PathVariable Long id) {
-        return orderService.findCertificateOrder(id);
+    public Order showCertificateOrder(@PathVariable Long id) throws ResourceNotFoundException, PageOutOfBoundsException {
+        Certificate foundCertificate = certificateService.findById(id);
+        Order foundOrder = certificateService.findCertificateOrder(foundCertificate);
+        Link selfLink = linkTo(methodOn(CertificateController.class).showCertificateOrder(id)).withSelfRel();
+        Link certificateLink = linkTo(methodOn(CertificateController.class).showCertificate(foundCertificate.getId())).withRel("certificate");
+        foundOrder.add(selfLink);
+        foundOrder.add(certificateLink);
+        return foundOrder;
     }
 
     @PostMapping("/{id}/order")
-    public Order makeOrder(@PathVariable Long id, @RequestBody User user) {
-        System.out.println(user.getName());
-        User userServiceByName = userService.findByName(user.getName());
-        return orderService.makeOrder(id, userServiceByName.getId());
+    public Order makeOrder(@PathVariable Long id, @RequestBody User user) throws ResourceNotFoundException, PageOutOfBoundsException {
+        User foundUser = userService.findByName(user.getName());
+        Certificate foundCertificate = certificateService.findById(id);
+        Order savedOrder = userService.orderCertificate(foundUser, foundCertificate);
+        Link selfLink = linkTo(methodOn(CertificateController.class).showCertificateOrder(id)).withSelfRel();
+        savedOrder.add(selfLink);
+        return savedOrder;
     }
 
-    /**
-     * Exception handlers methods that handles CertificateNotFoundException if
-     * exception occurs in other methods and response with localized message
-     *
-     * @param exception exception that occur in controller
-     * @param locale    client locale
-     * @return controller custom localized error response in JSON format
-     */
-    @ExceptionHandler(CertificateNotFoundException.class)
-    public ResponseEntity<Error> certificateNotFound(CertificateNotFoundException exception, Locale locale) {
-        String message = messageSource.getMessage("certificate.notFound", new Object[]{exception.getCertificateId()}, locale);
-        String code = HttpStatus.NOT_FOUND.value() + exception.getCode();
-        Error error = new Error(code, message);
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Error> certificateNotFound(ResourceNotFoundException exception, Locale locale) {
+        String message = messageSource.getMessage("resource.notFound", new Object[]{exception.getResourceId()}, locale);
+        Error error = new Error(ErrorCode.NOT_FOUND, message);
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
-    /**
-     * Exception handlers methods that handles TagNotFoundException if
-     * exception occurs in other methods and response with localized message
-     *
-     * @param exception exception that occur in controller
-     * @param locale    client locale
-     * @return controller custom localized error response in JSON format
-     */
-    @ExceptionHandler(TagNotFoundException.class)
-    public ResponseEntity<Error> tagNotFound(TagNotFoundException exception, Locale locale) {
-        String message = messageSource.getMessage("tag.notFound", new Object[]{exception.getTagId()}, locale);
-        String code = HttpStatus.NOT_FOUND.value() + exception.getCode();
-        Error error = new Error(code, message);
+    @ExceptionHandler(InvalidResourceException.class)
+    public ResponseEntity<Error> invalidCertificate(InvalidResourceException exception, Locale locale) {
+        String message = messageSource.getMessage("resource.invalid", new Object[]{}, locale);;
+        Error error = new Error(ErrorCode.INVALID, message);
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<Error> orderNotFound(OrderNotFoundException exception, Locale locale) {
+        String message = messageSource.getMessage("order.notFound", new Object[]{exception.getResourceId()}, locale);
+        Error error = new Error(ErrorCode.NOT_FOUND, message);
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
-    /**
-     * Exception handler method to handle InvalidCertificateException if
-     * exception occurs in other methods and response with localized message.
-     *
-     * @param exception exception that occur in controller
-     * @param locale    client locale
-     * @return controller custom localized error response in JSON format
-     */
-    @ExceptionHandler(InvalidCertificateException.class)
-    public ResponseEntity<Error> invalidCertificate(InvalidCertificateException exception, Locale locale) {
-        String message = messageSource.getMessage("certificate.invalid", new Object[]{}, locale);
-        String code = HttpStatus.BAD_REQUEST.value() + exception.getCode();
-        Error error = new Error(code, message);
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    @ExceptionHandler(PageOutOfBoundsException.class)
+    public ResponseEntity<Error> pageOutOfBounds(PageOutOfBoundsException exception, Locale locale) {
+        String message = messageSource.getMessage("page.outOfBounds", new Object[]{exception.getCurrentPage(), exception.getMinPage(), exception.getMaxPage()}, locale);
+        Error error = new Error(ErrorCode.PAGE_OUT_OF_BOUNDS, message);
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
-    /**
-     * Exception handler methods to handle InvalidTagException if
-     * exception occurs in other methods and response with localized message.
-     *
-     * @param exception exception that occur in controller
-     * @param locale    client locale
-     * @return controller custom localized response in JSON format
-     */
-    @ExceptionHandler(InvalidTagException.class)
-    public ResponseEntity<Error> invalidTag(InvalidTagException exception, Locale locale) {
-        String message = messageSource.getMessage("tag.invalid", new Object[]{}, locale);
-        String code = HttpStatus.BAD_REQUEST.value() + exception.getCode();
-        Error error = new Error(code, message);
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
-    }
 }

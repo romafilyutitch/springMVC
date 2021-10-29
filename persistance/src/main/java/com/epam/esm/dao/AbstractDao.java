@@ -66,7 +66,7 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
      * @return list of all entities from database table
      */
     @Override
-    public List<T> findPage(long page) {
+    public List<T> findPage(int page) {
         return template.query(findAllSql, rowMapper, (ROWS_PER_PAGE * page) - ROWS_PER_PAGE);
     }
 
@@ -79,7 +79,7 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
      * empty optional otherwise
      */
     @Override
-    public Optional<T> findById(Long id) {
+    public Optional<T> findById(long id) {
         List<T> query = template.query(findByIdSql, rowMapper, id);
         return query.isEmpty() ? Optional.empty() : Optional.of(query.get(0));
     }
@@ -120,20 +120,20 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
      * @param id id of entity that need to be deleted
      */
     @Override
-    public void delete(Long id) {
+    public void delete(long id) {
         template.update(deleteSql, id);
     }
 
     @Override
-    public long getTotalPages() {
-        Long rows = template.queryForObject(countSql, (rs, rowNum) -> rs.getLong("count(*)"));
-        long pages = (rows / ROWS_PER_PAGE);
+    public int getTotalPages() {
+        int rows = template.queryForObject(countSql, (rs, rowNum) -> rs.getInt("count(*)"));
+        int pages = (rows / ROWS_PER_PAGE);
         return rows % ROWS_PER_PAGE == 0 ? pages : ++pages;
     }
 
     @Override
-    public long getTotalElements() {
-        return template.queryForObject(countSql, (rs, rowNum) -> rs.getLong("count(*)"));
+    public int getTotalElements() {
+        return template.queryForObject(countSql, (rs, rowNum) -> rs.getInt("count(*)"));
     }
 
     /**

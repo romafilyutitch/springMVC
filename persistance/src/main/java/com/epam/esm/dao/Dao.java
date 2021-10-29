@@ -19,7 +19,7 @@ public interface Dao<T extends Entity> {
      *
      * @return list of entities from database
      */
-    List<T> findPage(long page);
+    List<T> findPage(int page);
 
     /**
      * Finds and returns entity that have passed id
@@ -28,7 +28,7 @@ public interface Dao<T extends Entity> {
      * @return Optional that contains entity if entity with passed id exists
      * or empty optional otherwise
      */
-    Optional<T> findById(Long id);
+    Optional<T> findById(long id);
 
     /**
      * Perform entity save operation. And assigns calculates by database id to saved entity
@@ -51,9 +51,9 @@ public interface Dao<T extends Entity> {
      *
      * @param id id of entity that need to be deleted
      */
-    void delete(Long id);
+    void delete(long id);
 
-    long getTotalElements();
+    int getTotalElements();
 
-    long getTotalPages();
+    int getTotalPages();
 }

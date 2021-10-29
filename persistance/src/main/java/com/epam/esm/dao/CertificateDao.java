@@ -14,6 +14,6 @@ public interface CertificateDao extends Dao<Certificate> {
 
     List<Certificate> findWithParameters(LinkedHashMap<String, String> findParameters);
 
-    Optional<Certificate> findByOrderId(Long orderId);
+    Optional<Certificate> findByOrderId(long orderId);
 
 }

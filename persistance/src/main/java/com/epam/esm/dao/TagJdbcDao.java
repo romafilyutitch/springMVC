@@ -1,6 +1,7 @@
 package com.epam.esm.dao;
 
 import com.epam.esm.model.Tag;
+import org.apache.catalina.mapper.Mapper;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
@@ -84,13 +85,19 @@ public class TagJdbcDao extends AbstractDao<Tag> implements TagDao {
 
     @Override
     public int getCertificateTagsTotalPages(Long certificateId) {
-        Integer rows = template.queryForObject(COUNT_CERTIFICATE_TAGS_SQL, (rs, rowNum) -> rs.getInt(COUNT_COLUMN), certificateId);
-        int pages = (rows / ROWS_PER_PAGE) + 1;
+        int rows = template.queryForObject(COUNT_CERTIFICATE_TAGS_SQL, (rs, rowNum) -> rs.getInt(COUNT_COLUMN), certificateId);
+        int pages = (rows / ROWS_PER_PAGE);
         return rows % ROWS_PER_PAGE == 0 ? pages : ++pages;
     }
 
     @Override
-    public long getCertificateTagsTotalElements(Long certificateId) {
-        return template.queryForObject(COUNT_CERTIFICATE_TAGS_SQL, (rs, rowNum) -> rs.getLong(COUNT_COLUMN), certificateId);
+    public int getCertificateTagsTotalElements(Long certificateId) {
+        return template.queryForObject(COUNT_CERTIFICATE_TAGS_SQL, (rs, rowNum) -> rs.getInt(COUNT_COLUMN), certificateId);
+    }
+
+    @Override
+    public Optional<Tag> findCertificateTag(long certificateId, long tagId) {
+        List<Tag> foundTags = template.query("select tag.id, tag.name from tag left join certificate_tag on certificate_tag.tag_id = tag.id where certificate_tag.certificate_id = ? and certificate_tag.tag_id = ?", MAPPER, certificateId, tagId);
+        return foundTags.isEmpty() ? Optional.empty() : Optional.of(foundTags.get(0));
     }
 }
