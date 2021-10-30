@@ -20,7 +20,7 @@ public interface CertificateService extends Service<Certificate> {
 
     void deleteCertificateTag(Certificate certificate, Tag tag);
 
-    Tag findCertificateTag(Certificate certificate, Long tagId) throws ResourceNotFoundException;
+    Tag findCertificateTag(Certificate certificate, long tagId) throws ResourceNotFoundException;
 
     List<Tag> findCertificateTagsPage(Certificate foundCertificate, int page) throws PageOutOfBoundsException;
 

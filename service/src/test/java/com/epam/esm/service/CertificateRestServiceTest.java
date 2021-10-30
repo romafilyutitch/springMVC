@@ -1,11 +1,14 @@
 package com.epam.esm.service;
 
 import com.epam.esm.dao.CertificateDao;
+import com.epam.esm.dao.OrderDao;
 import com.epam.esm.dao.TagDao;
 import com.epam.esm.model.Certificate;
+import com.epam.esm.model.Order;
 import com.epam.esm.model.Tag;
 import com.epam.esm.validation.CertificateValidator;
 import com.epam.esm.validation.InvalidCertificateException;
+import com.epam.esm.validation.InvalidResourceException;
 import com.epam.esm.validation.InvalidTagException;
 import com.epam.esm.validation.TagValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,64 +21,53 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 class CertificateRestServiceTest {
     private CertificateRestService service;
-
-    private Certificate certificate;
-
     private CertificateDao certificateDao;
-
     private TagDao tagDao;
-
+    private OrderDao orderDao;
     private CertificateValidator certificateFieldsValidator;
-
     private TagValidator tagFieldsValidator;
+    private Certificate certificate;
 
     @BeforeEach
     public void setUp() {
-        certificate = new Certificate("test", "test", 1.1, 2);
+        certificate = new Certificate(1, "name", "description", 100.0, 100, LocalDateTime.now(), LocalDateTime.now());
         certificateDao = mock(CertificateDao.class);
         tagDao = mock(TagDao.class);
+        orderDao = mock(OrderDao.class);
         certificateFieldsValidator = mock(CertificateValidator.class);
         tagFieldsValidator = mock(TagValidator.class);
-        service = new CertificateRestService(certificateDao, tagDao, certificateFieldsValidator, tagFieldsValidator);
-    }
-
-
-    @Test
-    public void findAll_shouldReturnAllCertificates() {
-        List<Certificate> mockCertificates = Collections.singletonList(certificate);
-        when(certificateDao.findPage()).thenReturn(mockCertificates);
-
-        List<Certificate> allCertificates = service.findAll();
-
-        assertEquals(mockCertificates, allCertificates);
-        verify(certificateDao).findPage();
+        service = new CertificateRestService(certificateDao, tagDao, orderDao, certificateFieldsValidator, tagFieldsValidator);
     }
 
     @Test
-    public void findById_shouldReturnSavedCertificate() throws CertificateNotFoundException {
-        when(certificateDao.findById(1L)).thenReturn(Optional.of(certificate));
+    public void findPage_shouldReturnFirstPage() throws PageOutOfBoundsException {
+        when(certificateDao.getTotalPages()).thenReturn(1);
+        List<Certificate> certificates = Collections.singletonList(certificate);
+        when(certificateDao.findPage(1)).thenReturn(certificates);
+        List<Certificate> foundPage = service.findPage(1);
 
-        Certificate foundCertificate = service.findById(1L);
+        assertEquals(certificates, foundPage);
 
-        assertEquals(certificate, foundCertificate);
-        verify(certificateDao).findById(1L);
+        verify(certificateDao).getTotalPages();
+        verify(certificateDao).findPage(1);
     }
 
     @Test
-    public void findById_shouldThrowExceptionWhenThereIsNoCertificateWithId() {
-        when(certificateDao.findById(1L)).thenReturn(Optional.empty());
+    public void findPage_shouldThrowExceptionIfPageOutOfBounds() {
+        when(certificateDao.getTotalPages()).thenReturn(1);
 
-        assertThrows(CertificateNotFoundException.class, () -> service.findById(1L));
+        assertThrows(PageOutOfBoundsException.class, () -> service.findPage(100));
 
-        verify(certificateDao).findById(1L);
+        verify(certificateDao, atLeastOnce()).getTotalPages();
     }
 
     @Test
-    public void findWithParameters_shouldReturnCertificatesThatMatchesPassedParameters() {
+    public void findWithParameters_shouldReturnCertificatesThatMatchesPassedParameters() throws PageOutOfBoundsException {
         LinkedHashMap<String, String> map = new LinkedHashMap<>();
         map.put("partOfName", "e");
         map.put("partOfDescription", "e");
@@ -88,170 +80,212 @@ class CertificateRestServiceTest {
         verify(certificateDao).findWithParameters(map);
     }
 
-
     @Test
-    public void save_shouldSaveCertificate() throws InvalidCertificateException {
-        Certificate unsaved = new Certificate(null, "saved", "saved", 1.1, 1, LocalDateTime.now(), LocalDateTime.now());
-        Certificate saved = new Certificate(1L, "saved", "saved", 1.1, 1, LocalDateTime.now(), LocalDateTime.now());
-        when(certificateDao.save(unsaved)).thenReturn(saved);
-        doNothing().when(certificateFieldsValidator).validate(unsaved);
+    public void findById_shouldReturnCertificateById() throws ResourceNotFoundException {
+        when(certificateDao.findById(1)).thenReturn(Optional.of(certificate));
+        Certificate foundCertificate = service.findById(1);
 
-        Certificate savedCertificate = service.save(unsaved);
-
-        assertEquals(saved, savedCertificate);
-        verify(certificateDao).save(unsaved);
-        verify(certificateFieldsValidator).validate(unsaved);
+        assertEquals(certificate, foundCertificate);
+        verify(certificateDao).findById(1);
     }
 
     @Test
-    public void save_shouldThrowExceptionIfSavedCertificateIsInvalid() throws InvalidCertificateException {
-        Certificate invalidCertificate = new Certificate(null, "", "", 1.1, 1, LocalDateTime.now(), LocalDateTime.now());
-        doThrow(InvalidCertificateException.class).when(certificateFieldsValidator).validate(invalidCertificate);
+    public void findById_shouldThrowExceptionIfThereIsNoCertificateWithId() {
+        when(certificateDao.findById(1)).thenReturn(Optional.empty());
 
-        assertThrows(InvalidCertificateException.class, () -> service.save(invalidCertificate));
+        assertThrows(ResourceNotFoundException.class, () -> service.findById(1));
 
-        verify(certificateFieldsValidator).validate(invalidCertificate);
+        verify(certificateDao).findById(1);
     }
 
+    @Test
+    public void save_shouldReturnSavedCertificate() throws InvalidResourceException {
+        doNothing().when(certificateFieldsValidator).validate(certificate);
+        when(certificateDao.save(certificate)).thenReturn(certificate);
+
+        Certificate savedCertificate = service.save(certificate);
+
+        assertEquals(certificate, savedCertificate);
+        verify(certificateFieldsValidator).validate(certificate);
+        verify(certificateDao).save(certificate);
+    }
 
     @Test
-    public void update_shouldUpdateCertificate() throws CertificateNotFoundException, InvalidCertificateException {
-        when(certificateDao.findById(1L)).thenReturn(Optional.of(certificate));
-        certificate.setName("updated");
+    public void save_shouldThrowExceptionWhenCertificateIsInvalid() throws InvalidResourceException {
+        doThrow(InvalidCertificateException.class).when(certificateFieldsValidator).validate(certificate);
+
+        assertThrows(InvalidResourceException.class, () -> service.save(certificate));
+
+        verify(certificateFieldsValidator).validate(certificate);
+    }
+
+    @Test
+    public void update_shouldReturnUpdatedCertificate() throws InvalidResourceException {
+        doNothing().when(certificateFieldsValidator).validate(certificate);
         when(certificateDao.update(certificate)).thenReturn(certificate);
 
-        Certificate updated = service.update(1L, certificate);
+        Certificate updatedCertificate = service.update(certificate);
 
-        assertEquals(certificate, updated);
-        verify(certificateDao).findById(1L);
+        assertEquals(certificate, updatedCertificate);
+        verify(certificateFieldsValidator).validate(certificate);
         verify(certificateDao).update(certificate);
     }
 
     @Test
-    public void update_shouldThrowExceptionWhenThereIsNoCertificateWithId() {
-        when(certificateDao.findById(1L)).thenReturn(Optional.empty());
+    public void update_shouldThrowExceptionWhenCertificateIsInvalid() throws InvalidResourceException {
+        doThrow(InvalidCertificateException.class).when(certificateFieldsValidator).validate(certificate);
 
-        assertThrows(CertificateNotFoundException.class, () -> service.update(1L, certificate));
+        assertThrows(InvalidResourceException.class, () -> service.update(certificate));
 
-        verify(certificateDao).findById(1L);
+        verify(certificateFieldsValidator).validate(certificate);
     }
 
     @Test
-    public void delete_shouldThrowExceptionWhenThereIsNoCertificateWithId() {
-        when(certificateDao.findById(1L)).thenReturn(Optional.empty());
+    public void delete_shouldCertificate() {
+        doNothing().when(certificateDao).delete(certificate.getId());
 
-        assertThrows(CertificateNotFoundException.class, () -> service.delete(1L));
+        service.delete(certificate);
 
-        verify(certificateDao).findById(1L);
+        verify(certificateDao).delete(certificate.getId());
     }
 
     @Test
-    public void delete_shouldDeleteCertificate() {
-        when(certificateDao.findById(1L)).thenReturn(Optional.of(certificate));
+    public void addTags_shouldReturnCertificateWithTagAddedTags() throws InvalidResourceException {
+        Tag tag = new Tag(1, "tag");
+        List<Tag> tags = Collections.singletonList(tag);
+        doNothing().when(tagFieldsValidator).validate(tag);
+        when(certificateDao.update(certificate)).thenReturn(certificate);
 
-        assertDoesNotThrow(() -> service.delete(1L));
+        Certificate updatedCertificate = service.addTags(certificate, tags);
 
-        verify(certificateDao).findById(1L);
-        verify(certificateDao).delete(1L);
-
-    }
-
-
-    @Test
-    public void findCertificateTag_shouldGetCertificateTag() throws TagNotFoundException, CertificateNotFoundException {
-        Tag tag = new Tag(1L, "Tag");
-        certificate.getTags().add(tag);
-        when(certificateDao.findById(1L)).thenReturn(Optional.of(certificate));
-
-        Tag certificateTag = service.findCertificateTag(1L, 1L);
-
-        assertEquals(tag, certificateTag);
-        verify(certificateDao).findById(1L);
+        assertTrue(updatedCertificate.getTags().contains(tag));
+        assertEquals(certificate, updatedCertificate);
+        verify(tagFieldsValidator).validate(tag);
+        verify(certificateDao).update(certificate);
 
     }
 
     @Test
-    public void findCertificateTag_shouldThrowExceptionWhenCertificateNotFound() {
-        when(certificateDao.findById(1L)).thenReturn(Optional.empty());
+    public void addTags_shouldThrowExceptionIfTagIsInvalid() throws InvalidResourceException {
+        Tag invalid = new Tag("");
+        List<Tag> tags = Collections.singletonList(invalid);
+        certificate.getTags().add(invalid);
+        doThrow(InvalidTagException.class).when(tagFieldsValidator).validate(invalid);
 
-        assertThrows(CertificateNotFoundException.class, () -> service.findCertificateTag(1L, 1L));
-
-        verify(certificateDao).findById(1L);
-    }
-
-    @Test
-    public void findCertificateTag_shouldThrowExceptionWhenTagNotFound() {
-        when(certificateDao.findById(1L)).thenReturn(Optional.of(certificate));
-
-        assertThrows(TagNotFoundException.class, () -> service.findCertificateTag(1L, 1L));
-
-        verify(certificateDao).findById(1L);
+        assertThrows(InvalidResourceException.class, () -> service.addTags(certificate, tags));
+        verify(tagFieldsValidator).validate(invalid);
     }
 
     @Test
     public void deleteCertificateTag_shouldDeleteTag() {
-        Tag tag = new Tag(1L, "tag");
-        certificate.getTags().add(tag);
-        when(certificateDao.findById(1L)).thenReturn(Optional.of(certificate));
+        Tag tag = new Tag(1, "tag");
+        doNothing().when(tagDao).delete(tag.getId());
+        service.deleteCertificateTag(certificate, tag);
 
-        assertDoesNotThrow(() -> service.deleteCertificateTag(1L, 1L));
-
-        verify(certificateDao).findById(1L);
-
+        verify(tagDao).delete(tag.getId());
     }
 
     @Test
-    public void deleteCertificateTag_shouldThrowExceptionWhenCertificateNotFound() {
-        when(certificateDao.findById(1L)).thenReturn(Optional.empty());
+    public void findCertificateTag_shouldFindTag() throws ResourceNotFoundException {
+        Tag tag = new Tag(1, "tag");
+        when(tagDao.findCertificateTag(certificate.getId(), tag.getId())).thenReturn(Optional.of(tag));
 
-        assertThrows(CertificateNotFoundException.class, () -> service.deleteCertificateTag(1L, 1L));
+        Tag certificateTag = service.findCertificateTag(certificate, tag.getId());
 
-        verify(certificateDao).findById(1L);
+        assertEquals(tag, certificateTag);
+        verify(tagDao).findCertificateTag(certificate.getId(), tag.getId());
     }
 
     @Test
-    public void deleteCertificateTag_shouldThrowExceptionWhenTagNotFound() {
-        when(certificateDao.findById(1L)).thenReturn(Optional.of(certificate));
+    public void findCertificateTag_shouldThrowExceptionIfThereIsNotTagWithId() {
+        when(tagDao.findCertificateTag(certificate.getId(), 1)).thenReturn(Optional.empty());
 
-        assertThrows(TagNotFoundException.class, () -> service.deleteCertificateTag(1L, 1L));
+        assertThrows(ResourceNotFoundException.class, () -> service.findCertificateTag(certificate, 1));
 
-        verify(certificateDao).findById(1L);
+        verify(tagDao).findCertificateTag(certificate.getId(), 1);
     }
 
     @Test
-    public void addTags_shouldThrowExceptionWhenCertificateNotFound() throws InvalidTagException {
-        Tag tag = new Tag(1L, "tag");
-        when(certificateDao.findById(1L)).thenReturn(Optional.empty());
-        doNothing().when(tagFieldsValidator).validate(tag);
-        assertThrows(CertificateNotFoundException.class, () -> service.addTags(1L, Collections.singletonList(tag)));
+    public void findCertificateTagsPage_shouldReturnFirstPage() throws PageOutOfBoundsException {
+        Tag tag = new Tag(1, "tag");
+        List<Tag> tags = Collections.singletonList(tag);
+        when(tagDao.getCertificateTagsTotalPages(certificate.getId())).thenReturn(1);
+        when(tagDao.findCertificateTagsPage(certificate.getId(), 1)).thenReturn(tags);
 
-        verify(certificateDao).findById(1L);
-        verify(tagFieldsValidator).validate(tag);
+        List<Tag> tagsPage = service.findCertificateTagsPage(certificate, 1);
+
+        assertEquals(tags, tagsPage);
+        verify(tagDao).getCertificateTagsTotalPages(certificate.getId());
+        verify(tagDao).findCertificateTagsPage(certificate.getId(), 1);
     }
 
     @Test
-    public void addTags_shouldAddTagsToCertificate() throws CertificateNotFoundException, InvalidTagException {
-        Tag tag = new Tag(1L, "tag");
-        certificate.getTags().add(tag);
-        when(certificateDao.findById(1L)).thenReturn(Optional.of(certificate));
-        when(certificateDao.update(certificate)).thenReturn(certificate);
-        doNothing().when(tagFieldsValidator).validate(tag);
+    public void findCertificateTagsPage_shouldThrowExceptionIfPageOutOfBounds() {
+        when(tagDao.getCertificateTagsTotalPages(certificate.getId())).thenReturn(1);
 
-        Certificate upadtedCertificate = service.addTags(1L, Collections.singletonList(tag));
+        assertThrows(PageOutOfBoundsException.class, () -> service.findCertificateTagsPage(certificate, 100));
 
-        assertEquals(certificate, upadtedCertificate);
-        verify(certificateDao).findById(1L);
-        verify(tagFieldsValidator).validate(tag);
+        verify(tagDao, atLeastOnce()).getCertificateTagsTotalPages(certificate.getId());
     }
 
     @Test
-    public void addTags_shouldThrowExceptionIfTagIsInvalid() throws InvalidTagException {
-        Tag invalidTag = new Tag("");
-        when(certificateDao.findById(1L)).thenReturn(Optional.of(certificate));
-        doThrow(InvalidTagException.class).when(tagFieldsValidator).validate(invalidTag);
+    public void getCertificateTagsTotalPages_shouldReturnOne() {
+        when(tagDao.getCertificateTagsTotalPages(certificate.getId())).thenReturn(1);
 
-        assertThrows(InvalidTagException.class, () -> service.addTags(1L, Collections.singletonList(invalidTag)));
+        int certificateTagsPages = service.getCertificateTagsTotalPages(certificate);
 
-        verify(tagFieldsValidator).validate(invalidTag);
+        assertEquals(1, certificateTagsPages);
+        verify(tagDao).getCertificateTagsTotalPages(certificate.getId());
+    }
+
+    @Test
+    public void getCertificateTagsTotalElements_shouldReturnOne() {
+        when(tagDao.getCertificateTagsTotalElements(certificate.getId())).thenReturn(1);
+
+        int certificateTagsElements = service.getCertificateTagsTotalElements(certificate);
+
+        assertEquals(1, certificateTagsElements);
+        verify(tagDao).getCertificateTagsTotalElements(certificate.getId());
+    }
+
+    @Test
+    public void getTotalElements_shouldReturnOne() {
+        when(certificateDao.getTotalElements()).thenReturn(1);
+
+        int totalElements = service.getTotalElements();
+
+        assertEquals(1, totalElements);
+        verify(certificateDao).getTotalElements();
+    }
+
+    @Test
+    public void getTotalPages_shouldReturnOne() {
+        when(certificateDao.getTotalPages()).thenReturn(1);
+
+        int totalPages = service.getTotalPages();
+
+        assertEquals(1, totalPages);
+        verify(certificateDao).getTotalPages();
+    }
+
+    @Test
+    public void findCertificateOrder_shouldReturnOrder() throws OrderNotFoundException {
+        Order order = new Order(1, certificate.getPrice(), LocalDateTime.now());
+        order.setCertificate(certificate);
+        when(orderDao.findByCertificateId(certificate.getId())).thenReturn(Optional.of(order));
+
+        Order certificateOrder = service.findCertificateOrder(certificate);
+
+        assertEquals(order, certificateOrder);
+        verify(orderDao).findByCertificateId(certificate.getId());
+    }
+
+    @Test
+    public void findCertificateOrder_shouldThrowExceptionIfThereIsNoCertificateOrder() {
+        when(orderDao.findByCertificateId(certificate.getId())).thenReturn(Optional.empty());
+
+        assertThrows(OrderNotFoundException.class, () -> service.findCertificateOrder(certificate));
+
+        verify(orderDao).findByCertificateId(certificate.getId());
     }
 }

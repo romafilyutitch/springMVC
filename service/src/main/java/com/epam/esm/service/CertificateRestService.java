@@ -136,7 +136,7 @@ public class CertificateRestService implements CertificateService {
 
 
     @Override
-    public Tag findCertificateTag(Certificate certificate, Long tagId) throws ResourceNotFoundException {
+    public Tag findCertificateTag(Certificate certificate, long tagId) throws ResourceNotFoundException {
         Optional<Tag> optionalTag = tagDao.findCertificateTag(certificate.getId(), tagId);
         if (optionalTag.isPresent()) {
             logger.info(String.format("Certificate tag was found %s", optionalTag.get()));
