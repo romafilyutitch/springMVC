@@ -20,13 +20,13 @@ public interface TagDao extends Dao<Tag> {
      */
     Optional<Tag> findByName(String name);
 
-    List<Tag> findCertificateTagsPage(Long certificateId, int page);
+    List<Tag> findCertificateTagsPage(long certificateId, int page);
 
-    List<Tag> findAllCertificateTags(Long certificateId);
+    List<Tag> findAllCertificateTags(long certificateId);
 
-    int getCertificateTagsTotalPages(Long certificateId);
+    int getCertificateTagsTotalPages(long certificateId);
 
-    int getCertificateTagsTotalElements(Long certificateId);
+    int getCertificateTagsTotalElements(long certificateId);
 
     Optional<Tag> findCertificateTag(long certificateId, long tagId);
 }

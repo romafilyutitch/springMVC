@@ -70,9 +70,11 @@ public class CertificateRestService implements CertificateService {
     @Override
     public List<Certificate> findAllWithParameters(LinkedHashMap<String, String> findParameters) throws PageOutOfBoundsException {
         String pageValue = findParameters.get("page");
-        int page = Integer.parseInt(pageValue);
-        if (page < 1 || page > certificateDao.getTotalPages()) {
-            throw new PageOutOfBoundsException(page, certificateDao.getTotalPages(), 1);
+        if (pageValue != null) {
+            int page = Integer.parseInt(pageValue);
+            if (page < 1 || page > certificateDao.getTotalPages()) {
+                throw new PageOutOfBoundsException(page, certificateDao.getTotalPages(), 1);
+            }
         }
         List<Certificate> foundCertificates = certificateDao.findWithParameters(findParameters);
         logger.info("Certificates with parameters were found " + foundCertificates);

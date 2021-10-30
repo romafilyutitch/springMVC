@@ -74,24 +74,24 @@ public class TagJdbcDao extends AbstractDao<Tag> implements TagDao {
     }
 
     @Override
-    public List<Tag> findCertificateTagsPage(Long certificateId, int page) {
+    public List<Tag> findCertificateTagsPage(long certificateId, int page) {
         return template.query(FIND_TAGS_PAGE_BY_CERTIFICATE_ID_SQL, MAPPER, certificateId, (ROWS_PER_PAGE * page) - ROWS_PER_PAGE);
     }
 
     @Override
-    public List<Tag> findAllCertificateTags(Long certificateId) {
+    public List<Tag> findAllCertificateTags(long certificateId) {
         return template.query(FIND_ALL_CERTIFICATE_TAGS_SQL, MAPPER, certificateId);
     }
 
     @Override
-    public int getCertificateTagsTotalPages(Long certificateId) {
+    public int getCertificateTagsTotalPages(long certificateId) {
         int rows = template.queryForObject(COUNT_CERTIFICATE_TAGS_SQL, (rs, rowNum) -> rs.getInt(COUNT_COLUMN), certificateId);
         int pages = (rows / ROWS_PER_PAGE);
         return rows % ROWS_PER_PAGE == 0 ? pages : ++pages;
     }
 
     @Override
-    public int getCertificateTagsTotalElements(Long certificateId) {
+    public int getCertificateTagsTotalElements(long certificateId) {
         return template.queryForObject(COUNT_CERTIFICATE_TAGS_SQL, (rs, rowNum) -> rs.getInt(COUNT_COLUMN), certificateId);
     }
 

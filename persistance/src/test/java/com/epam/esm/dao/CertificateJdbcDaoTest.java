@@ -26,10 +26,10 @@ class CertificateJdbcDaoTest {
 
     @Test
     public void findAll_shouldReturnSavedAllSavedCertificates() {
-        List<Certificate> allCertificates = dao.findPage();
+        List<Certificate> certificates = dao.findPage(1);
 
-        assertEquals(1, allCertificates.size());
-        Certificate certificate = allCertificates.get(0);
+        assertEquals(1, certificates.size());
+        Certificate certificate = certificates.get(0);
         assertEquals(1L, certificate.getId());
         assertEquals("free music listen certificate", certificate.getName());
         assertEquals("spotify free music listening", certificate.getDescription());
@@ -62,16 +62,6 @@ class CertificateJdbcDaoTest {
         assertFalse(optionalCertificate.isPresent());
     }
 
-    @Test
-    public void findWithParameters_shouldReturnCertificateWithCertificateParameters() {
-        LinkedHashMap<String, String> parameters = new LinkedHashMap<>();
-        parameters.put("partOfName", "music");
-        List<Certificate> certificateWithParameters = dao.findWithParameters(parameters);
-
-        assertEquals(1, certificateWithParameters.size());
-        Certificate foundCertificate = certificateWithParameters.get(0);
-        assertTrue(foundCertificate.getName().contains("music"));
-    }
 
     @Test
     public void save_shouldReturnSavedCertificateWithAssignedId() {
