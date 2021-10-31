@@ -83,7 +83,7 @@ public class CertificateRestService implements CertificateService {
             return optionalCertificate.get();
         } else {
             logger.error("Certificate with id wasn't found " + id);
-            throw new ResourceNotFoundException(id);
+            throw new CertificateNotFoundException(id);
         }
     }
 
@@ -143,7 +143,7 @@ public class CertificateRestService implements CertificateService {
             return optionalTag.get();
         } else {
             logger.error(String.format("Certificate tag with id %d wasn't found ", tagId));
-            throw new ResourceNotFoundException(tagId);
+            throw new TagNotFoundException(tagId);
         }
     }
 
@@ -178,7 +178,7 @@ public class CertificateRestService implements CertificateService {
     }
 
     @Override
-    public Order findCertificateOrder(Certificate certificate) throws OrderNotFoundException {
+    public Order findCertificateOrder(Certificate certificate) throws ResourceNotFoundException {
         Optional<Order> optionalOrder = orderDao.findByCertificateId(certificate.getId());
         if (optionalOrder.isPresent()) {
             logger.info(String.format("Certificate order was found %s", optionalOrder.get()));

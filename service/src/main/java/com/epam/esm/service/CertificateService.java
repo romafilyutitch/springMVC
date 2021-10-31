@@ -28,5 +28,5 @@ public interface CertificateService extends Service<Certificate> {
 
     int getCertificateTagsTotalElements(Certificate certificate);
 
-    Order findCertificateOrder(Certificate certificate) throws OrderNotFoundException;
+    Order findCertificateOrder(Certificate certificate) throws ResourceNotFoundException;
 }

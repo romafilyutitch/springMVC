@@ -123,22 +123,26 @@ class CertificateRestServiceTest {
 
     @Test
     public void update_shouldReturnUpdatedCertificate() throws InvalidResourceException, ResourceNotFoundException {
+        when(certificateDao.findById(certificate.getId())).thenReturn(Optional.of(certificate));
         doNothing().when(certificateFieldsValidator).validate(certificate);
         when(certificateDao.update(certificate)).thenReturn(certificate);
 
         Certificate updatedCertificate = service.update(certificate);
 
         assertEquals(certificate, updatedCertificate);
+        verify(certificateDao).findById(certificate.getId());
         verify(certificateFieldsValidator).validate(certificate);
         verify(certificateDao).update(certificate);
     }
 
     @Test
     public void update_shouldThrowExceptionWhenCertificateIsInvalid() throws InvalidResourceException {
+        when(certificateDao.findById(certificate.getId())).thenReturn(Optional.of(certificate));
         doThrow(InvalidCertificateException.class).when(certificateFieldsValidator).validate(certificate);
 
         assertThrows(InvalidResourceException.class, () -> service.update(certificate));
 
+        verify(certificateDao).findById(certificate.getId());
         verify(certificateFieldsValidator).validate(certificate);
     }
 
@@ -271,7 +275,7 @@ class CertificateRestServiceTest {
     }
 
     @Test
-    public void findCertificateOrder_shouldReturnOrder() throws OrderNotFoundException {
+    public void findCertificateOrder_shouldReturnOrder() throws ResourceNotFoundException {
         Order order = new Order(1, certificate.getPrice(), LocalDateTime.now());
         order.setCertificate(certificate);
         when(orderDao.findByCertificateId(certificate.getId())).thenReturn(Optional.of(order));

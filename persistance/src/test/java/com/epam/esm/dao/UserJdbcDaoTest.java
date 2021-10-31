@@ -46,18 +46,6 @@ class UserJdbcDaoTest {
     }
 
     @Test
-    public void findByName_shouldReturnUserWithUserName() {
-        Optional<User> optionalUser = dao.findByName("user");
-        assertTrue(optionalUser.isPresent());
-    }
-
-    @Test
-    public void findByName_shouldReturnEmptyOptionalIfThereIsNoUserWithName() {
-        Optional<User> optionalUser = dao.findByName("");
-        assertFalse(optionalUser.isPresent());
-    }
-
-    @Test
     public void findRichestUser_shouldReturnNotNullUser() {
         User richestUser = dao.findRichestUser();
         assertNotNull(richestUser);

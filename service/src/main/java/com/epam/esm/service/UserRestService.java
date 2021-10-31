@@ -48,13 +48,8 @@ public class UserRestService implements UserService {
             return optionalUser.get();
         } else {
             logger.error(String.format("User with id %d wasn't found", id));
-            throw new ResourceNotFoundException(id);
+            throw new UserNotFoundException(id);
         }
-    }
-
-    @Override
-    public User findByName(String name) {
-        return userDao.findByName(name).get();
     }
 
     @Override

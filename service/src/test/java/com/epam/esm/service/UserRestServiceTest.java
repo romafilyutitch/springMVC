@@ -70,16 +70,6 @@ class UserRestServiceTest {
     }
 
     @Test
-    public void findByName_shouldReturnUserWithName() {
-        when(userDao.findByName("user")).thenReturn(Optional.of(user));
-
-        User foundUser = service.findByName("user");
-
-        assertEquals(user, foundUser);
-        verify(userDao).findByName("user");
-    }
-
-    @Test
     public void findRichestUser_shouldReturnUser() {
         when(userDao.findRichestUser()).thenReturn(user);
 

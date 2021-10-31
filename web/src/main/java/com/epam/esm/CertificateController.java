@@ -192,44 +192,13 @@ public class CertificateController {
 
     @PostMapping("/{id}/order")
     public Order makeOrder(@PathVariable Long id, @RequestBody User user) throws ResourceNotFoundException, PageOutOfBoundsException {
-        User foundUser = userService.findByName(user.getName());
         Certificate foundCertificate = certificateService.findById(id);
+        User foundUser = userService.findById(user.getId());
         Order savedOrder = userService.orderCertificate(foundUser, foundCertificate);
         Link selfLink = linkTo(methodOn(CertificateController.class).showCertificateOrder(id)).withSelfRel();
         savedOrder.add(selfLink);
         return savedOrder;
     }
-
-
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Error> certificateNotFound(ResourceNotFoundException exception, Locale locale) {
-        String message = messageSource.getMessage("resource.notFound", new Object[]{exception.getResourceId()}, locale);
-        Error error = new Error(ErrorCode.NOT_FOUND, message);
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
-    }
-
-    @ExceptionHandler(InvalidResourceException.class)
-    public ResponseEntity<Error> invalidCertificate(InvalidResourceException exception, Locale locale) {
-        String message = messageSource.getMessage("resource.invalid", new Object[]{}, locale);
-        ;
-        Error error = new Error(ErrorCode.INVALID, message);
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(OrderNotFoundException.class)
-    public ResponseEntity<Error> orderNotFound(OrderNotFoundException exception, Locale locale) {
-        String message = messageSource.getMessage("order.notFound", new Object[]{exception.getResourceId()}, locale);
-        Error error = new Error(ErrorCode.NOT_FOUND, message);
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
-    }
-
-    @ExceptionHandler(PageOutOfBoundsException.class)
-    public ResponseEntity<Error> pageOutOfBounds(PageOutOfBoundsException exception, Locale locale) {
-        String message = messageSource.getMessage("page.outOfBounds", new Object[]{exception.getCurrentPage(), exception.getMinPage(), exception.getMaxPage()}, locale);
-        Error error = new Error(ErrorCode.PAGE_OUT_OF_BOUNDS, message);
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
-    }
-
 
     private PagedModel<Certificate> makeCertificatePage(int currentPage, List<Certificate> certificates) throws ResourceNotFoundException, PageOutOfBoundsException {
         for (Certificate certificate : certificates) {
