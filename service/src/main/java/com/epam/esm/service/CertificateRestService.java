@@ -30,16 +30,16 @@ public class CertificateRestService implements CertificateService {
     private final TagDao tagDao;
     private final OrderDao orderDao;
 
-    private final CertificateValidator certificateFieldsValidator;
-    private final TagValidator tagFieldsValidator;
+    private final CertificateValidator certificateValidator;
+    private final TagValidator tagValidator;
 
     @Autowired
-    public CertificateRestService(CertificateDao certificateDao, TagDao tagDao, OrderDao orderDao, CertificateValidator certificateFieldsValidator, TagValidator tagFieldsValidator) {
+    public CertificateRestService(CertificateDao certificateDao, TagDao tagDao, OrderDao orderDao, CertificateValidator certificateValidator, TagValidator tagValidator) {
         this.certificateDao = certificateDao;
         this.tagDao = tagDao;
         this.orderDao = orderDao;
-        this.certificateFieldsValidator = certificateFieldsValidator;
-        this.tagFieldsValidator = tagFieldsValidator;
+        this.certificateValidator = certificateValidator;
+        this.tagValidator = tagValidator;
     }
 
     /**
@@ -95,7 +95,7 @@ public class CertificateRestService implements CertificateService {
 
     @Override
     public Certificate save(Certificate certificate) throws InvalidResourceException {
-        certificateFieldsValidator.validate(certificate);
+        certificateValidator.validate(certificate);
         Certificate savedCertificate = certificateDao.save(certificate);
         logger.info("New certificate was validated and saved successfully " + savedCertificate);
         return savedCertificate;
@@ -103,7 +103,7 @@ public class CertificateRestService implements CertificateService {
 
     @Override
     public Certificate update(Certificate certificate) throws InvalidResourceException {
-        certificateFieldsValidator.validate(certificate);
+        certificateValidator.validate(certificate);
         Certificate updatedCertificate = certificateDao.update(certificate);
         logger.info("Certificate was validated and updated successfully " + updatedCertificate);
         return updatedCertificate;
@@ -119,7 +119,7 @@ public class CertificateRestService implements CertificateService {
     @Override
     public Certificate addTags(Certificate certificate, List<Tag> tags) throws InvalidResourceException {
         for (Tag tag : tags) {
-            tagFieldsValidator.validate(tag);
+            tagValidator.validate(tag);
         }
         List<Tag> certificateTags = certificate.getTags();
         certificateTags.addAll(tags);

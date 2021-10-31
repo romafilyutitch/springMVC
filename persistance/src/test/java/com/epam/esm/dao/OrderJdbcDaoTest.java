@@ -1,7 +1,6 @@
 package com.epam.esm.dao;
 
 import com.epam.esm.config.DevConfig;
-import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 @SpringBootTest(classes = DevConfig.class)
 @ActiveProfiles("dev")
 @Sql(scripts = "classpath:data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
@@ -20,7 +20,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class OrderJdbcDaoTest {
     @Autowired
     private OrderJdbcDao dao;
-
 
     @Test
     public void findPage_shouldReturnFirstPage() {
