@@ -26,10 +26,10 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
         return new Order(id, cost, date);
     };
     private static final String FIND_ALL_USER_ORDERS_SQL = "select id, cost, date, certificate_id from certificate_order where user_id = ?";
-    private static final String SAVE_CERTIFICATE_ORDER_SQL = "insert into certificate_order (cost, certificate_id, user_id) values (?, ?, ?)";
     private static final String FIND_ORDER_BY_CERTIFICATE_ID_SQL = "select id, cost, date, certificate_id from certificate_order where certificate_id = ?";
     private static final String FIND_USER_ORDERS_PAGE_SQL = "select id, cost, date, certificate_id from certificate_order where user_id = ? limit ?, 5";
     private static final String COUNT_USER_ORDERS_SQL = "select count(*) from certificate_order where user_id = ?";
+    private static final String SET_USER_ID_TO_ORDER_SQL = "update certificate_order set user_id = ? where id = ?";
     private static final String COUNT_COLUMN = "count(*)";
 
     private final CertificateDao certificateDao;
@@ -71,18 +71,8 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
     }
 
     @Override
-    public Order makeUserOrder(long userId, Order order) {
-        GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
-        template.update(creator -> {
-            PreparedStatement saveStatement = creator.prepareStatement(SAVE_CERTIFICATE_ORDER_SQL, Statement.RETURN_GENERATED_KEYS);
-            saveStatement.setDouble(1, order.getCost());
-            saveStatement.setLong(2, order.getCertificate().getId());
-            saveStatement.setLong(3, userId);
-            return saveStatement;
-        }, generatedKeyHolder);
-        long id = generatedKeyHolder.getKey().longValue();
-        order.setId(id);
-        return order;
+    public void setUserToOrder(long userId, long orderId) {
+        template.update(SET_USER_ID_TO_ORDER_SQL, userId, orderId);
     }
 
     @Override
@@ -115,13 +105,15 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
     protected void setSaveValues(PreparedStatement saveStatement, Order entity) throws SQLException {
         saveStatement.setDouble(1, entity.getCost());
         saveStatement.setObject(2, entity.getOrderDate());
+        saveStatement.setLong(3, entity.getCertificate().getId());
     }
 
     @Override
     protected void setUpdateValues(PreparedStatement updateStatement, Order entity) throws SQLException {
         updateStatement.setDouble(1, entity.getCost());
         updateStatement.setObject(2, entity.getOrderDate());
-        updateStatement.setLong(3, entity.getId());
+        updateStatement.setLong(3, entity.getCertificate().getId());
+        updateStatement.setLong(4, entity.getId());
     }
 
     private void addCertificateToOrder(Order order) {

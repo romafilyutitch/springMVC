@@ -14,7 +14,7 @@ public interface OrderDao extends Dao<Order> {
 
     int getUserOrdersTotalElements(long userId);
 
-    Order makeUserOrder(long userId, Order order);
+    void setUserToOrder(long userId, long orderId);
 
     Optional<Order> findByCertificateId(long certificateId);
 }
