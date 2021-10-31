@@ -14,7 +14,7 @@ import java.util.List;
  */
 public interface CertificateService extends Service<Certificate> {
 
-    List<Certificate> findAllWithParameters(LinkedHashMap<String, String> findParameters) throws PageOutOfBoundsException;
+    List<Certificate> findAllWithParameters(LinkedHashMap<String, String> findParameters);
 
     Certificate addTags(Certificate certificate, List<Tag> tags) throws InvalidResourceException;
 

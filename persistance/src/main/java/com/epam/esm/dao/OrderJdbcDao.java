@@ -18,7 +18,7 @@ import java.util.Optional;
 @Repository
 public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
     private static final String TABLE_NAME = "certificate_order";
-    private static final List<String> COLUMNS = Arrays.asList("cost", "date", "user_id", "certificate_id");
+    private static final List<String> COLUMNS = Arrays.asList("cost", "date", "certificate_id");
     private static final RowMapper<Order> MAPPER = (rs, rowNum) -> {
         long id = rs.getLong("id");
         double cost = rs.getDouble("cost");
@@ -56,11 +56,11 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
 
     @Override
     public Order save(Order entity) {
-        super.save(entity);
+        Order savedOrder = super.save(entity);
         Certificate certificate = entity.getCertificate();
         Certificate savedCertificate = certificateDao.save(certificate);
         entity.setCertificate(savedCertificate);
-        return entity;
+        return findById(savedOrder.getId()).orElseThrow(DaoException::new);
     }
 
     @Override

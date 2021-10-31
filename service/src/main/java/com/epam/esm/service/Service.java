@@ -12,7 +12,7 @@ public interface Service<T extends Entity> {
 
     T save(T entity) throws InvalidResourceException;
 
-    T update(T entity) throws InvalidResourceException;
+    T update(T entity) throws InvalidResourceException, ResourceNotFoundException;
 
     void delete(T entity);
 

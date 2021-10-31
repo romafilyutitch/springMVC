@@ -109,7 +109,7 @@ public class UserRestService implements UserService {
         Order savedOrder = orderDao.save(order);
         orderDao.setUserToOrder(user.getId(), savedOrder.getId());
         logger.info(String.format("User order was saved %s", savedOrder));
-        return order;
+        return savedOrder;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.epam.esm.service;
 
 import com.epam.esm.dao.CertificateDao;
+import com.epam.esm.dao.DaoException;
 import com.epam.esm.dao.OrderDao;
 import com.epam.esm.dao.TagDao;
 import com.epam.esm.model.Certificate;
@@ -68,14 +69,7 @@ public class CertificateRestService implements CertificateService {
      * @return list of certificates that matches passed parameters
      */
     @Override
-    public List<Certificate> findAllWithParameters(LinkedHashMap<String, String> findParameters) throws PageOutOfBoundsException {
-        String pageValue = findParameters.get("page");
-        if (pageValue != null) {
-            int page = Integer.parseInt(pageValue);
-            if (page < 1 || page > certificateDao.getTotalPages()) {
-                throw new PageOutOfBoundsException(page, certificateDao.getTotalPages(), 1);
-            }
-        }
+    public List<Certificate> findAllWithParameters(LinkedHashMap<String, String> findParameters) {
         List<Certificate> foundCertificates = certificateDao.findWithParameters(findParameters);
         logger.info("Certificates with parameters were found " + foundCertificates);
         return foundCertificates;
@@ -102,9 +96,15 @@ public class CertificateRestService implements CertificateService {
     }
 
     @Override
-    public Certificate update(Certificate certificate) throws InvalidResourceException {
-        certificateValidator.validate(certificate);
-        Certificate updatedCertificate = certificateDao.update(certificate);
+    public Certificate update(Certificate certificate) throws InvalidResourceException, ResourceNotFoundException {
+        Certificate certificateFromTable = findById(certificate.getId());
+        certificateFromTable.setName(certificate.getName() == null ? certificateFromTable.getName() : certificate.getName());
+        certificateFromTable.setDescription(certificate.getDescription() == null ? certificateFromTable.getDescription() : certificate.getDescription());
+        certificateFromTable.setPrice(certificate.getPrice() == 0.0 ? certificateFromTable.getPrice() : certificate.getPrice());
+        certificateFromTable.setDuration(certificate.getDuration() == 0 ? certificateFromTable.getDuration() : certificate.getDuration());
+        certificateFromTable.getTags().addAll(certificate.getTags());
+        certificateValidator.validate(certificateFromTable);
+        Certificate updatedCertificate = certificateDao.update(certificateFromTable);
         logger.info("Certificate was validated and updated successfully " + updatedCertificate);
         return updatedCertificate;
     }

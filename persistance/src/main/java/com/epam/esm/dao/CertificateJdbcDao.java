@@ -142,14 +142,7 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
      */
     @Override
     public Certificate update(Certificate ceritficate) {
-        Optional<Certificate> optionalCertificate = findById(ceritficate.getId());
-        Certificate certificateFromTable = optionalCertificate.orElseThrow(DaoException::new);
-        certificateFromTable.setName(ceritficate.getName() == null ? certificateFromTable.getName() : ceritficate.getName());
-        certificateFromTable.setDescription(ceritficate.getDescription() == null ? certificateFromTable.getDescription() : ceritficate.getDescription());
-        certificateFromTable.setPrice(ceritficate.getPrice() == 0.0 ? certificateFromTable.getPrice() : ceritficate.getPrice());
-        certificateFromTable.setDuration(ceritficate.getDuration() == 0 ? certificateFromTable.getDuration() : ceritficate.getDuration());
-        certificateFromTable.getTags().addAll(ceritficate.getTags());
-        Certificate updatedCertificate = super.update(certificateFromTable);
+        Certificate updatedCertificate = super.update(ceritficate);
         updatedCertificate.getTags().addAll(ceritficate.getTags());
         saveAndLinkTagsWithCertificate(updatedCertificate);
         return findById(updatedCertificate.getId()).orElseThrow(DaoException::new);
