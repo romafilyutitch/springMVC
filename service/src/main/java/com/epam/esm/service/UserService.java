@@ -11,8 +11,6 @@ public interface UserService extends Service<User> {
 
     Order orderCertificate(User user, Certificate certificate);
 
-    User findByName(String name);
-
     User findRichestUser();
 
     Tag findRichestUserPopularTag();

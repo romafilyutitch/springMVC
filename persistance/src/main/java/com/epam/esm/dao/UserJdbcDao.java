@@ -38,7 +38,6 @@ public class UserJdbcDao extends AbstractDao<User> implements UserDao {
             "left join certificate_order on certificate_order.user_id = user.id " +
             "group by user.id order by sum(certificate_order.cost) desc limit 0, 1) " +
             "group by tag.id order by count(tag.id) desc limit 0,1 ";
-    private static final String FIND_BY_NAME_SQL = "select id, name, surname from user where name = ?";
     private final OrderDao orderDao;
 
     @Autowired
@@ -59,13 +58,6 @@ public class UserJdbcDao extends AbstractDao<User> implements UserDao {
         Optional<User> optionalUser = super.findById(id);
         optionalUser.ifPresent(this::addOrdersToUser);
         return optionalUser;
-    }
-
-    @Override
-    public Optional<User> findByName(String name) {
-        List<User> users = template.query(FIND_BY_NAME_SQL, MAPPER, name);
-        users.forEach(this::addOrdersToUser);
-        return users.isEmpty() ? Optional.empty() : Optional.of(users.get(0));
     }
 
     @Override
