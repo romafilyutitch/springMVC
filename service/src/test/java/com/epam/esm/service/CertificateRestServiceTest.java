@@ -122,7 +122,7 @@ class CertificateRestServiceTest {
     }
 
     @Test
-    public void update_shouldReturnUpdatedCertificate() throws InvalidResourceException {
+    public void update_shouldReturnUpdatedCertificate() throws InvalidResourceException, ResourceNotFoundException {
         doNothing().when(certificateFieldsValidator).validate(certificate);
         when(certificateDao.update(certificate)).thenReturn(certificate);
 

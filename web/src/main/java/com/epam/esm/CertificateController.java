@@ -54,19 +54,25 @@ public class CertificateController {
         this.messageSource = messageSource;
     }
 
-    @GetMapping
-    public CollectionModel<Certificate> showCertificates(@RequestParam LinkedHashMap<String, String> findParams) throws PageOutOfBoundsException, ResourceNotFoundException {
-        List<Certificate> certificates = certificateService.findAllWithParameters(findParams);
-        for (Certificate certificate : certificates) {
+    @GetMapping("/find")
+    public CollectionModel<Certificate> findCertificateWithParameters(@RequestParam LinkedHashMap<String, String> findParameters) throws PageOutOfBoundsException, ResourceNotFoundException {
+        List<Certificate> foundCertificates = certificateService.findAllWithParameters(findParameters);
+        for (Certificate certificate : foundCertificates) {
             if (certificate.getTags().size() > 0) {
-                Link tagsLink = linkTo(methodOn(CertificateController.class).showCertificateTagsPage(certificate.getId(), 1)).withRel("tags");
+                Link tagsLink = linkTo(methodOn(CertificateController.class).showCertificateTags(certificate.getId())).withRel("tags");
                 certificate.add(tagsLink);
             }
             Link orderLink = linkTo(methodOn(CertificateController.class).showCertificateOrder(certificate.getId())).withRel("order");
             certificate.add(orderLink);
         }
-        Link selfLink = linkTo(methodOn(CertificateController.class).showCertificates(findParams)).withSelfRel();
-        return certificates.isEmpty() ? CollectionModel.empty(selfLink) : CollectionModel.of(certificates, selfLink);
+        Link selfLink = linkTo(methodOn(CertificateController.class).findCertificateWithParameters(findParameters)).withSelfRel();
+        return foundCertificates.isEmpty() ? CollectionModel.empty(selfLink) : CollectionModel.of(foundCertificates, selfLink);
+    }
+
+    @GetMapping
+    public PagedModel<Certificate> showCertificates() throws PageOutOfBoundsException, ResourceNotFoundException {
+        List<Certificate> foundPage = certificateService.findPage(1);
+        return makeCertificatePage(1, foundPage);
     }
 
     @GetMapping("/page/{page}")

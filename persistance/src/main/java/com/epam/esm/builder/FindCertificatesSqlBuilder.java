@@ -46,8 +46,6 @@ public class FindCertificatesSqlBuilder {
     private static final String ACCEDING_ORDER = "asc";
     private static final String DESCENDING_ORDER = "desc";
     private static final String PATTERN_FOR_LIKE_QUERY = "%%%s%%";
-    private static final String PAGE_KEY = "page";
-    private static final String LIMIT = "limit %d,%d";
     private static final String GROUP_BY_CERTIFICATE_ID = " group by gift_certificate.id ";
     private static final String HAVING_CERTIFICATE_ID_COUNT = "having count(certificate_id) = ";
 
@@ -62,7 +60,6 @@ public class FindCertificatesSqlBuilder {
      * @return built sql find all certificates statement that defined by passed parameters map
      */
     public String buildSql(LinkedHashMap<String, String> findParameters) {
-        String page = findParameters.get(PAGE_KEY);
         String tagNames = findParameters.get(TAG_NAME_KEY);
         String partOfName = findParameters.get(PART_OF_NAME_KEY);
         String partOfDescription = findParameters.get(PART_OF_DESCRIPTION_KEY);
@@ -72,8 +69,7 @@ public class FindCertificatesSqlBuilder {
                 .wherePartOfName(partOfName)
                 .wherePartOfDescription(partOfDescription)
                 .groupByCertificateId()
-                .havingIdCountEquals(tagNames)
-                .page(page);
+                .havingIdCountEquals(tagNames);
         for (Map.Entry<String, String> entry : entries) {
             String key = entry.getKey();
             String value = entry.getValue();
@@ -81,15 +77,6 @@ public class FindCertificatesSqlBuilder {
             builder = key.equals(SORT_BY_DATE_KEY) ? builder.orderByDate(value) : builder;
         }
         return builder.build();
-    }
-
-    private FindCertificatesSqlBuilder page(String page) {
-        if (isNullOrEmptyParameter(page)) {
-            return this;
-        }
-        int pageNumber = Integer.parseInt(page);
-        finalQuery += String.format(LIMIT, ((5 * pageNumber) - 5), 5);
-        return this;
     }
 
     private FindCertificatesSqlBuilder havingIdCountEquals(String tagNames) {
