@@ -13,11 +13,9 @@ import java.util.Optional;
  */
 public interface Dao<T extends Entity> {
     /**
-     * Finds and returns all entities from particular database
-     * If there is not entities in database then empty list
-     * will be returned
-     *
-     * @return list of entities from database
+     * Finds and returns entities on specified page
+     * @param page that need to be finds
+     * @return entities on passed page
      */
     List<T> findPage(int page);
 
@@ -53,7 +51,16 @@ public interface Dao<T extends Entity> {
      */
     void delete(long id);
 
+    /**
+     * Counts all entities rand returns saved entities amount
+     * @return saved entities amount
+     */
     int getTotalElements();
 
+    /**
+     * Counts all entities and computes
+     * pages amount
+     * @return pages amount
+     */
     int getTotalPages();
 }

@@ -37,7 +37,7 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
     private static final String COMMA_DELIMITER = ",";
     private static final String QUESTION_MARK = "?";
     private static final String EQUALS_MARK = "=";
-    public static final int ROWS_PER_PAGE = 5;
+    protected static final int ROWS_PER_PAGE = 5;
 
     private final String findAllSql;
     private final String findByIdSql;
@@ -61,9 +61,9 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
     }
 
     /**
-     * Performs select database request to find all entities
-     *
-     * @return list of all entities from database table
+     * Finds and returns entities on specified page
+     * @param page that need to be finds
+     * @return entities on passed page
      */
     @Override
     public List<T> findPage(int page) {
@@ -124,6 +124,11 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
         template.update(deleteSql, id);
     }
 
+    /**
+     * Counts all entities and computes
+     * pages amount
+     * @return pages amount
+     */
     @Override
     public int getTotalPages() {
         int rows = template.queryForObject(countSql, (rs, rowNum) -> rs.getInt("count(*)"));
@@ -131,6 +136,10 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
         return rows % ROWS_PER_PAGE == 0 ? pages : ++pages;
     }
 
+    /**
+     * Counts all entities rand returns saved entities amount
+     * @return saved entities amount
+     */
     @Override
     public int getTotalElements() {
         return template.queryForObject(countSql, (rs, rowNum) -> rs.getInt("count(*)"));

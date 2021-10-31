@@ -40,20 +40,36 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
         this.certificateDao = certificateDao;
     }
 
+    /**
+     * Finds and returns entities on specified page
+     * @param page that need to be finds
+     * @return entities on passed page
+     */
     @Override
     public List<Order> findPage(int page) {
         List<Order> allOrders = super.findPage(page);
         allOrders.forEach(this::addCertificateToOrder);
         return allOrders;
     }
-
+    /**
+     * Finds and returns entity that have passed id
+     *
+     * @param id id of entity that need to be found
+     * @return Optional that contains entity if entity with passed id exists
+     * or empty optional otherwise
+     */
     @Override
     public Optional<Order> findById(long id) {
         Optional<Order> optionalOrder = super.findById(id);
         optionalOrder.ifPresent(this::addCertificateToOrder);
         return optionalOrder;
     }
-
+    /**
+     * Perform entity save operation. And assigns calculates by database id to saved entity
+     *
+     * @param entity entity that need to be saved
+     * @return saved entity with assigned id
+     */
     @Override
     public Order save(Order entity) {
         Order savedOrder = super.save(entity);
@@ -62,45 +78,77 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
         entity.setCertificate(savedCertificate);
         return findById(savedOrder.getId()).orElseThrow(DaoException::new);
     }
-
+    /**
+     * Finds and returns user orders by user id
+     * @param userId id of user which orders need to be found
+     * @return list of user orders
+     */
     @Override
     public List<Order> findAllUserOrders(long userId) {
         List<Order> foundOrders = template.query(FIND_ALL_USER_ORDERS_SQL, MAPPER, userId);
         foundOrders.forEach(this::addCertificateToOrder);
         return foundOrders;
     }
-
+    /**
+     * Sets user to saved order.
+     * @param userId id of user that need to be saved to order
+     * @param orderId order id that need to be set to user
+     */
     @Override
     public void setUserToOrder(long userId, long orderId) {
         template.update(SET_USER_ID_TO_ORDER_SQL, userId, orderId);
     }
-
+    /**
+     * Finds certificate order by passed certificate id
+     * @param certificateId whose order need to be found
+     * @return order that contains certificate with passed id
+     * or empty order otherwise
+     */
     @Override
     public Optional<Order> findByCertificateId(long certificateId) {
         List<Order> orders = template.query(FIND_ORDER_BY_CERTIFICATE_ID_SQL, MAPPER, certificateId);
         orders.forEach(this::addCertificateToOrder);
         return orders.isEmpty() ? Optional.empty() : Optional.of(orders.get(0));
     }
-
+    /**
+     * Finds and returns passed user passed orders page
+     * @param userId user id which orders need to be found
+     * @param page user orders page that need to be found
+     * @return user orders passed page
+     */
     @Override
     public List<Order> findUserOrdersPage(long userId, long page) {
         List<Order> orders = template.query(FIND_USER_ORDERS_PAGE_SQL, MAPPER, userId, (ROWS_PER_PAGE * page) - ROWS_PER_PAGE);
         orders.forEach(this::addCertificateToOrder);
         return orders;
     }
-
+    /**
+     * Counts user orders pages amount.
+     * @param userId id of user which orders pages need to be count
+     * @return amount of user orders pages
+     */
     @Override
     public int getUserOrdersTotalPages(long userId) {
         int rows = template.queryForObject(COUNT_USER_ORDERS_SQL, (rs, rowNum) -> rs.getInt(COUNT_COLUMN), userId);
         int pages = (rows / ROWS_PER_PAGE);
         return rows % ROWS_PER_PAGE == 0 ? pages : ++pages;
     }
-
+    /**
+     * Counts user orders amount.
+     * @param userId id of user which orders amount need to be count
+     * @return amount of user orders
+     */
     @Override
     public int getUserOrdersTotalElements(long userId) {
         return template.queryForObject(COUNT_USER_ORDERS_SQL, (rs, rowNum) -> rs.getInt(COUNT_COLUMN), userId);
     }
 
+    /**
+     * Maps entity values to Prepared save statement
+     * @param saveStatement PreparedStatement that need to be set entity values for save
+     * @param entity        entity that need to be saved
+     * @throws SQLException if exception in database occurs
+     */
     @Override
     protected void setSaveValues(PreparedStatement saveStatement, Order entity) throws SQLException {
         saveStatement.setDouble(1, entity.getCost());
@@ -108,6 +156,12 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
         saveStatement.setLong(3, entity.getCertificate().getId());
     }
 
+    /**
+     * Maps entity values to Prepared updated statement
+     * @param updateStatement Prepared statement that need to be set entity values for update
+     * @param entity          entity that need to be updated
+     * @throws SQLException if exception in database occurs
+     */
     @Override
     protected void setUpdateValues(PreparedStatement updateStatement, Order entity) throws SQLException {
         updateStatement.setDouble(1, entity.getCost());
