@@ -11,7 +11,7 @@ public class User extends Entity {
     public User() {
     }
 
-    public User(Long id, String name, String surname) {
+    public User(long id, String name, String surname) {
         super(id);
         this.name = name;
         this.surname = surname;
