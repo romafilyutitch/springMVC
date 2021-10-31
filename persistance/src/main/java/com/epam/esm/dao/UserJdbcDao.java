@@ -45,28 +45,47 @@ public class UserJdbcDao extends AbstractDao<User> implements UserDao {
         super(TABLE_NAME, COLUMNS, MAPPER);
         this.orderDao = orderDao;
     }
-
+    /**
+     * Finds and returns entities on specified page
+     * @param page that need to be finds
+     * @return entities on passed page
+     */
     @Override
     public List<User> findPage(int page) {
         List<User> allUsers = super.findPage(page);
         allUsers.forEach(this::addOrdersToUser);
         return allUsers;
     }
-
+    /**
+     * Finds and returns entity that have passed id
+     *
+     * @param id id of entity that need to be found
+     * @return Optional that contains entity if entity with passed id exists
+     * or empty optional otherwise
+     */
     @Override
     public Optional<User> findById(long id) {
         Optional<User> optionalUser = super.findById(id);
         optionalUser.ifPresent(this::addOrdersToUser);
         return optionalUser;
     }
-
+    /**
+     * Finds and returns riches user.
+     * Riches user is the user that has maximum of orders cost.
+     * @return user that has maximum orders cost
+     */
     @Override
     public User findRichestUser() {
         User user = template.queryForObject(FIND_RICHEST_USER_SQL, MAPPER);
         addOrdersToUser(user);
         return user;
     }
-
+    /**
+     * Finds and returns riches user popular tag.
+     * Popular tag is tag that uses most frequently amount richest
+     * user orders
+     * @return popular tag
+     */
     @Override
     public Tag findRichestUserPopularTag() {
         return template.queryForObject(FIND_RICHEST_USER_POPULAR_TAG, (rs, rowNum) -> {
@@ -76,12 +95,24 @@ public class UserJdbcDao extends AbstractDao<User> implements UserDao {
         });
     }
 
+    /**
+     * Maps entity values to save PreparedStatement
+     * @param saveStatement PreparedStatement that need to be set entity values for save
+     * @param entity        entity that need to be saved
+     * @throws SQLException if exception in database occurs
+     */
     @Override
     protected void setSaveValues(PreparedStatement saveStatement, User entity) throws SQLException {
         saveStatement.setString(1, entity.getName());
         saveStatement.setString(2, entity.getSurname());
     }
 
+    /**
+     * Maps entity values to update PreparedStatement
+     * @param updateStatement Prepared statement that need to be set entity values for update
+     * @param entity          entity that need to be updated
+     * @throws SQLException if exception in database occurs
+     */
     @Override
     protected void setUpdateValues(PreparedStatement updateStatement, User entity) throws SQLException {
         updateStatement.setString(1, entity.getName());

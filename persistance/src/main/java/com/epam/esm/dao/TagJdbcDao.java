@@ -72,29 +72,53 @@ public class TagJdbcDao extends AbstractDao<Tag> implements TagDao {
         List<Tag> foundTag = template.query(FIND_BY_NAME_SQL, MAPPER, name);
         return foundTag.isEmpty() ? Optional.empty() : Optional.of(foundTag.get(0));
     }
-
+    /**
+     * Finds and returns specified certificate tags page
+     * @param certificateId id of certificate whose page need to be found
+     * @param page page number that need to be found
+     * @return list of tags on specified page
+     */
     @Override
     public List<Tag> findCertificateTagsPage(long certificateId, int page) {
         return template.query(FIND_TAGS_PAGE_BY_CERTIFICATE_ID_SQL, MAPPER, certificateId, (ROWS_PER_PAGE * page) - ROWS_PER_PAGE);
     }
 
+    /**
+     * Finds and returns all certificate tags
+     * @param certificateId id of certificate whose tags need to be found
+     * @return list of certificate tags
+     */
     @Override
     public List<Tag> findAllCertificateTags(long certificateId) {
         return template.query(FIND_ALL_CERTIFICATE_TAGS_SQL, MAPPER, certificateId);
     }
-
+    /**
+     * Counts and returns certificate tags pages amount
+     * @param certificateId id of certificate whose tags pages need to be counted
+     * @return amount of specified certificate tags pages
+     */
     @Override
     public int getCertificateTagsTotalPages(long certificateId) {
         int rows = template.queryForObject(COUNT_CERTIFICATE_TAGS_SQL, (rs, rowNum) -> rs.getInt(COUNT_COLUMN), certificateId);
         int pages = (rows / ROWS_PER_PAGE);
         return rows % ROWS_PER_PAGE == 0 ? pages : ++pages;
     }
-
+    /**
+     * Counts and returns certificate tags elements amount
+     * @param certificateId id of certificate whose tags amount need to be counted
+     * @return amount of specified certificate tags
+     */
     @Override
     public int getCertificateTagsTotalElements(long certificateId) {
         return template.queryForObject(COUNT_CERTIFICATE_TAGS_SQL, (rs, rowNum) -> rs.getInt(COUNT_COLUMN), certificateId);
     }
-
+    /**
+     * Finds specified certificate specified tag
+     * @param certificateId id of certificate whose tag need to be found
+     * @param tagId id of certificate tag that need to be found
+     * @return specified certificate specified tag if there is certificate tag
+     * or empty optional otherwise
+     */
     @Override
     public Optional<Tag> findCertificateTag(long certificateId, long tagId) {
         List<Tag> foundTags = template.query("select tag.id, tag.name from tag left join certificate_tag on certificate_tag.tag_id = tag.id where certificate_tag.certificate_id = ? and certificate_tag.tag_id = ?", MAPPER, certificateId, tagId);

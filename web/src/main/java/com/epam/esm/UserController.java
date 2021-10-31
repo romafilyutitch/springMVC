@@ -22,6 +22,13 @@ import java.util.Optional;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+/**
+ * REST API users controller
+ * handles HTTP-request that related to
+ * user resource
+ *
+ * Use JSON format to handle requests and responses
+ */
 @RestController()
 @RequestMapping("/users")
 public class UserController {
@@ -32,18 +39,38 @@ public class UserController {
         this.userService = userService;
     }
 
+    /**
+     * Shows user orders on first page
+     * @return list of orders on first page
+     * @throws PageOutOfBoundsException if page number is less of one and greater then pages amount
+     * @throws ResourceNotFoundException if user is not found
+     */
     @GetMapping
     public PagedModel<User> showUsers() throws PageOutOfBoundsException, ResourceNotFoundException {
         List<User> users = userService.findPage(1);
         return makeUserPage(1, users);
     }
 
+    /**
+     * Finds users on passed page
+     * @param page page of users on page
+     * @return list of users on passed page
+     * @throws PageOutOfBoundsException if page number is less then one and greater then pages amount
+     * @throws ResourceNotFoundException if user is not found
+     */
     @GetMapping("/page/{page}")
     public PagedModel<User> showUsersPage(@PathVariable int page) throws PageOutOfBoundsException, ResourceNotFoundException {
         List<User> users = userService.findPage(page);
         return makeUserPage(page, users);
     }
 
+    /**
+     * Finds user that has passed id
+     * @param userId id of user
+     * @return user that has passed id
+     * @throws ResourceNotFoundException if there is no user that has passed id
+     * @throws PageOutOfBoundsException if page number is less then one and greater then pages amount
+     */
     @GetMapping("/{userId}")
     public User showUser(@PathVariable Long userId) throws ResourceNotFoundException, PageOutOfBoundsException {
         User user = userService.findById(userId);
@@ -53,6 +80,13 @@ public class UserController {
         return user;
     }
 
+    /**
+     * Finds user's orders first page
+     * @param userId id of user whose orders need to be found
+     * @return list of user's orders on first page
+     * @throws ResourceNotFoundException if user is not found
+     * @throws PageOutOfBoundsException if page number is less then one and greater then pages amount
+     */
     @GetMapping("/{userId}/orders")
     public PagedModel<Order> showUserOrders(@PathVariable long userId) throws ResourceNotFoundException, PageOutOfBoundsException {
         User user = userService.findById(userId);
@@ -60,6 +94,14 @@ public class UserController {
         return makeUserOrdersPage(1, user, orders);
     }
 
+    /**
+     * Finds user's orders on passed page
+     * @param userId id of users whose orders need to be found
+     * @param page page of user's orders
+     * @return list of user's order on passed page
+     * @throws ResourceNotFoundException if user is not found
+     * @throws PageOutOfBoundsException if page number is less then one and greater then pages amount
+     */
     @GetMapping("/{userId}/orders/{page}")
     public PagedModel<Order> showUserOrdersPage(@PathVariable long userId, @PathVariable int page) throws ResourceNotFoundException, PageOutOfBoundsException {
         User user = userService.findById(userId);
@@ -67,7 +109,12 @@ public class UserController {
         return makeUserOrdersPage(page, user, orders);
     }
 
-
+    /**
+     * Finds richest user
+     * @return found richest user
+     * @throws ResourceNotFoundException if user is not found
+     * @throws PageOutOfBoundsException if page number is less then one and greater then pages amount
+     */
     @GetMapping("/richest")
     public User showRichestUser() throws ResourceNotFoundException, PageOutOfBoundsException {
         User richestUser = userService.findRichestUser();
@@ -78,6 +125,10 @@ public class UserController {
         return richestUser;
     }
 
+    /**
+     * Finds richest user popular tag
+     * @return richest user popular tag
+     */
     @GetMapping("/richest/popularTag")
     public Tag showRichestUserPopularTag() {
         Tag popularTag = userService.findRichestUserPopularTag();

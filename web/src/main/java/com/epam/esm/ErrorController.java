@@ -23,6 +23,10 @@ import java.util.Locale;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+/**
+ * REST controller that handles all
+ * occured exceptions in certificate and user controllers
+ */
 @ControllerAdvice
 @RestController
 public class ErrorController {
@@ -33,6 +37,14 @@ public class ErrorController {
         this.messageSource = messageSource;
     }
 
+    /**
+     * Handles {@link ClassNotFoundException}
+     * @param exception occuredException
+     * @param locale client locale
+     * @return error response
+     * @throws ResourceNotFoundException if certificate is not found
+     * @throws PageOutOfBoundsException if page number is less then one and greater then pages amount
+     */
     @ExceptionHandler(CertificateNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Error certificateNotFound(CertificateNotFoundException exception, Locale locale) throws ResourceNotFoundException, PageOutOfBoundsException {
@@ -43,6 +55,14 @@ public class ErrorController {
         return error;
     }
 
+    /**
+     * Handles {@link TagNotFoundException}
+     * @param exception occured exception
+     * @param locale client locale
+     * @return error response
+     * @throws ResourceNotFoundException if certificate is not found
+     * @throws PageOutOfBoundsException if page number is less then one and greater then pages amount
+     */
     @ExceptionHandler(TagNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Error tagNotFound(TagNotFoundException exception, Locale locale) throws ResourceNotFoundException, PageOutOfBoundsException {
@@ -53,6 +73,14 @@ public class ErrorController {
         return error;
     }
 
+    /**
+     * Handles {@link OrderNotFoundException}
+     * @param exception occured exception
+     * @param locale client locale
+     * @return error response
+     * @throws ResourceNotFoundException if certificate is not found
+     * @throws PageOutOfBoundsException if pga number is less then on and greater then pages amount
+     */
     @ExceptionHandler(OrderNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Error orderNotFound(OrderNotFoundException exception, Locale locale) throws ResourceNotFoundException, PageOutOfBoundsException {
@@ -65,6 +93,14 @@ public class ErrorController {
         return error;
     }
 
+    /**
+     * Handles {@link UserNotFoundException}
+     * @param exception occured exception
+     * @param locale client locale
+     * @return error response
+     * @throws ResourceNotFoundException if user is not found
+     * @throws PageOutOfBoundsException if page number is less then one and greater then pages amount
+     */
     @ExceptionHandler(UserNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Error userNotFound(UserNotFoundException exception, Locale locale) throws ResourceNotFoundException, PageOutOfBoundsException {
@@ -75,6 +111,14 @@ public class ErrorController {
         return error;
     }
 
+    /**
+     * Handles {@link InvalidCertificateException}
+     * @param exception occured exception
+     * @param locale client locale
+     * @return error response
+     * @throws ResourceNotFoundException if certificate is not found
+     * @throws PageOutOfBoundsException if page number is less then one and greater then pages amount
+     */
     @ExceptionHandler(InvalidCertificateException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Error invalidCertificate(InvalidCertificateException exception, Locale locale) throws ResourceNotFoundException, PageOutOfBoundsException {
@@ -85,6 +129,14 @@ public class ErrorController {
         return error;
     }
 
+    /**
+     * Handles {@link InvalidTagException}
+     * @param exception occured exception
+     * @param locale client locale
+     * @return error response
+     * @throws ResourceNotFoundException if certificate is not found
+     * @throws PageOutOfBoundsException if page number is less then one and greater then pages amount
+     */
     @ExceptionHandler(InvalidTagException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Error invalidTag(InvalidTagException exception, Locale locale) throws ResourceNotFoundException, PageOutOfBoundsException {
@@ -95,6 +147,14 @@ public class ErrorController {
         return error;
     }
 
+    /**
+     * Handles {@link InvalidUserException}
+     * @param exception occured exception
+     * @param locale client locle
+     * @return error response
+     * @throws ResourceNotFoundException if users is not found
+     * @throws PageOutOfBoundsException if page number is less then one and greater then pages amount
+     */
     @ExceptionHandler(InvalidUserException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Error invalidUser(InvalidUserException exception, Locale locale) throws ResourceNotFoundException, PageOutOfBoundsException {
@@ -105,6 +165,14 @@ public class ErrorController {
         return error;
     }
 
+    /**
+     * Handles {@link PageOutOfBoundsException}
+     * @param exception occured exception
+     * @param locale client locale
+     * @return error response
+     * @throws ResourceNotFoundException if user of certificate is not found
+     * @throws PageOutOfBoundsException if page number is less then one and greater then pages amount
+     */
     @ExceptionHandler(PageOutOfBoundsException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Error pageOutOfBounds(PageOutOfBoundsException exception, Locale locale) throws ResourceNotFoundException, PageOutOfBoundsException {

@@ -61,15 +61,11 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     }
 
     /**
-     * Finds all certificates that matches passed parameters such as tag name,
-     * part of name, part of description. Also performs sort certificates operation
-     * if there is sort parameters in passed map. Can be extended if it needs to add new find parameter later.
-     * Uses FindCertificateSqlBuilder that make all work to build right sql query and find parameter values.
-     * Certificate tags are linked with certificate with many-to-many relationship so method uses intermediate
-     * table that links entities together (certificate_tag) and tag dao to link tags with certificate.
-     *
-     * @param findParameters find certificates parameters
-     * @return Certificates that matches passed find parameters
+     * Finds certificates that matches passed parameters
+     * such as tag names, part of name , part of description.
+     * Also make sorting based on passed sorting parameters
+     * @param findParameters parameters by which need to find certificates
+     * @return certificates that match passed parameters
      */
     @Override
     public List<Certificate> findWithParameters(LinkedHashMap<String, String> findParameters) {
@@ -83,12 +79,9 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     }
 
     /**
-     * Finds and returns all certificates from database. Don't use find parameters.
-     * If it's need to find certificates that matches some parameters use windWithParameters methods.
-     * Certificate tag are linked with certificate with many-to-many relationship so method uses intermediate
-     * table that links entities together (certificate_tag) and tag dao to link tags with certificate.
-     *
-     * @return list of all certificates from database
+     * Finds and returns entities on specified page
+     * @param page that need to be finds
+     * @return entities on passed page
      */
     @Override
     public List<Certificate> findPage(int page) {
@@ -148,6 +141,13 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         return findById(updatedCertificate.getId()).orElseThrow(DaoException::new);
     }
 
+    /**
+     * Finds certificate by passed order id.
+     * @param orderId order id by which need to find
+     *                certificate
+     * @return found certificate if there is order with passed certificate
+     * or empty optional otherwise
+     */
     @Override
     public Optional<Certificate> findByOrderId(long orderId) {
         List<Certificate> foundCertificates = template.query(FIND_CERTIFICATE_BY_ORDER_ID_SQL, MAPPER, orderId);
