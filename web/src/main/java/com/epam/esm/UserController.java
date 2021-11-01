@@ -102,7 +102,7 @@ public class UserController {
      * @throws ResourceNotFoundException if user is not found
      * @throws PageOutOfBoundsException if page number is less then one and greater then pages amount
      */
-    @GetMapping("/{userId}/orders/{page}")
+    @GetMapping("/{userId}/orders/page/{page}")
     public PagedModel<Order> showUserOrdersPage(@PathVariable long userId, @PathVariable int page) throws ResourceNotFoundException, PageOutOfBoundsException {
         User user = userService.findById(userId);
         List<Order> orders = userService.findUserOrderPage(user, page);
@@ -165,8 +165,8 @@ public class UserController {
 
     private PagedModel<Order> makeUserOrdersPage(int page, User user, List<Order> orders) throws ResourceNotFoundException, PageOutOfBoundsException {
         for (Order order : orders) {
-            Link certificateLink = linkTo(methodOn(CertificateController.class).showCertificate(order.getCertificate().getId())).withRel("certificate");
-            order.add(certificateLink);
+            Link orderLink = linkTo(methodOn(CertificateController.class).showCertificateOrder(order.getCertificate().getId())).withRel("order");
+            order.add(orderLink);
         }
         Link selfLink = linkTo(methodOn(UserController.class).showUserOrdersPage(user.getId(), page)).withSelfRel();
         Link firstPage = linkTo(methodOn(UserController.class).showUserOrdersPage(user.getId(), 1)).withRel("firstPage");

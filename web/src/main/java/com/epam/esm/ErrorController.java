@@ -49,7 +49,7 @@ public class ErrorController {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Error certificateNotFound(CertificateNotFoundException exception, Locale locale) throws ResourceNotFoundException, PageOutOfBoundsException {
         String message = messageSource.getMessage("certificate.notFound", new Object[]{exception.getResourceId()}, locale);
-        Error error = new Error(ErrorCode.NOT_FOUND, message);
+        Error error = new Error(ErrorCode.NOT_FOUND.getCode(), message);
         Link certificatesLink = linkTo(methodOn(CertificateController.class).showCertificates()).withRel("certificates");
         error.add(certificatesLink);
         return error;
@@ -67,7 +67,7 @@ public class ErrorController {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Error tagNotFound(TagNotFoundException exception, Locale locale) throws ResourceNotFoundException, PageOutOfBoundsException {
         String message = messageSource.getMessage("tag.notFound", new Object[]{exception.getResourceId()}, locale);
-        Error error = new Error(ErrorCode.NOT_FOUND, message);
+        Error error = new Error(ErrorCode.NOT_FOUND.getCode(), message);
         Link certificatesLink = linkTo(methodOn(CertificateController.class).showCertificates()).withRel("certificates");
         error.add(certificatesLink);
         return error;
@@ -84,8 +84,8 @@ public class ErrorController {
     @ExceptionHandler(OrderNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Error orderNotFound(OrderNotFoundException exception, Locale locale) throws ResourceNotFoundException, PageOutOfBoundsException {
-        String message = messageSource.getMessage("order.notFound", new Object[]{}, locale);
-        Error error = new Error(ErrorCode.NOT_FOUND, message);
+        String message = messageSource.getMessage("order.notFound", new Object[]{exception.getResourceId()}, locale);
+        Error error = new Error(ErrorCode.NOT_FOUND.getCode(), message);
         Link certificatesLink = linkTo(methodOn(CertificateController.class).showCertificates()).withRel("certificates");
         Link usersLink = linkTo(methodOn(UserController.class).showUsers()).withRel("users");
         error.add(certificatesLink);
@@ -105,7 +105,7 @@ public class ErrorController {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Error userNotFound(UserNotFoundException exception, Locale locale) throws ResourceNotFoundException, PageOutOfBoundsException {
         String message = messageSource.getMessage("user.notFound", new Object[]{exception.getResourceId()}, locale);
-        Error error = new Error(ErrorCode.NOT_FOUND, message);
+        Error error = new Error(ErrorCode.NOT_FOUND.getCode(), message);
         Link usersLink = linkTo(methodOn(UserController.class).showUsers()).withRel("users");
         error.add(usersLink);
         return error;
@@ -123,7 +123,7 @@ public class ErrorController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Error invalidCertificate(InvalidCertificateException exception, Locale locale) throws ResourceNotFoundException, PageOutOfBoundsException {
         String message = messageSource.getMessage("certificate.invalid", new Object[]{}, locale);
-        Error error = new Error(ErrorCode.INVALID, message);
+        Error error = new Error(ErrorCode.INVALID.getCode(), message);
         Link certificatesLink = linkTo(methodOn(CertificateController.class).showCertificates()).withRel("certificates");
         error.add(certificatesLink);
         return error;
@@ -141,7 +141,7 @@ public class ErrorController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Error invalidTag(InvalidTagException exception, Locale locale) throws ResourceNotFoundException, PageOutOfBoundsException {
         String message = messageSource.getMessage("tag.invalid", new Object[]{}, locale);
-        Error error = new Error(ErrorCode.INVALID, message);
+        Error error = new Error(ErrorCode.INVALID.getCode(), message);
         Link certificatesLink = linkTo(methodOn(CertificateController.class).showCertificates()).withRel("certificates");
         error.add(certificatesLink);
         return error;
@@ -159,7 +159,7 @@ public class ErrorController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Error invalidUser(InvalidUserException exception, Locale locale) throws ResourceNotFoundException, PageOutOfBoundsException {
         String message = messageSource.getMessage("user.invalid", new Object[]{}, locale);
-        Error error = new Error(ErrorCode.INVALID, message);
+        Error error = new Error(ErrorCode.INVALID.getCode(), message);
         Link usersLink = linkTo(methodOn(UserController.class).showUsers()).withRel("users");
         error.add(usersLink);
         return error;
@@ -177,7 +177,7 @@ public class ErrorController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Error pageOutOfBounds(PageOutOfBoundsException exception, Locale locale) throws ResourceNotFoundException, PageOutOfBoundsException {
         String message = messageSource.getMessage("page.outOfBounds", new Object[] {exception.getCurrentPage(), exception.getMinPage(), exception.getMaxPage()}, locale);
-        Error error = new Error(ErrorCode.PAGE_OUT_OF_BOUNDS, message);
+        Error error = new Error(ErrorCode.PAGE_OUT_OF_BOUNDS.getCode(), message);
         Link usersLink = linkTo(methodOn(UserController.class).showUsers()).withRel("users");
         Link certificatesLink = linkTo(methodOn(CertificateController.class).showCertificates()).withRel("certificates");
         error.add(usersLink);

@@ -288,8 +288,9 @@ public class CertificateController {
         Certificate foundCertificate = certificateService.findById(id);
         User foundUser = userService.findById(user.getId());
         Order savedOrder = userService.orderCertificate(foundUser, foundCertificate);
-        Link selfLink = linkTo(methodOn(CertificateController.class).showCertificateOrder(id)).withSelfRel();
-        savedOrder.add(selfLink);
+        Link userLink = linkTo(methodOn(UserController.class).showUser(foundUser.getId())).withRel("user");
+        Link certificateLink = linkTo(methodOn(CertificateController.class).showCertificate(foundCertificate.getId())).withRel("certificate");
+        savedOrder.add(userLink, certificateLink);
         return savedOrder;
     }
 
@@ -300,7 +301,8 @@ public class CertificateController {
                 certificate.add(tagsLink);
             }
             Link orderLink = linkTo(methodOn(CertificateController.class).showCertificateOrder(certificate.getId())).withRel("order");
-            certificate.add(orderLink);
+            Link certificateLink = linkTo(methodOn(CertificateController.class).showCertificate(certificate.getId())).withRel("certificate");
+            certificate.add(orderLink, certificateLink);
         }
         Link selfLink = linkTo(methodOn(CertificateController.class).showCertificatePage(currentPage)).withSelfRel();
         Link firstPageLink = linkTo(methodOn(CertificateController.class).showCertificatePage(1)).withRel("firstPage");
@@ -315,7 +317,8 @@ public class CertificateController {
         links.add(nextPageLink);
         if (currentPage == 1) {
             links.remove(previousPageLink);
-        } else if (currentPage == certificateService.getTotalPages()) {
+        }
+        if (currentPage == certificateService.getTotalPages()) {
             links.remove(nextPageLink);
         }
         PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(certificates.size(), currentPage, certificateService.getTotalElements(), certificateService.getTotalPages());
@@ -340,7 +343,8 @@ public class CertificateController {
         links.add(nextPage);
         if (page == 1) {
             links.remove(previousPage);
-        } else if (page == certificateService.getCertificateTagsTotalPages(certificate)) {
+        }
+        if (page == certificateService.getCertificateTagsTotalPages(certificate)) {
             links.remove(nextPage);
         }
         PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(foundTags.size(), page, certificateService.getCertificateTagsTotalElements(certificate), certificateService.getCertificateTagsTotalPages(certificate));
