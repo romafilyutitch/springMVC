@@ -29,7 +29,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
  *
  * Use JSON format to handle requests and responses
  */
-@RestController()
+@RestController
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;

@@ -15,8 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = DevConfig.class)
 @ActiveProfiles("dev")
-@Sql(scripts = "classpath:data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-@Sql(scripts = "classpath:delete.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+@Sql(scripts = {"classpath:delete.sql", "classpath:data.sql"})
 class OrderJdbcDaoTest {
     @Autowired
     private OrderJdbcDao dao;
