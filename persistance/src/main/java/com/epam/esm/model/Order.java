@@ -1,11 +1,19 @@
 package com.epam.esm.model;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.Objects;
-
+@javax.persistence.Entity
+@Table(name = "certificate_order")
 public class Order extends Entity {
+    @Column(name = "cost")
     private double cost;
+    @Column(name = "date")
     private LocalDateTime orderDate;
+    @OneToOne(targetEntity = Certificate.class, cascade = CascadeType.ALL)
     private Certificate certificate;
 
     public Order() {

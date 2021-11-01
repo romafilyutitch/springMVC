@@ -1,11 +1,25 @@
 package com.epam.esm.model;
 
+import org.springframework.data.repository.cdi.Eager;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinColumns;
+import javax.persistence.OneToMany;
+import javax.persistence.OrderColumn;
+import javax.persistence.Table;
 import java.util.List;
 import java.util.Objects;
-
+@javax.persistence.Entity
+@Table(name = "user")
 public class User extends Entity {
+    @Column(name = "name")
     private String name;
+    @Column(name = "surname")
     private String surname;
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id")
     private List<Order> orders;
 
     public User() {

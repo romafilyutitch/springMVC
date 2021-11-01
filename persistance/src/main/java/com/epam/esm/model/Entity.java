@@ -2,9 +2,14 @@ package com.epam.esm.model;
 
 import org.springframework.hateoas.RepresentationModel;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import java.util.Objects;
-
+@javax.persistence.Entity
 public abstract class Entity extends RepresentationModel<Entity> {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
     public Entity() {
