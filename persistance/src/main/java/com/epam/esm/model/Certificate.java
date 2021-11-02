@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 @javax.persistence.Entity
-@Table(name = "certificate_order")
+@Table(name = "gift_certificate")
 public class Certificate extends Entity {
     @Column(name = "name")
     private String name;

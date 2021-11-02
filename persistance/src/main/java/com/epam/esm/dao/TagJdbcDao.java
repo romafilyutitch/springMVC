@@ -28,9 +28,6 @@ public class TagJdbcDao implements TagDao {
     @Autowired
     private SessionFactory sessionFactory;
 
-    @Autowired
-    private HibernateTemplate template;
-
     @Override
     public List<Tag> findPage(int page) {
         Session session = sessionFactory.getCurrentSession();
@@ -112,10 +109,9 @@ public class TagJdbcDao implements TagDao {
     @Override
     public List<Tag> findAllCertificateTags(long certificateId) {
         Session session = sessionFactory.getCurrentSession();
-        Query<Certificate> query = session.createQuery("from Tag Certificate where id = ?1", Certificate.class);
+        Query<Certificate> query = session.createQuery("from Certificate where id = ?1", Certificate.class);
         query.setParameter(1, certificateId);
-        List<Certificate> list = query.list();
-        Certificate certificate = list.get(0);
+        Certificate certificate = query.uniqueResult();
         return certificate.getTags();
     }
 

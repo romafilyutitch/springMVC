@@ -18,7 +18,7 @@ public class User extends Entity {
     private String name;
     @Column(name = "surname")
     private String surname;
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(targetEntity = Order.class, cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private List<Order> orders;
 
