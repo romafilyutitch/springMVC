@@ -10,6 +10,8 @@ import javax.persistence.JoinColumns;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +31,7 @@ public class Certificate extends Entity {
     private LocalDateTime createDate;
     @Column(name = "last_update_date")
     private LocalDateTime lastUpdateDate;
-    @ManyToMany(targetEntity = Tag.class, cascade = CascadeType.ALL)
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "certificate_tag",
             joinColumns = {@JoinColumn(name = "certificate_id")},
     inverseJoinColumns = {@JoinColumn(name = "tag_id")})

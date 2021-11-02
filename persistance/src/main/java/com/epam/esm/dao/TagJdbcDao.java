@@ -13,11 +13,14 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.orm.hibernate5.HibernateTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.io.Serializable;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Realisation of abstract dao class for tag. Performs sql queries to
@@ -32,52 +35,45 @@ public class TagJdbcDao implements TagDao {
     public List<Tag> findPage(int page) {
         Session session = sessionFactory.getCurrentSession();
         Query<Tag> query = session.createQuery("from Tag", Tag.class);
-        query.setFirstResult(5 * page);
-        query.setMaxResults(5 * page + 5);
+        query.setFirstResult(5 * page - 5);
+        query.setMaxResults(5 * page);
         return query.list();
     }
 
     @Override
     public Optional<Tag> findById(long id) {
         Session session = sessionFactory.getCurrentSession();
-        Query<Tag> query = session.createQuery("from Tag where id = ?1", Tag.class);
-        List<Tag> foundedTags = query.list();
-        return foundedTags.isEmpty() ? Optional.empty() : Optional.of(foundedTags.get(0));
+        Tag tag = session.find(Tag.class, id);
+        return Optional.ofNullable(tag);
     }
 
     @Override
     public Tag save(Tag entity) {
         Session session = sessionFactory.getCurrentSession();
-        session.save(entity);
-        return entity;
+        Serializable id = session.save(entity);
+        return session.find(Tag.class, id);
     }
 
     @Override
     public Tag update(Tag entity) {
         Session session = sessionFactory.getCurrentSession();
-        Transaction transaction = session.beginTransaction();
-        Query<Tag> query = session.createQuery("update Tag set name = ?1 where id = ?2", Tag.class);
-        query.setParameter(1, entity.getName());
-        query.setParameter(2, entity.getId());
-        query.executeUpdate();
-        transaction.commit();
-        return entity;
+        session.update(entity);
+        return session.find(Tag.class, entity.getId());
     }
 
     @Override
     public void delete(long id) {
         Session session = sessionFactory.getCurrentSession();
-        Query<Tag> query = session.createQuery("delete from Tag where id = ?1", Tag.class);
-        query.setParameter(1, id);
-        query.executeUpdate();
+        Tag tag = session.find(Tag.class, id);
+        session.delete(tag);
     }
 
     @Override
     public int getTotalElements() {
         Session session = sessionFactory.getCurrentSession();
-        Query<Integer> query = session.createQuery("select count(*) from Tag", Integer.class);
-        List<Integer> list = query.list();
-        return list.get(0);
+        Query<Long> query = session.createQuery("select count(*) from Tag", Long.class);
+        Long totalElements = query.uniqueResult();
+        return totalElements.intValue();
     }
 
     @Override
@@ -92,17 +88,16 @@ public class TagJdbcDao implements TagDao {
         Session session = sessionFactory.getCurrentSession();
         Query<Tag> query = session.createQuery("select from Tag where name = ?1", Tag.class);
         query.setParameter(1, name);
-        List<Tag> list = query.list();
-        return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
+        return query.uniqueResultOptional();
     }
 
     @Override
     public List<Tag> findCertificateTagsPage(long certificateId, int page) {
         Session session = sessionFactory.getCurrentSession();
-        Query<Tag> query = session.createQuery("select Tag from Certificate where id = ?1", Tag.class);
+        Query<Tag> query = session.createQuery("select t from Certificate c join c.tags t where c.id = ?1", Tag.class);
         query.setParameter(1, certificateId);
-        query.setFirstResult(5 * page);
-        query.setMaxResults(5 * page + 5);
+        query.setFirstResult(5 * page - 5);
+        query.setMaxResults(5 * page);
         return query.list();
     }
 
@@ -125,19 +120,17 @@ public class TagJdbcDao implements TagDao {
     @Override
     public int getCertificateTagsTotalElements(long certificateId) {
         Session session = sessionFactory.getCurrentSession();
-        Query<Integer> query = session.createQuery("select count(Tag) from Certificate where id = ?1", Integer.class);
-        query.setParameter(1, certificateId);
-        List<Integer> list = query.list();
-        return list.get(0);
+        Certificate certificate = session.find(Certificate.class, certificateId);
+        List<Tag> certificateTags = certificate.getTags();
+        return certificateTags.size();
     }
 
     @Override
     public Optional<Tag> findCertificateTag(long certificateId, long tagId) {
         Session session = sessionFactory.getCurrentSession();
-        Query<Tag> query = session.createQuery("select Tag from Certificate where Certificate.id = ?1 and tag.id = ?2", Tag.class);
+        Query<Tag> query = session.createQuery("select t from Certificate c join c.tags t where c.id = ?1 and t.id = ?2", Tag.class);
         query.setParameter(1, certificateId);
         query.setParameter(2, tagId);
-        List<Tag> list = query.list();
-        return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
+        return query.uniqueResultOptional();
     }
 }
