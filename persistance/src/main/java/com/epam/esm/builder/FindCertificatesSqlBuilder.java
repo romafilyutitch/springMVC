@@ -1,7 +1,15 @@
 package com.epam.esm.builder;
 
+import com.epam.esm.model.Certificate;
+import com.epam.esm.model.Tag;
 import org.springframework.stereotype.Component;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -59,25 +67,24 @@ public class FindCertificatesSqlBuilder {
      * @param findParameters parameters map that define find certificate parameters
      * @return built sql find all certificates statement that defined by passed parameters map
      */
-    public String buildSql(LinkedHashMap<String, String> findParameters) {
-        String tagNames = findParameters.get(TAG_NAME_KEY);
+    public CriteriaQuery<Certificate> buildSql(LinkedHashMap<String, String> findParameters, CriteriaBuilder criteriaBuilder) {
+        CriteriaQuery<Certificate> query = criteriaBuilder.createQuery(Certificate.class);
+        Root<Certificate> root = query.from(Certificate.class);
+        Join<Certificate, Tag> join = root.join("tags", JoinType.LEFT);
+        List<Predicate> predicates = new ArrayList<>();
         String partOfName = findParameters.get(PART_OF_NAME_KEY);
+        Predicate partOfNamePredicate = criteriaBuilder.like(root.get("name"), partOfName);
         String partOfDescription = findParameters.get(PART_OF_DESCRIPTION_KEY);
-        Set<Map.Entry<String, String>> entries = findParameters.entrySet();
-        FindCertificatesSqlBuilder builder = findAll()
-                .whereTagName(tagNames)
-                .wherePartOfName(partOfName)
-                .wherePartOfDescription(partOfDescription)
-                .groupByCertificateId()
-                .havingIdCountEquals(tagNames);
-        for (Map.Entry<String, String> entry : entries) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-            builder = key.equals(SORT_BY_NAME_KEY) ? builder.orderByName(value) : builder;
-            builder = key.equals(SORT_BY_DATE_KEY) ? builder.orderByDate(value) : builder;
-        }
-        return builder.build();
+        Predicate partOfDescriptionPredicate = criteriaBuilder.like(root.get("description"), partOfDescription);
+        String tagNames = findParameters.get(TAG_NAME_KEY);
+        String[] names = tagNames.split(",");
+        Predicate in = join.get("name").in(names);
+        query.select(root).where(partOfNamePredicate, partOfDescriptionPredicate, in)
+                .groupBy(root.get("id"));
+        return query;
     }
+
+
 
     private FindCertificatesSqlBuilder havingIdCountEquals(String tagNames) {
         if (isNullOrEmptyParameter(tagNames)) {

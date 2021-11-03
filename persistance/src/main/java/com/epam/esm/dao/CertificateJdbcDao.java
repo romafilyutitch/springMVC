@@ -10,8 +10,14 @@ import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.orm.hibernate5.HibernateTemplate;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Root;
 import java.io.Serializable;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -32,10 +38,18 @@ import java.util.Optional;
 public class CertificateJdbcDao implements CertificateDao {
     @Autowired
     private SessionFactory sessionFactory;
+    @Autowired
+    private FindCertificatesSqlBuilder builder;
 
     @Override
     public List<Certificate> findWithParameters(LinkedHashMap<String, String> findParameters) {
-        return null;
+        Session session = sessionFactory.getCurrentSession();
+        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+        CriteriaQuery<Certificate> criteriaQuery = builder.buildSql(findParameters, criteriaBuilder);
+        Query<Certificate> query = session.createQuery(criteriaQuery);
+        System.out.println(query.getQueryString());
+        System.out.println(query.list());
+        return query.list();
     }
 
     @Override
@@ -64,8 +78,8 @@ public class CertificateJdbcDao implements CertificateDao {
     @Override
     public Certificate save(Certificate entity) {
         Session session = sessionFactory.getCurrentSession();
-        Serializable id = session.save(entity);
-        return session.get(Certificate.class, id);
+        session.save(entity);
+        return entity;
     }
 
     @Override
