@@ -43,7 +43,7 @@ public class TagJdbcDao implements TagDao {
     @Override
     public Optional<Tag> findById(long id) {
         Session session = sessionFactory.getCurrentSession();
-        Tag tag = session.find(Tag.class, id);
+        Tag tag = session.get(Tag.class, id);
         return Optional.ofNullable(tag);
     }
 
@@ -51,20 +51,20 @@ public class TagJdbcDao implements TagDao {
     public Tag save(Tag entity) {
         Session session = sessionFactory.getCurrentSession();
         Serializable id = session.save(entity);
-        return session.find(Tag.class, id);
+        return session.get(Tag.class, id);
     }
 
     @Override
     public Tag update(Tag entity) {
         Session session = sessionFactory.getCurrentSession();
         session.update(entity);
-        return session.find(Tag.class, entity.getId());
+        return session.get(Tag.class, entity.getId());
     }
 
     @Override
     public void delete(long id) {
         Session session = sessionFactory.getCurrentSession();
-        Tag tag = session.find(Tag.class, id);
+        Tag tag = session.get(Tag.class, id);
         session.delete(tag);
     }
 
@@ -120,7 +120,7 @@ public class TagJdbcDao implements TagDao {
     @Override
     public int getCertificateTagsTotalElements(long certificateId) {
         Session session = sessionFactory.getCurrentSession();
-        Certificate certificate = session.find(Certificate.class, certificateId);
+        Certificate certificate = session.get(Certificate.class, certificateId);
         List<Tag> certificateTags = certificate.getTags();
         return certificateTags.size();
     }

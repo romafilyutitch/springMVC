@@ -41,7 +41,7 @@ public class CertificateJdbcDao implements CertificateDao {
     @Override
     public Optional<Certificate> findByOrderId(long orderId) {
         Session session = sessionFactory.getCurrentSession();
-        Order order = session.find(Order.class, orderId);
+        Order order = session.get(Order.class, orderId);
         return Optional.of(order.getCertificate());
     }
 
@@ -57,7 +57,7 @@ public class CertificateJdbcDao implements CertificateDao {
     @Override
     public Optional<Certificate> findById(long id) {
         Session session = sessionFactory.getCurrentSession();
-        Certificate certificate = session.find(Certificate.class, id);
+        Certificate certificate = session.get(Certificate.class, id);
         return Optional.ofNullable(certificate);
     }
 
@@ -65,7 +65,7 @@ public class CertificateJdbcDao implements CertificateDao {
     public Certificate save(Certificate entity) {
         Session session = sessionFactory.getCurrentSession();
         Serializable id = session.save(entity);
-        return session.find(Certificate.class, id);
+        return session.get(Certificate.class, id);
     }
 
     @Override
@@ -78,7 +78,7 @@ public class CertificateJdbcDao implements CertificateDao {
     @Override
     public void delete(long id) {
         Session session = sessionFactory.getCurrentSession();
-        Certificate certificate = session.find(Certificate.class, id);
+        Certificate certificate = session.get(Certificate.class, id);
         session.delete(certificate);
     }
 

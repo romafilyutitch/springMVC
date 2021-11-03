@@ -19,7 +19,7 @@ public interface OrderDao extends Dao<Order> {
      * @param page user orders page that need to be found
      * @return user orders passed page
      */
-    List<Order> findUserOrdersPage(long userId, long page);
+    List<Order> findUserOrdersPage(long userId, int page);
 
     /**
      * Counts user orders pages amount.

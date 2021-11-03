@@ -2,6 +2,7 @@ package com.epam.esm.dao;
 
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Order;
+import com.epam.esm.model.User;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
@@ -36,7 +37,7 @@ public class OrderJdbcDao implements OrderDao {
     @Override
     public Optional<Order> findById(long id) {
         Session session = sessionFactory.getCurrentSession();
-        Order order = session.find(Order.class, id);
+        Order order = session.get(Order.class, id);
         return Optional.ofNullable(order);
     }
 
@@ -44,20 +45,20 @@ public class OrderJdbcDao implements OrderDao {
     public Order save(Order entity) {
         Session session = sessionFactory.getCurrentSession();
         Serializable id = session.save(entity);
-        return session.find(Order.class, id);
+        return session.get(Order.class, id);
     }
 
     @Override
     public Order update(Order entity) {
         Session session = sessionFactory.getCurrentSession();
         session.update(entity);
-        return session.find(Order.class, entity.getId());
+        return session.get(Order.class, entity.getId());
     }
 
     @Override
     public void delete(long id) {
         Session session = sessionFactory.getCurrentSession();
-        Order order = session.find(Order.class, id);
+        Order order = session.get(Order.class, id);
         session.delete(order);
     }
 
@@ -112,7 +113,11 @@ public class OrderJdbcDao implements OrderDao {
 
     @Override
     public void setUserToOrder(long userId, long orderId) {
-//        @todo fix this
+        Session session = sessionFactory.getCurrentSession();
+        User user = session.get(User.class, userId);
+        Order order = session.get(Order.class, orderId);
+        user.getOrders().add(order);
+        session.update(user);
     }
 
     @Override
