@@ -32,8 +32,8 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
     public List<Order> findPage(int page) {
         Session session = sessionFactory.getCurrentSession();
         Query<Order> query = session.createQuery("from Order", Order.class);
-        query.setFirstResult(5 * page - 5);
-        query.setMaxResults(5 * page);
+        query.setFirstResult(rowsPerPage * page - rowsPerPage);
+        query.setMaxResults(rowsPerPage);
         return query.list();
     }
 
@@ -74,7 +74,7 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
     @Override
     public int getUserOrdersTotalPages(long userId) {
         int userOrdersTotalElements = getUserOrdersTotalElements(userId);
-        int userOrdersTotalPages = userOrdersTotalElements / 5;
+        int userOrdersTotalPages = userOrdersTotalElements / rowsPerPage;
         return userOrdersTotalElements % rowsPerPage == 0 ? userOrdersTotalPages : ++userOrdersTotalPages;
     }
 

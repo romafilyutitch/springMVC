@@ -25,7 +25,7 @@ public class TagJdbcDao extends AbstractDao<Tag> implements TagDao {
         Session session = sessionFactory.getCurrentSession();
         Query<Tag> query = session.createQuery("from Tag", Tag.class);
         query.setFirstResult(rowsPerPage * page - rowsPerPage);
-        query.setMaxResults(rowsPerPage * page);
+        query.setMaxResults(rowsPerPage);
         return query.list();
     }
 

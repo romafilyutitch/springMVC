@@ -37,7 +37,7 @@ public class UserJdbcDao extends AbstractDao<User> implements UserDao {
         Session session = sessionFactory.getCurrentSession();
         Query<User> query = session.createQuery("from User", User.class);
         query.setFirstResult(rowsPerPage * page - rowsPerPage);
-        query.setMaxResults(rowsPerPage * page);
+        query.setMaxResults(rowsPerPage);
         return query.list();
     }
 

@@ -51,7 +51,7 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         Session session = sessionFactory.getCurrentSession();
         Query<Certificate> query = session.createQuery("from Certificate", Certificate.class);
         query.setFirstResult(rowsPerPage * page - rowsPerPage);
-        query.setMaxResults(rowsPerPage * page);
+        query.setMaxResults(rowsPerPage);
         return query.list();
     }
 
