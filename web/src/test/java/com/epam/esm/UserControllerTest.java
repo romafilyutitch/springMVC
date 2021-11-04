@@ -1,29 +1,21 @@
 package com.epam.esm;
 
-import com.epam.esm.config.DevConfig;
-import com.epam.esm.model.Certificate;
-import com.epam.esm.model.Tag;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.epam.esm.config.PersistanceConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Collections;
-import java.util.List;
-
-import static org.apache.tomcat.jni.Shm.size;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(classes = DevConfig.class)
+@SpringBootTest(classes = PersistanceConfig.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("dev")
 @Sql(scripts = {"classpath:delete.sql","classpath:data.sql"})

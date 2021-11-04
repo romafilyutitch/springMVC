@@ -1,6 +1,6 @@
 package com.epam.esm.dao;
 
-import com.epam.esm.config.DevConfig;
+import com.epam.esm.config.PersistanceConfig;
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
 import org.junit.jupiter.api.Test;
@@ -9,15 +9,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 
-import java.util.LinkedHashMap;
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(classes = DevConfig.class)
+@SpringBootTest(classes = PersistanceConfig.class)
 @ActiveProfiles("dev")
 @Sql(scripts = {"classpath:delete.sql", "classpath:data.sql"})
+@Transactional
 class CertificateJdbcDaoTest {
 
     @Autowired
@@ -86,8 +87,11 @@ class CertificateJdbcDaoTest {
 
     @Test
     public void delete_shouldDeleteSavedCertificate() {
-        dao.delete(1L);
-        Optional<Certificate> optionalCertificate = dao.findById(1L);
+        Optional<Certificate> optionalSavedCertificate = dao.findById(1);
+        assertTrue(optionalSavedCertificate.isPresent());
+        Certificate certificate = optionalSavedCertificate.get();
+        dao.delete(certificate);
+        Optional<Certificate> optionalCertificate = dao.findById(1);
 
         assertFalse(optionalCertificate.isPresent());
     }

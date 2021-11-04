@@ -148,11 +148,11 @@ class CertificateRestServiceTest {
 
     @Test
     public void delete_shouldCertificate() {
-        doNothing().when(certificateDao).delete(certificate.getId());
+        doNothing().when(certificateDao).delete(certificate);
 
         service.delete(certificate);
 
-        verify(certificateDao).delete(certificate.getId());
+        verify(certificateDao).delete(certificate);
     }
 
     @Test
@@ -185,10 +185,10 @@ class CertificateRestServiceTest {
     @Test
     public void deleteCertificateTag_shouldDeleteTag() {
         Tag tag = new Tag(1, "tag");
-        doNothing().when(tagDao).delete(tag.getId());
+        doNothing().when(tagDao).delete(tag);
         service.deleteCertificateTag(certificate, tag);
 
-        verify(tagDao).delete(tag.getId());
+        verify(tagDao).delete(tag);
     }
 
     @Test

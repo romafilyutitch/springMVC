@@ -1,6 +1,6 @@
 package com.epam.esm.dao;
 
-import com.epam.esm.config.DevConfig;
+import com.epam.esm.config.PersistanceConfig;
 import com.epam.esm.model.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,14 +8,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(classes = DevConfig.class)
+@SpringBootTest(classes = PersistanceConfig.class)
 @ActiveProfiles("dev")
 @Sql(scripts = {"classpath:delete.sql", "classpath:data.sql"})
+@Transactional
 class TagJdbcDaoTest {
 
     @Autowired
@@ -92,7 +94,10 @@ class TagJdbcDaoTest {
 
     @Test
     public void delete_shouldDeleteSavedTag() {
-        dao.delete(1L);
+        Optional<Tag> optionalSavedTag = dao.findById(1);
+        assertTrue(optionalSavedTag.isPresent());
+        Tag savedTag = optionalSavedTag.get();
+        dao.delete(savedTag);
         Optional<Tag> optionalTag = dao.findById(1L);
 
         assertFalse(optionalTag.isPresent());

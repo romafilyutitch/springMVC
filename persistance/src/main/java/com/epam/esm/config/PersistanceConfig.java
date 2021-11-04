@@ -10,6 +10,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -17,14 +19,14 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.sql.DataSource;
 
 @Configuration
-@Profile("prod")
 @ComponentScan("com.epam.esm")
-public class ProdConfig {
+public class PersistanceConfig {
 
     @Autowired
     private Environment env;
 
     @Bean
+    @Profile("prod")
     public DataSource getDataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName(env.getRequiredProperty("spring.datasource.driver-class-name"));
@@ -34,23 +36,27 @@ public class ProdConfig {
         return dataSource;
     }
 
-    @Bean LocalSessionFactoryBean sessionFactoryBean() {
+    @Bean
+    @Profile("dev")
+    public DataSource dataSource() {
+        EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder();
+        return builder.setType(EmbeddedDatabaseType.H2)
+                .addScript("schema.sql")
+                .build();
+    }
+
+    @Bean
+    public LocalSessionFactoryBean sessionFactoryBean(DataSource dataSource) {
         LocalSessionFactoryBean sessionFactoryBean = new LocalSessionFactoryBean();
-        sessionFactoryBean.setDataSource(getDataSource());
+        sessionFactoryBean.setDataSource(dataSource);
         sessionFactoryBean.setPackagesToScan("com.epam.esm");
         return sessionFactoryBean;
     }
 
     @Bean
-    public PlatformTransactionManager hibernateTransactionManager() {
+    public PlatformTransactionManager hibernateTransactionManager(LocalSessionFactoryBean localSessionFactoryBean) {
         HibernateTransactionManager transactionManager = new HibernateTransactionManager();
-        transactionManager.setSessionFactory(sessionFactoryBean().getObject());
+        transactionManager.setSessionFactory(localSessionFactoryBean.getObject());
         return transactionManager;
     }
-
-    @Bean
-    public JdbcTemplate jdbcTemplate(DataSource dataSource) {
-        return new JdbcTemplate(dataSource);
-    }
-
 }

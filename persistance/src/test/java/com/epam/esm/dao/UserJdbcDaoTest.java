@@ -1,6 +1,6 @@
 package com.epam.esm.dao;
 
-import com.epam.esm.config.DevConfig;
+import com.epam.esm.config.PersistanceConfig;
 import com.epam.esm.model.Tag;
 import com.epam.esm.model.User;
 import org.junit.jupiter.api.Test;
@@ -9,13 +9,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-@SpringBootTest(classes = DevConfig.class)
+@SpringBootTest(classes = PersistanceConfig.class)
 @ActiveProfiles("dev")
 @Sql(scripts = {"classpath:delete.sql", "classpath:data.sql"})
+@Transactional
 class UserJdbcDaoTest {
 
     @Autowired

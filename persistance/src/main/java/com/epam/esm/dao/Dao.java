@@ -47,9 +47,9 @@ public interface Dao<T extends Entity> {
     /**
      * Performs entity delete operation. Deletes entity from database that have passed id
      *
-     * @param id id of entity that need to be deleted
+     * @param entity entity that need to be deleted
      */
-    void delete(long id);
+    void delete(T entity);
 
     /**
      * Counts all entities rand returns saved entities amount

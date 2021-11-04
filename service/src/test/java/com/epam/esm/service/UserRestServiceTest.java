@@ -153,11 +153,11 @@ class UserRestServiceTest {
 
     @Test
     public void delete_shouldDeleteUser() {
-        doNothing().when(userDao).delete(user.getId());
+        doNothing().when(userDao).delete(user);
 
         service.delete(user);
 
-        verify(userDao).delete(user.getId());
+        verify(userDao).delete(user);
     }
 
     @Test
