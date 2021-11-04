@@ -3,6 +3,7 @@ package com.epam.esm.dao;
 import com.epam.esm.model.Entity;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -29,21 +30,27 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
     @Override
     public T save(T entity) {
         Session session = sessionFactory.getCurrentSession();
+        Transaction transaction = session.beginTransaction();
         session.save(entity);
+        transaction.commit();
         return entity;
     }
 
     @Override
     public T update(T entity) {
         Session session = sessionFactory.getCurrentSession();
+        Transaction transaction = session.beginTransaction();
         session.update(entity);
+        transaction.commit();
         return entity;
     }
 
     @Override
     public void delete(T entity) {
         Session session = sessionFactory.getCurrentSession();
+        Transaction transaction = session.beginTransaction();
         session.delete(entity);
+        transaction.commit();
     }
 
     @Override
