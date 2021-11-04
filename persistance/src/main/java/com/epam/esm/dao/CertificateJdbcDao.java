@@ -34,8 +34,6 @@ public class CertificateJdbcDao implements CertificateDao {
         CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
         CriteriaQuery<Certificate> criteriaQuery = builder.buildSql(findParameters, criteriaBuilder);
         Query<Certificate> query = session.createQuery(criteriaQuery);
-        System.out.println(query.getQueryString());
-        System.out.println(query.list());
         return query.list();
     }
 

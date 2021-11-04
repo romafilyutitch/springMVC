@@ -86,7 +86,7 @@ public class TagJdbcDao implements TagDao {
     @Override
     public Optional<Tag> findByName(String name) {
         Session session = sessionFactory.getCurrentSession();
-        Query<Tag> query = session.createQuery("select from Tag where name = ?1", Tag.class);
+        Query<Tag> query = session.createQuery("from Tag where name = ?1", Tag.class);
         query.setParameter(1, name);
         return query.uniqueResultOptional();
     }

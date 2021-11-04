@@ -1,6 +1,6 @@
 package com.epam.esm;
 
-import com.epam.esm.config.DevConfig;
+import com.epam.esm.config.PersistanceConfig;
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,7 +22,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(classes = DevConfig.class)
+@SpringBootTest(classes = PersistanceConfig.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("dev")
 @Sql(scripts = {"classpath:delete.sql","classpath:data.sql"})
