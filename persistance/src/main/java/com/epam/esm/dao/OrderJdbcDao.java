@@ -5,6 +5,7 @@ import com.epam.esm.model.Order;
 import com.epam.esm.model.User;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
@@ -80,10 +81,12 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
     @Override
     public void setUserToOrder(long userId, long orderId) {
         Session session = sessionFactory.getCurrentSession();
+        Transaction transaction = session.beginTransaction();
         User user = session.get(User.class, userId);
         Order order = session.get(Order.class, orderId);
         user.getOrders().add(order);
         session.update(user);
+        transaction.commit();
     }
 
     @Override
