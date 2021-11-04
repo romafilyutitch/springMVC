@@ -1,29 +1,16 @@
 package com.epam.esm.dao;
 
-import com.epam.esm.builder.FindCertificatesSqlBuilder;
+import com.epam.esm.builder.FindCertificatesQueryBuilder;
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Order;
-import com.epam.esm.model.Tag;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.orm.hibernate5.HibernateTemplate;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Root;
-import java.io.Serializable;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
@@ -39,7 +26,7 @@ public class CertificateJdbcDao implements CertificateDao {
     @Autowired
     private SessionFactory sessionFactory;
     @Autowired
-    private FindCertificatesSqlBuilder builder;
+    private FindCertificatesQueryBuilder builder;
 
     @Override
     public List<Certificate> findWithParameters(LinkedHashMap<String, String> findParameters) {
