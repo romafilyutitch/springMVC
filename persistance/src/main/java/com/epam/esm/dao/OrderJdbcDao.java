@@ -21,9 +21,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class OrderJdbcDao implements OrderDao {
-    @Autowired
-    private SessionFactory sessionFactory;
+public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
+
+    public OrderJdbcDao() {
+        super(Order.class.getSimpleName());
+    }
 
     @Override
     public List<Order> findPage(int page) {
@@ -42,42 +44,6 @@ public class OrderJdbcDao implements OrderDao {
     }
 
     @Override
-    public Order save(Order entity) {
-        Session session = sessionFactory.getCurrentSession();
-        Serializable id = session.save(entity);
-        return session.get(Order.class, id);
-    }
-
-    @Override
-    public Order update(Order entity) {
-        Session session = sessionFactory.getCurrentSession();
-        session.update(entity);
-        return session.get(Order.class, entity.getId());
-    }
-
-    @Override
-    public void delete(long id) {
-        Session session = sessionFactory.getCurrentSession();
-        Order order = session.get(Order.class, id);
-        session.delete(order);
-    }
-
-    @Override
-    public int getTotalElements() {
-        Session session = sessionFactory.getCurrentSession();
-        Query<Long> query = session.createQuery("select count(*) from Order", Long.class);
-        Long totalElements = query.uniqueResult();
-        return totalElements.intValue();
-    }
-
-    @Override
-    public int getTotalPages() {
-        int totalElements = getTotalElements();
-        int totalPages = totalElements / 5;
-        return totalElements % 5 == 0 ? totalPages : ++totalPages;
-    }
-
-    @Override
     public List<Order> findAllUserOrders(long userId) {
         Session session = sessionFactory.getCurrentSession();
         Query<Order> query = session.createQuery("from Order where user_id = ?1", Order.class);
@@ -90,8 +56,8 @@ public class OrderJdbcDao implements OrderDao {
         Session session = sessionFactory.getCurrentSession();
         Query<Order> query = session.createQuery("from Order where user_id = ?1", Order.class);
         query.setParameter(1, userId);
-        query.setFirstResult(5 * page - 5);
-        query.setMaxResults(5 * page);
+        query.setFirstResult(rowsPerPage * page - rowsPerPage);
+        query.setMaxResults(rowsPerPage * page);
         return query.list();
     }
 
@@ -108,7 +74,7 @@ public class OrderJdbcDao implements OrderDao {
     public int getUserOrdersTotalPages(long userId) {
         int userOrdersTotalElements = getUserOrdersTotalElements(userId);
         int userOrdersTotalPages = userOrdersTotalElements / 5;
-        return userOrdersTotalElements % 5 == 0 ? userOrdersTotalPages : ++userOrdersTotalPages;
+        return userOrdersTotalElements % rowsPerPage == 0 ? userOrdersTotalPages : ++userOrdersTotalPages;
     }
 
     @Override

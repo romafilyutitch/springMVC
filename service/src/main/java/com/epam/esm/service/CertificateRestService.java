@@ -127,7 +127,7 @@ public class CertificateRestService implements CertificateService {
      */
     @Override
     public void delete(Certificate certificate) {
-        certificateDao.delete(certificate.getId());
+        certificateDao.delete(certificate);
         logger.info(String.format("Certificate was deleted %s", certificate));
     }
     /**
@@ -155,7 +155,7 @@ public class CertificateRestService implements CertificateService {
      */
     @Override
     public void deleteCertificateTag(Certificate certificate, Tag tag) {
-        tagDao.delete(tag.getId());
+        tagDao.delete(tag);
         logger.info("Certificate tag was deleted successfully");
     }
 

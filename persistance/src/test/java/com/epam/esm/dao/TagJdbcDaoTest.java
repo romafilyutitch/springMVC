@@ -94,7 +94,10 @@ class TagJdbcDaoTest {
 
     @Test
     public void delete_shouldDeleteSavedTag() {
-        dao.delete(1L);
+        Optional<Tag> optionalSavedTag = dao.findById(1);
+        assertTrue(optionalSavedTag.isPresent());
+        Tag savedTag = optionalSavedTag.get();
+        dao.delete(savedTag);
         Optional<Tag> optionalTag = dao.findById(1L);
 
         assertFalse(optionalTag.isPresent());

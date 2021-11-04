@@ -87,8 +87,11 @@ class CertificateJdbcDaoTest {
 
     @Test
     public void delete_shouldDeleteSavedCertificate() {
-        dao.delete(1L);
-        Optional<Certificate> optionalCertificate = dao.findById(1L);
+        Optional<Certificate> optionalSavedCertificate = dao.findById(1);
+        assertTrue(optionalSavedCertificate.isPresent());
+        Certificate certificate = optionalSavedCertificate.get();
+        dao.delete(certificate);
+        Optional<Certificate> optionalCertificate = dao.findById(1);
 
         assertFalse(optionalCertificate.isPresent());
     }

@@ -132,7 +132,7 @@ public class UserRestService implements UserService {
      */
     @Override
     public void delete(User entity) {
-        userDao.delete(entity.getId());
+        userDao.delete(entity);
         logger.info(String.format("User was deleted %s", entity));
     }
     /**
