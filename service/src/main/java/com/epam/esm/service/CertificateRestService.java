@@ -15,9 +15,11 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Service layer certificate certificate service implementation
@@ -96,7 +98,14 @@ public class CertificateRestService implements CertificateService {
     @Override
     public Certificate save(Certificate certificate) throws InvalidResourceException {
         certificateValidator.validate(certificate);
+        List<Tag> tags = certificate.getTags();
+        for (Tag tag : tags) {
+            tagValidator.validate(tag);
+        }
+        List<Tag> tagsToSave = tags.stream().map(tag -> tagDao.findByName(tag.getName()).orElse(tag)).collect(Collectors.toList());
+        certificate.setTags(tagsToSave);
         Certificate savedCertificate = certificateDao.save(certificate);
+        savedCertificate.setCreateDate(LocalDateTime.now());
         logger.info("New certificate was validated and saved successfully " + savedCertificate);
         return savedCertificate;
     }
@@ -114,9 +123,15 @@ public class CertificateRestService implements CertificateService {
         certificateFromTable.setDescription(certificate.getDescription() == null ? certificateFromTable.getDescription() : certificate.getDescription());
         certificateFromTable.setPrice(certificate.getPrice() == 0.0 ? certificateFromTable.getPrice() : certificate.getPrice());
         certificateFromTable.setDuration(certificate.getDuration() == 0 ? certificateFromTable.getDuration() : certificate.getDuration());
-        certificateFromTable.getTags().addAll(certificate.getTags());
+        List<Tag> tags = certificate.getTags();
+        for (Tag tag : tags) {
+            tagValidator.validate(tag);
+        }
+        List<Tag> tagsToUpdate = tags.stream().map(tag -> tagDao.findByName(tag.getName()).orElse(tag)).collect(Collectors.toList());
+        certificateFromTable.getTags().addAll(tagsToUpdate);
         certificateValidator.validate(certificateFromTable);
         Certificate updatedCertificate = certificateDao.update(certificateFromTable);
+        updatedCertificate.setLastUpdateDate(LocalDateTime.now());
         logger.info("Certificate was validated and updated successfully " + updatedCertificate);
         return updatedCertificate;
     }
@@ -142,8 +157,9 @@ public class CertificateRestService implements CertificateService {
         for (Tag tag : tags) {
             tagValidator.validate(tag);
         }
+        List<Tag> tagsToUpdate = tags.stream().map(tag -> tagDao.findByName(tag.getName()).orElse(tag)).collect(Collectors.toList());
         List<Tag> certificateTags = certificate.getTags();
-        certificateTags.addAll(tags);
+        certificateTags.addAll(tagsToUpdate);
         Certificate updatedCertificate = certificateDao.update(certificate);
         logger.info("Certificate was updated with new tags " + updatedCertificate);
         return updatedCertificate;
