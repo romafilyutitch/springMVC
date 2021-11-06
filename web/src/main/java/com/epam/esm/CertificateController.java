@@ -68,7 +68,7 @@ public class CertificateController {
                 Link tagsLink = linkTo(methodOn(CertificateController.class).showCertificateTags(certificate.getId())).withRel("tags");
                 certificate.add(tagsLink);
             }
-            Link orderLink = linkTo(methodOn(CertificateController.class).showCertificateOrder(certificate.getId())).withRel("order");
+            Link orderLink = linkTo(methodOn(CertificateController.class).showCertificateOrders(certificate.getId())).withRel("order");
             certificate.add(orderLink);
         }
         Link selfLink = linkTo(methodOn(CertificateController.class).findCertificateWithParameters(findParameters)).withSelfRel();
@@ -116,7 +116,7 @@ public class CertificateController {
             Link tagsLink = linkTo(methodOn(CertificateController.class).showCertificateTagsPage(id, 1)).withRel("tags");
             foundCertificate.add(tagsLink);
         }
-        Link orderLink = linkTo(methodOn(CertificateController.class).showCertificateOrder(foundCertificate.getId())).withRel("order");
+        Link orderLink = linkTo(methodOn(CertificateController.class).showCertificateOrders(foundCertificate.getId())).withRel("order");
         foundCertificate.add(orderLink);
         return foundCertificate;
     }
@@ -264,14 +264,27 @@ public class CertificateController {
      * @throws ResourceNotFoundException if certificate or order is not found
      * @throws PageOutOfBoundsException if page number is less then 1 and greater then pages amount
      */
-    @GetMapping("/{id}/order")
-    public Order showCertificateOrder(@PathVariable Long id) throws ResourceNotFoundException, PageOutOfBoundsException {
+    @GetMapping("/{id}/orders")
+    public CollectionModel<Order> showCertificateOrders(@PathVariable Long id) throws ResourceNotFoundException, PageOutOfBoundsException {
         Certificate foundCertificate = certificateService.findById(id);
-        Order foundOrder = certificateService.findCertificateOrder(foundCertificate);
-        Link selfLink = linkTo(methodOn(CertificateController.class).showCertificateOrder(id)).withSelfRel();
+        List<Order> foundOrders = certificateService.findCertificateOrders(foundCertificate);
+        for (Order foundOrder : foundOrders) {
+            Link orderLink  = linkTo(methodOn(CertificateController.class).showCertificateOrder(id, foundOrder.getId())).withRel("order");
+            foundOrder.add(orderLink);
+        }
+        Link selfLink = linkTo(methodOn(CertificateController.class).showCertificateOrders(id)).withSelfRel();
+        return CollectionModel.of(foundOrders, selfLink);
+    }
+
+    @GetMapping("/{id}/orders/{orderId}")
+    public Order showCertificateOrder(@PathVariable long id, @PathVariable long orderId) throws ResourceNotFoundException, PageOutOfBoundsException {
+        Certificate foundCertificate = certificateService.findById(id);
+        Order foundOrder = certificateService.findCertificateOrder(orderId);
+        User foundUser = userService.findOrderUser(foundOrder);
+        Link selfLink = linkTo(methodOn(CertificateController.class).showCertificateOrder(id, orderId)).withSelfRel();
         Link certificateLink = linkTo(methodOn(CertificateController.class).showCertificate(foundCertificate.getId())).withRel("certificate");
-        foundOrder.add(selfLink);
-        foundOrder.add(certificateLink);
+        Link userLink = linkTo(methodOn(UserController.class).showUser(foundUser.getId())).withRel("user");
+        foundOrder.add(selfLink, certificateLink, userLink);
         return foundOrder;
     }
 
@@ -300,7 +313,7 @@ public class CertificateController {
                 Link tagsLink = linkTo(methodOn(CertificateController.class).showCertificateTagsPage(certificate.getId(), 1)).withRel("tags");
                 certificate.add(tagsLink);
             }
-            Link orderLink = linkTo(methodOn(CertificateController.class).showCertificateOrder(certificate.getId())).withRel("order");
+            Link orderLink = linkTo(methodOn(CertificateController.class).showCertificateOrders(certificate.getId())).withRel("order");
             Link certificateLink = linkTo(methodOn(CertificateController.class).showCertificate(certificate.getId())).withRel("certificate");
             certificate.add(orderLink, certificateLink);
         }

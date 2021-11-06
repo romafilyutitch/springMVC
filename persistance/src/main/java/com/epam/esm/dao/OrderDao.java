@@ -48,5 +48,5 @@ public interface OrderDao extends Dao<Order> {
      * @return order that contains certificate with passed id
      * or empty order otherwise
      */
-    Optional<Order> findByCertificateId(long certificateId);
+    List<Order> findByCertificateId(long certificateId);
 }

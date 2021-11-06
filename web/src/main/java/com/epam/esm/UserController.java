@@ -165,7 +165,7 @@ public class UserController {
 
     private PagedModel<Order> makeUserOrdersPage(int page, User user, List<Order> orders) throws ResourceNotFoundException, PageOutOfBoundsException {
         for (Order order : orders) {
-            Link orderLink = linkTo(methodOn(CertificateController.class).showCertificateOrder(order.getCertificate().getId())).withRel("order");
+            Link orderLink = linkTo(methodOn(CertificateController.class).showCertificateOrders(order.getCertificate().getId())).withRel("order");
             order.add(orderLink);
         }
         Link selfLink = linkTo(methodOn(UserController.class).showUserOrdersPage(user.getId(), page)).withSelfRel();

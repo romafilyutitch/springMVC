@@ -75,5 +75,7 @@ public interface CertificateService extends Service<Certificate> {
      * @return order that has passed certificate
      * @throws ResourceNotFoundException if there is no orders that has passed certificate
      */
-    Order findCertificateOrder(Certificate certificate) throws ResourceNotFoundException;
+    List<Order> findCertificateOrders(Certificate certificate) throws ResourceNotFoundException;
+
+    Order findCertificateOrder(long orderId) throws ResourceNotFoundException;
 }

@@ -183,4 +183,9 @@ public class UserRestService implements UserService {
     public int getUserOrdersTotalElements(User user) {
         return orderDao.getUserOrdersTotalElements(user.getId());
     }
+
+    @Override
+    public User findOrderUser(Order order) {
+        return userDao.findByOrderId(order.getId());
+    }
 }

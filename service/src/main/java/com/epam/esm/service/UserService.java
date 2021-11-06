@@ -54,4 +54,6 @@ public interface UserService extends Service<User> {
      * @return user's orders amount
      */
     int getUserOrdersTotalElements(User user);
+
+    User findOrderUser(Order order);
 }

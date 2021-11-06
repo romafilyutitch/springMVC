@@ -90,10 +90,10 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
     }
 
     @Override
-    public Optional<Order> findByCertificateId(long certificateId) {
+    public List<Order> findByCertificateId(long certificateId) {
         Session session = sessionFactory.getCurrentSession();
         Query<Order> query = session.createQuery("from Order where certificate.id = ?1", Order.class);
         query.setParameter(1, certificateId);
-        return query.uniqueResultOptional();
+        return query.list();
     }
 }

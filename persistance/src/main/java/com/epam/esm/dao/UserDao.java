@@ -22,4 +22,5 @@ public interface UserDao extends Dao<User> {
      */
     Tag findRichestUserPopularTag();
 
+    User findByOrderId(long id);
 }

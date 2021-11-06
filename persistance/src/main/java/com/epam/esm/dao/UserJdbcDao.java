@@ -74,4 +74,14 @@ public class UserJdbcDao extends AbstractDao<User> implements UserDao {
         System.out.println(query.list());
         return query.list().get(0);
     }
+
+    @Override
+    public User findByOrderId(long id) {
+        Session session = sessionFactory.getCurrentSession();
+        Query<User> query = session.createQuery("select u from User u join u.orders o where o.id = ?1", User.class);
+        query.setParameter(1, id);
+        return query.uniqueResult();
+    }
 }
+
+

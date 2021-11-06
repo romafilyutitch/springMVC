@@ -250,14 +250,21 @@ public class CertificateRestService implements CertificateService {
      * @throws ResourceNotFoundException if there is no orders that has passed certificate
      */
     @Override
-    public Order findCertificateOrder(Certificate certificate) throws ResourceNotFoundException {
-        Optional<Order> optionalOrder = orderDao.findByCertificateId(certificate.getId());
-        if (optionalOrder.isPresent()) {
-            logger.info(String.format("Certificate order was found %s", optionalOrder.get()));
-            return optionalOrder.get();
+    public List<Order> findCertificateOrders(Certificate certificate) throws ResourceNotFoundException {
+        List<Order> certificateOrders = orderDao.findByCertificateId(certificate.getId());
+        logger.info(String.format("Certificate with id %d orders were found %s", certificate.getId(), certificateOrders));
+        return certificateOrders;
+    }
+
+    @Override
+    public Order findCertificateOrder(long orderId) throws ResourceNotFoundException {
+        Optional<Order> byId = orderDao.findById(orderId);
+        if (byId.isPresent()) {
+            logger.info(String.format("Order with id was found by id %s", byId.get()));
+            return byId.get();
         } else {
-            logger.info(String.format("Order for certificate wasn't found %s", certificate));
-            throw new OrderNotFoundException(certificate.getId());
+            logger.error(String.format("Order with id %d wasn't found", orderId));
+            throw new OrderNotFoundException(orderId);
         }
     }
 }
