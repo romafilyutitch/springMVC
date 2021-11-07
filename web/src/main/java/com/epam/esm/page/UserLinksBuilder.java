@@ -33,6 +33,6 @@ public interface UserLinksBuilder extends LinksBuilder<User> {
      * @throws PageOutOfBoundsException if offset is greater then total elements
      * @throws InvalidPageException if offset or limit is negative
      */
-    CollectionModel<Order> buildUserOrdersPageLinks(User user, List<Order> orders, int currentOffset, int currentLimit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException;
+    PagedModel<Order> buildUserOrdersPageLinks(User user, List<Order> orders, int currentOffset, int currentLimit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException;
 
 }

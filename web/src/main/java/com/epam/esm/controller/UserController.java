@@ -52,7 +52,7 @@ public class UserController {
      * @throws InvalidPageException if offset or limit is negative
      */
     @GetMapping
-    public CollectionModel<User> showUsers(@RequestParam(required = false, defaultValue = "0") int offset,
+    public PagedModel<User> showUsers(@RequestParam(required = false, defaultValue = "0") int offset,
                                            @RequestParam(required = false, defaultValue = "10") int limit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         List<User> usersOnPage = userService.findPage(offset, limit);
         return linksBuilder.buildPageLinks(usersOnPage, offset, limit);
@@ -79,7 +79,7 @@ public class UserController {
      * @throws PageOutOfBoundsException if page number is less then one and greater then pages amount
      */
     @GetMapping("/{userId}/orders")
-    public CollectionModel<Order> showUserOrders(@PathVariable long userId, @RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
+    public PagedModel<Order> showUserOrders(@PathVariable long userId, @RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         User user = userService.findById(userId);
         List<Order> orders = userService.findUserOrderPage(user, offset, limit);
         return linksBuilder.buildUserOrdersPageLinks(user, orders, offset, limit);

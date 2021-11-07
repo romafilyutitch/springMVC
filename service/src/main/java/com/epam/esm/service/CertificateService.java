@@ -69,6 +69,13 @@ public interface CertificateService extends Service<Certificate> {
     int getCertificateTagsTotalElements(Certificate certificate);
 
     /**
+     * Computes and returns certificate orders total elements
+     * @param certificate whose orders need to count
+     * @return certificate orders amount
+     */
+    int getCertificateOrdersTotalElements(Certificate certificate);
+
+    /**
      * Finds passed certificate order.
      * @param certificate whose order need to be found
      * @param offset current page offset
@@ -87,5 +94,4 @@ public interface CertificateService extends Service<Certificate> {
      * @throws ResourceNotFoundException if certificate order is not found
      */
     Order findCertificateOrder(Certificate certificate, long orderId) throws ResourceNotFoundException;
-
 }

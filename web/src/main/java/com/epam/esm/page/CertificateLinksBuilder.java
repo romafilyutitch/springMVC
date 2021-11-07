@@ -25,7 +25,7 @@ public interface CertificateLinksBuilder extends LinksBuilder<Certificate> {
      * @throws PageOutOfBoundsException if offset is greater then total elements
      * @throws InvalidPageException if offset or limit is negative
      */
-    CollectionModel<Certificate> buildPageLinks(List<Certificate> entities, LinkedHashMap<String, String> parameters, int currentOffset, int currentLimit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException;
+    PagedModel<Certificate> buildPageLinks(List<Certificate> entities, LinkedHashMap<String, String> parameters, int currentOffset, int currentLimit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException;
 
     /**
      * Build certificate tag links
@@ -49,7 +49,7 @@ public interface CertificateLinksBuilder extends LinksBuilder<Certificate> {
      * @throws PageOutOfBoundsException if offset is greater then total elements
      * @throws InvalidPageException if offset or limit is negative
      */
-    CollectionModel<Tag> buildCertificateTagsPage(Certificate certificate, List<Tag> tags, int currentOffset, int currentLimit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException;
+    PagedModel<Tag> buildCertificateTagsPage(Certificate certificate, List<Tag> tags, int currentOffset, int currentLimit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException;
 
     /**
      * build certificate orders page links
@@ -62,5 +62,5 @@ public interface CertificateLinksBuilder extends LinksBuilder<Certificate> {
      * @throws PageOutOfBoundsException if offset is greater then total elements
      * @throws InvalidPageException if offset or limit is negative
      */
-    CollectionModel<Order> buildCertificateOrdersPage(Certificate certificate, List<Order> orders, int currentOffset, int currentLimit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException;
+    PagedModel<Order> buildCertificateOrdersPage(Certificate certificate, List<Order> orders, int currentOffset, int currentLimit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException;
 }

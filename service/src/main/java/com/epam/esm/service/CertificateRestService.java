@@ -227,6 +227,16 @@ public class CertificateRestService implements CertificateService {
     }
 
     /**
+     * Computes and returns certificate orders amount
+     * @param certificate whose orders need to count
+     * @return certificate orders amount
+     */
+    @Override
+    public int getCertificateOrdersTotalElements(Certificate certificate) {
+        return orderDao.getCertificateOrdersTotalElements(certificate.getId());
+    }
+
+    /**
      * Computes and returns amount of entity elements
      *
      * @return saved entities amount

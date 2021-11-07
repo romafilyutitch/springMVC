@@ -67,10 +67,10 @@ public class RestCertificateLinksBuilder implements CertificateLinksBuilder {
             Link certificateLink = linkTo(methodOn(CertificateController.class).showCertificate(entity.getId())).withRel("certificate");
             entity.add(certificateLink);
         }
-        Link self = linkTo(methodOn(CertificateController.class).showCertificates(null, currentOffset, currentLimit)).withSelfRel();
-        Link next = linkTo(methodOn(CertificateController.class).showCertificates(null, currentOffset + currentLimit, currentLimit)).withRel("next");
-        Link prev = linkTo(methodOn(CertificateController.class).showCertificates(null, currentOffset - currentLimit, currentLimit)).withRel("previous");
-        return CollectionModel.of(entities, self, next, prev);
+        int totalElements = service.getTotalElements();
+        List<Link> links = makeCertificatePageLinks(entities, null, currentOffset, currentLimit, totalElements);
+        PagedModel.PageMetadata pageMetadata = makePageMetadata(entities.size(), currentOffset, currentLimit, totalElements);
+        return PagedModel.of(entities, pageMetadata, links);
     }
 
     /**
@@ -90,10 +90,10 @@ public class RestCertificateLinksBuilder implements CertificateLinksBuilder {
             Link certificateLink = linkTo(methodOn(CertificateController.class).showCertificate(entity.getId())).withRel("certificate");
             entity.add(certificateLink);
         }
-        Link self = linkTo(methodOn(CertificateController.class).showCertificates(parameters, currentOffset, currentLimit)).withSelfRel();
-        Link next = linkTo(methodOn(CertificateController.class).showCertificates(parameters, currentOffset + currentLimit, currentLimit)).withRel("next");
-        Link prev = linkTo(methodOn(CertificateController.class).showCertificates(parameters, currentOffset - currentLimit, currentLimit)).withRel("previous");
-        return CollectionModel.of(entities, self, next, prev);
+        int totalElements = service.getTotalElements();
+        List<Link> links = makeCertificatePageLinks(entities, parameters, currentOffset, currentLimit, totalElements);
+        PagedModel.PageMetadata pageMetadata = makePageMetadata(entities.size(), currentOffset, currentLimit, totalElements);
+        return PagedModel.of(entities, pageMetadata, links);
     }
 
     /**
@@ -130,10 +130,10 @@ public class RestCertificateLinksBuilder implements CertificateLinksBuilder {
             Link tagLink = linkTo(methodOn(CertificateController.class).showCertificateTag(certificate.getId(), tag.getId())).withRel("tag");
             tag.add(tagLink);
         }
-        Link selfLink = linkTo(methodOn(CertificateController.class).showCertificateTags(certificate.getId(), currentOffset, currentLimit)).withSelfRel();
-        Link nextPageLink = linkTo(methodOn(CertificateController.class).showCertificateTags(certificate.getId(), currentOffset + currentLimit, currentLimit)).withRel("next");
-        Link previousPageLink = linkTo(methodOn(CertificateController.class).showCertificateTags(certificate.getId(), currentOffset - currentLimit, currentLimit)).withRel("previous");
-        return CollectionModel.of(tags, selfLink, nextPageLink, previousPageLink);
+        int certificateTagsTotalElements = service.getCertificateTagsTotalElements(certificate);
+        List<Link> links = makeCertificateTagsPageLinks(certificate, tags, currentOffset, currentLimit, certificateTagsTotalElements);
+        PagedModel.PageMetadata pageMetadata = makePageMetadata(tags.size(), currentOffset, currentLimit, certificateTagsTotalElements);
+        return PagedModel.of(tags, pageMetadata, links);
     }
 
     /**
@@ -149,9 +149,48 @@ public class RestCertificateLinksBuilder implements CertificateLinksBuilder {
      */
     @Override
     public CollectionModel<Order> buildCertificateOrdersPage(Certificate certificate, List<Order> orders, int currentOffset, int currentLimit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
+        for(Order order : orders) {
+            Link orderLink = linkTo(methodOn(CertificateController.class).showCertificateOrder(certificate.getId(), order.getId())).withRel("order");
+            order.add(orderLink);
+        }
+        int certificateOrdersTotalElements = service.getCertificateOrdersTotalElements(certificate);
+        List<Link> links = makeCertificateOrdersPageLinks(certificate, orders, currentOffset, currentLimit, certificateOrdersTotalElements);
+        PagedModel.PageMetadata pageMetadata = makePageMetadata(orders.size(), currentOffset, currentLimit, certificateOrdersTotalElements);
+        return PagedModel.of(orders, pageMetadata, links);
+    }
+
+    private List<Link> makeCertificatePageLinks(List<Certificate> certificates, LinkedHashMap<String, String> parameters, int currentOffset, int currentLimit, int totalElements) throws PageOutOfBoundsException, ResourceNotFoundException, InvalidPageException {
+        Link selfLink = linkTo(methodOn(CertificateController.class).showCertificates(parameters, currentOffset, currentLimit)).withSelfRel();
+        Link nextPageLink = linkTo(methodOn(CertificateController.class).showCertificates(parameters, currentOffset + currentLimit, currentLimit)).withRel("next");
+        Link previousPageLink = linkTo(methodOn(CertificateController.class).showCertificates(parameters, currentOffset - currentLimit, currentLimit)).withRel("previous");
+        Link firstPageLink = linkTo(methodOn(CertificateController.class).showCertificates(parameters, 0, currentLimit)).withRel("first");
+        Link lastPageLink = linkTo(methodOn(CertificateController.class).showCertificates(parameters, totalElements - currentLimit, currentLimit)).withRel("last");
+        return Arrays.asList(selfLink, nextPageLink, previousPageLink, firstPageLink, lastPageLink);
+    }
+
+    private List<Link> makeCertificateTagsPageLinks(Certificate certificate, List<Tag> tags, int currentOffset, int currentLimit, int totalElements) throws PageOutOfBoundsException, ResourceNotFoundException, InvalidPageException {
+        Link selfLink = linkTo(methodOn(CertificateController.class).showCertificateTags(certificate.getId(), currentOffset, currentLimit)).withSelfRel();
+        Link nextPageLink = linkTo(methodOn(CertificateController.class).showCertificateTags(certificate.getId(), currentOffset + currentLimit, currentLimit)).withRel("next");
+        Link previousPageLink = linkTo(methodOn(CertificateController.class).showCertificateTags(certificate.getId(), currentOffset - currentLimit, currentLimit)).withRel("previous");
+        Link firstPageLink = linkTo(methodOn(CertificateController.class).showCertificateTags(certificate.getId(), 0, currentLimit)).withRel("first");
+        Link lastPageLink = linkTo(methodOn(CertificateController.class).showCertificateTags(certificate.getId(), totalElements - currentLimit, currentLimit)).withRel("last");
+        return Arrays.asList(selfLink, nextPageLink, previousPageLink, firstPageLink, lastPageLink);
+    }
+
+    private List<Link> makeCertificateOrdersPageLinks(Certificate certificate, List<Order> orders, int currentOffset, int currentLimit, int totalElements) throws PageOutOfBoundsException, ResourceNotFoundException, InvalidPageException {
         Link selfLink = linkTo(methodOn(CertificateController.class).showCertificateOrders(certificate.getId(), currentOffset, currentLimit)).withSelfRel();
-        Link nextPageLink = linkTo(methodOn(CertificateController.class).showCertificateOrders(certificate.getId(), currentOffset + currentLimit, currentLimit)).withRel("nextPage");
-        Link previousPageLink = linkTo(methodOn(CertificateController.class).showCertificateOrders(certificate.getId(), currentOffset - currentLimit, currentLimit)).withRel("previousPage");
-        return CollectionModel.of(orders, selfLink, nextPageLink, previousPageLink);
+        Link nextPageLink = linkTo(methodOn(CertificateController.class).showCertificateOrders(certificate.getId(), currentOffset + currentLimit, currentLimit)).withRel("next");
+        Link previousPageLink = linkTo(methodOn(CertificateController.class).showCertificateOrders(certificate.getId(), currentOffset - currentLimit, currentLimit)).withRel("previous");
+        Link firstPageLink = linkTo(methodOn(CertificateController.class).showCertificateOrders(certificate.getId(), 0, currentLimit)).withRel("first");
+        Link lastPageLink = linkTo(methodOn(CertificateController.class).showCertificateOrders(certificate.getId(), totalElements - currentLimit, currentLimit)).withRel("last");
+        return Arrays.asList(selfLink, nextPageLink, previousPageLink, firstPageLink, lastPageLink);
+    }
+
+    private PagedModel.PageMetadata makePageMetadata(int size, int offset, int limit, int totalElements) {
+        int number = offset / limit + 1;
+        number = offset % limit == 0 ? number : ++number;
+        int pages = totalElements / limit;
+        pages = totalElements % limit == 0 ? pages : ++pages;
+        return new PagedModel.PageMetadata(size, number, totalElements, pages);
     }
 }

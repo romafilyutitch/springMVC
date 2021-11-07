@@ -36,5 +36,5 @@ public interface LinksBuilder<T extends Entity> {
      * @throws PageOutOfBoundsException if offset is greater then total elements
      * @throws InvalidPageException if offset or limit is negative
      */
-    CollectionModel<T> buildPageLinks(List<T> entities, int currentOffset, int currentLimit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException;
+    PagedModel<T> buildPageLinks(List<T> entities, int currentOffset, int currentLimit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException;
 }

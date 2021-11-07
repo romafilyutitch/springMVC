@@ -63,9 +63,10 @@ public class RestUserLinksBuilder implements UserLinksBuilder {
             Link userLink = linkTo(methodOn(UserController.class).showUser(entity.getId())).withRel("user");
             entity.add(userLink);
         }
-        Link nextLink = linkTo(methodOn(UserController.class).showUsers(currentOffset + currentLimit, currentLimit)).withRel("next");
-        Link previousLink = linkTo(methodOn(UserController.class).showUsers(currentOffset  - currentLimit, currentLimit)).withRel("previous");
-        return CollectionModel.of(entities, selfLink, nextLink, previousLink);
+        int totalElements = service.getTotalElements();
+        List<Link> links = makeUserPageLinks(entities, currentOffset, currentLimit, totalElements);
+        PagedModel.PageMetadata pageMetadata = makePageMetadata(entities.size(), currentOffset, currentLimit, totalElements);
+        return PagedModel.of(entities, pageMetadata, links);
     }
 
     /**
@@ -103,9 +104,35 @@ public class RestUserLinksBuilder implements UserLinksBuilder {
             Link orderLink = linkTo(methodOn(UserController.class).showUserOrder(user.getId(), order.getId())).withRel("order");
             order.add(orderLink);
         }
+        int userOrdersTotalElements = service.getUserOrdersTotalElements(user);
+        List<Link> links = makeOrdersPageLinks(user, orders, currentOffset, currentLimit, userOrdersTotalElements);
+        PagedModel.PageMetadata pageMetadata = makePageMetadata(orders.size(), currentOffset, currentLimit, userOrdersTotalElements);
+        return PagedModel.of(orders, pageMetadata, links);
+    }
+
+    private List<Link> makeUserPageLinks(List<User> users, int currentOffset, int currentLimit, int totalElements) throws PageOutOfBoundsException, ResourceNotFoundException, InvalidPageException {
+        Link selfLink = linkTo(methodOn(UserController.class).showUsers(currentOffset, currentLimit)).withSelfRel();
+        Link nextPageLink = linkTo(methodOn(UserController.class).showUsers(currentOffset + currentLimit, currentLimit)).withRel("next");
+        Link previousPageLink = linkTo(methodOn(UserController.class).showUsers(currentOffset - currentLimit, currentLimit)).withRel("previous");
+        Link firstPageLink = linkTo(methodOn(UserController.class).showUsers(0, currentLimit)).withRel("first");
+        Link lastPageLink = linkTo(methodOn(UserController.class).showUsers(totalElements - currentLimit, currentLimit)).withRel("last");
+        return Arrays.asList(selfLink, nextPageLink, previousPageLink, firstPageLink, lastPageLink);
+    }
+
+    private List<Link> makeOrdersPageLinks(User user, List<Order> orders, int currentOffset, int currentLimit, int totalElements) throws PageOutOfBoundsException, ResourceNotFoundException, InvalidPageException {
         Link selfLink = linkTo(methodOn(UserController.class).showUserOrders(user.getId(), currentOffset, currentLimit)).withSelfRel();
-        Link nextLink = linkTo(methodOn(UserController.class).showUserOrders(user.getId(), currentOffset + currentLimit, currentLimit)).withRel("next");
-        Link previousLink = linkTo(methodOn(UserController.class).showUserOrders(user.getId(), currentOffset - currentLimit, currentLimit)).withRel("previous");
-        return CollectionModel.of(orders, selfLink, nextLink, previousLink);
+        Link nextPageLink =  linkTo(methodOn(UserController.class).showUserOrders(user.getId(), currentOffset + currentLimit, currentLimit)).withRel("next");
+        Link previousPageLink = linkTo(methodOn(UserController.class).showUserOrders(user.getId(), currentOffset - currentLimit, currentLimit)).withRel("previous");
+        Link firstPageLink = linkTo(methodOn(UserController.class).showUserOrders(user.getId(), 0, currentLimit)).withRel("first");
+        Link lastPageLink = linkTo(methodOn(UserController.class).showUserOrders(user.getId(), totalElements - currentLimit, currentLimit)).withRel("next");
+        return Arrays.asList(selfLink, nextPageLink, previousPageLink, firstPageLink, lastPageLink);
+    }
+
+    private PagedModel.PageMetadata makePageMetadata(int size, int offset, int limit, int totalElements) {
+        int number = offset / limit + 1;
+        number = offset % limit == 0 ? number : ++number;
+        int pages = totalElements / limit;
+        pages = totalElements % limit == 0 ? pages : ++pages;
+        return new PagedModel.PageMetadata(size, number, totalElements, pages);
     }
 }
