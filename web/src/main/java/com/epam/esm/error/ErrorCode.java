@@ -1,4 +1,4 @@
-package com.epam.esm;
+package com.epam.esm.error;
 
 /**
  * Error code enum that contains error codes constants

@@ -6,13 +6,16 @@ import com.epam.esm.validation.InvalidResourceException;
 import java.util.List;
 
 public interface Service<T extends Entity> {
+    int DEFAULT_LIMIT = 10;
+    int DEFAULT_OFFSET = 0;
+
     /**
      * Finds and returns entities on specified page
      * @param page page of entities that need to be found
      * @return list of entities on passed page
      * @throws PageOutOfBoundsException if page number is less then 1 and greater that pages amount
      */
-    List<T> findPage(int page) throws PageOutOfBoundsException;
+    List<T> findPage(int offset, int limit);
 
     /**
      * Finds and returns entity that has passed id

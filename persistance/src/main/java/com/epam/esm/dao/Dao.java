@@ -17,7 +17,7 @@ public interface Dao<T extends Entity> {
      * @param page that need to be finds
      * @return entities on passed page
      */
-    List<T> findPage(int page);
+    List<T> findPage(int offset, int limit);
 
     /**
      * Finds and returns entity that have passed id

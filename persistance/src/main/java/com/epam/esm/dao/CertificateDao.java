@@ -19,7 +19,7 @@ public interface CertificateDao extends Dao<Certificate> {
      * @param findParameters parameters by which need to find certificates
      * @return certificates that match passed parameters
      */
-    List<Certificate> findWithParameters(LinkedHashMap<String, String> findParameters);
+    List<Certificate> findWithParameters(LinkedHashMap<String, String> findParameters, int offset, int limit);
 
     /**
      * Finds certificate by passed order id.

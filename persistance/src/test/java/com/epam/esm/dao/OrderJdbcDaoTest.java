@@ -51,13 +51,13 @@ class OrderJdbcDaoTest {
 
     @Test
     public void findByCertificateId_shouldReturnOrderById() {
-        Optional<Order> order = dao.findByCertificateId(1);
+        Optional<Order> order = dao.findCertificateOrders(1);
         assertTrue(order.isPresent());
     }
 
     @Test
     public void findByCertificateId_shouldReturnEmptyOptionalIfThereIsNoOrder() {
-        Optional<Order> optionalOrder = dao.findByCertificateId(0);
+        Optional<Order> optionalOrder = dao.findCertificateOrders(0);
         assertFalse(optionalOrder.isPresent());
     }
 

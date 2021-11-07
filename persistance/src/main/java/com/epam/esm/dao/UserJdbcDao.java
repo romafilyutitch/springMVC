@@ -33,11 +33,11 @@ public class UserJdbcDao extends AbstractDao<User> implements UserDao {
     }
 
     @Override
-    public List<User> findPage(int page) {
+    public List<User> findPage(int offset, int limit) {
         Session session = sessionFactory.getCurrentSession();
         Query<User> query = session.createQuery("from User", User.class);
-        query.setFirstResult(rowsPerPage * page - rowsPerPage);
-        query.setMaxResults(rowsPerPage);
+        query.setFirstResult(offset);
+        query.setMaxResults(limit);
         return query.list();
     }
 

@@ -29,11 +29,11 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
     }
 
     @Override
-    public List<Order> findPage(int page) {
+    public List<Order> findPage(int offset, int limit) {
         Session session = sessionFactory.getCurrentSession();
         Query<Order> query = session.createQuery("from Order", Order.class);
-        query.setFirstResult(rowsPerPage * page - rowsPerPage);
-        query.setMaxResults(rowsPerPage);
+        query.setFirstResult(offset);
+        query.setMaxResults(limit);
         return query.list();
     }
 
@@ -53,12 +53,12 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
     }
 
     @Override
-    public List<Order> findUserOrdersPage(long userId, int page) {
+    public List<Order> findUserOrdersPage(long userId, int offset, int limit) {
         Session session = sessionFactory.getCurrentSession();
         Query<Order> query = session.createQuery("from Order where user_id = ?1", Order.class);
         query.setParameter(1, userId);
-        query.setFirstResult(rowsPerPage * page - rowsPerPage);
-        query.setMaxResults(rowsPerPage * page);
+        query.setFirstResult(offset);
+        query.setMaxResults(limit);
         return query.list();
     }
 
@@ -90,10 +90,21 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
     }
 
     @Override
-    public List<Order> findByCertificateId(long certificateId) {
+    public List<Order> findCertificateOrders(long certificateId, int offset, int limit) {
         Session session = sessionFactory.getCurrentSession();
         Query<Order> query = session.createQuery("from Order where certificate.id = ?1", Order.class);
         query.setParameter(1, certificateId);
+        query.setFirstResult(offset);
+        query.setMaxResults(limit);
         return query.list();
+    }
+
+    @Override
+    public int getCertificateOrdersTotalElements(long certificateId) {
+        Session session = sessionFactory.getCurrentSession();
+        Query<Long> query = session.createQuery("select count(*) from Order where certificate.id = ?1", Long.class);
+        query.setParameter(1, certificateId);
+        Long totalElements = query.uniqueResult();
+        return totalElements.intValue();
     }
 }

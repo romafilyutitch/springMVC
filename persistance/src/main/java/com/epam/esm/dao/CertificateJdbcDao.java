@@ -31,11 +31,11 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     }
 
     @Override
-    public List<Certificate> findWithParameters(LinkedHashMap<String, String> findParameters) {
+    public List<Certificate> findWithParameters(LinkedHashMap<String, String> findParameters, int offset, int limit) {
+        findParameters.put("offset", Integer.toString(offset));
+        findParameters.put("limit", Integer.toString(limit));
         Session session = sessionFactory.getCurrentSession();
-        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
-        CriteriaQuery<Certificate> criteriaQuery = builder.buildSql(findParameters, criteriaBuilder);
-        Query<Certificate> query = session.createQuery(criteriaQuery);
+        Query<Certificate> query = builder.buildSql(findParameters, session);
         return query.list();
     }
 
@@ -47,11 +47,11 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
     }
 
     @Override
-    public List<Certificate> findPage(int page) {
+    public List<Certificate> findPage(int offset, int limit) {
         Session session = sessionFactory.getCurrentSession();
         Query<Certificate> query = session.createQuery("from Certificate", Certificate.class);
-        query.setFirstResult(rowsPerPage * page - rowsPerPage);
-        query.setMaxResults(rowsPerPage);
+        query.setFirstResult(offset);
+        query.setMaxResults(limit);
         return query.list();
     }
 

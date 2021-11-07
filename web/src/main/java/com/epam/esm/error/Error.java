@@ -1,4 +1,4 @@
-package com.epam.esm;
+package com.epam.esm.error;
 
 import org.springframework.hateoas.RepresentationModel;
 

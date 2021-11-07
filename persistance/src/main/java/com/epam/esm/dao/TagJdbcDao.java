@@ -21,11 +21,11 @@ public class TagJdbcDao extends AbstractDao<Tag> implements TagDao {
     }
 
     @Override
-    public List<Tag> findPage(int page) {
+    public List<Tag> findPage(int offset, int limit) {
         Session session = sessionFactory.getCurrentSession();
         Query<Tag> query = session.createQuery("from Tag", Tag.class);
-        query.setFirstResult(rowsPerPage * page - rowsPerPage);
-        query.setMaxResults(rowsPerPage);
+        query.setFirstResult(offset);
+        query.setMaxResults(limit);
         return query.list();
     }
 
@@ -45,12 +45,12 @@ public class TagJdbcDao extends AbstractDao<Tag> implements TagDao {
     }
 
     @Override
-    public List<Tag> findCertificateTagsPage(long certificateId, int page) {
+    public List<Tag> findCertificateTagsPage(long certificateId, int offset, int limit) {
         Session session = sessionFactory.getCurrentSession();
         Query<Tag> query = session.createQuery("select t from Certificate c join c.tags t where c.id = ?1", Tag.class);
         query.setParameter(1, certificateId);
-        query.setFirstResult(rowsPerPage * page - rowsPerPage);
-        query.setMaxResults(rowsPerPage * page);
+        query.setFirstResult(offset);
+        query.setMaxResults(limit);
         return query.list();
     }
 

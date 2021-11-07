@@ -6,12 +6,10 @@ import com.epam.esm.dao.TagDao;
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Order;
 import com.epam.esm.model.Tag;
-import com.epam.esm.validation.CertificateFieldsValidator;
 import com.epam.esm.validation.CertificateValidator;
 import com.epam.esm.validation.InvalidCertificateException;
 import com.epam.esm.validation.InvalidResourceException;
 import com.epam.esm.validation.InvalidTagException;
-import com.epam.esm.validation.TagFieldsValidator;
 import com.epam.esm.validation.TagValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +21,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 class CertificateRestServiceTest {
@@ -278,20 +275,20 @@ class CertificateRestServiceTest {
     public void findCertificateOrder_shouldReturnOrder() throws ResourceNotFoundException {
         Order order = new Order(1, certificate.getPrice(), LocalDateTime.now());
         order.setCertificate(certificate);
-        when(orderDao.findByCertificateId(certificate.getId())).thenReturn(Optional.of(order));
+        when(orderDao.findCertificateOrders(certificate.getId())).thenReturn(Optional.of(order));
 
         Order certificateOrder = service.findCertificateOrder(certificate);
 
         assertEquals(order, certificateOrder);
-        verify(orderDao).findByCertificateId(certificate.getId());
+        verify(orderDao).findCertificateOrders(certificate.getId());
     }
 
     @Test
     public void findCertificateOrder_shouldThrowExceptionIfThereIsNoCertificateOrder() {
-        when(orderDao.findByCertificateId(certificate.getId())).thenReturn(Optional.empty());
+        when(orderDao.findCertificateOrders(certificate.getId())).thenReturn(Optional.empty());
 
         assertThrows(OrderNotFoundException.class, () -> service.findCertificateOrder(certificate));
 
-        verify(orderDao).findByCertificateId(certificate.getId());
+        verify(orderDao).findCertificateOrders(certificate.getId());
     }
 }

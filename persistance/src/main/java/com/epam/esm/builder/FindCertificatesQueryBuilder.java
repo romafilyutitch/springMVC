@@ -2,6 +2,9 @@ package com.epam.esm.builder;
 
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
+import org.hibernate.Session;
+import org.hibernate.query.Query;
+import org.springframework.lang.UsesSunMisc;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -56,9 +59,10 @@ public class FindCertificatesQueryBuilder {
      * @param criteriaBuilder builder to build HCQL query
      * @return built sql find all certificates statement that defined by passed parameters map
      */
-    public CriteriaQuery<Certificate> buildSql(LinkedHashMap<String, String> findParameters, CriteriaBuilder criteriaBuilder) {
-        CriteriaQuery<Certificate> query = criteriaBuilder.createQuery(Certificate.class);
-        Root<Certificate> root = query.from(Certificate.class);
+    public Query<Certificate> buildSql(LinkedHashMap<String, String> findParameters, Session session) {
+        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+        CriteriaQuery<Certificate> criteriaQuery = criteriaBuilder.createQuery(Certificate.class);
+        Root<Certificate> root = criteriaQuery.from(Certificate.class);
         Join<Certificate, Tag> join = root.join(JOIN_ATTRIBUTE_NAME, JoinType.LEFT);
         List<Predicate> predicates = new ArrayList<>();
         List<Order> orders = new ArrayList<>();
@@ -72,7 +76,14 @@ public class FindCertificatesQueryBuilder {
             buildSortByNameOrder(criteriaBuilder, root, orders, key, value);
             buildSortByDateOrder(criteriaBuilder, root, orders, key, value);
         }
-        query.select(root).where(predicates.toArray(new Predicate[]{})).groupBy(root.get(ID_ATTRIBUTE)).orderBy(orders);
+        criteriaQuery.select(root).where(predicates.toArray(new Predicate[]{})).groupBy(root.get(ID_ATTRIBUTE)).orderBy(orders);
+        String offsetValue = findParameters.remove("offset");
+        int offset = Integer.parseInt(offsetValue);
+        String limitValue = findParameters.remove("limit");
+        int limit = Integer.parseInt(limitValue);
+        Query<Certificate> query = session.createQuery(criteriaQuery);
+        query.setFirstResult(offset);
+        query.setMaxResults(limit);
         return query;
     }
 

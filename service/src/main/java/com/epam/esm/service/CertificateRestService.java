@@ -1,7 +1,6 @@
 package com.epam.esm.service;
 
 import com.epam.esm.dao.CertificateDao;
-import com.epam.esm.dao.DaoException;
 import com.epam.esm.dao.OrderDao;
 import com.epam.esm.dao.TagDao;
 import com.epam.esm.model.Certificate;
@@ -47,33 +46,32 @@ public class CertificateRestService implements CertificateService {
 
     /**
      * Finds and returns entities on specified page
+     *
      * @param page page of entities that need to be found
      * @return list of entities on passed page
      * @throws PageOutOfBoundsException if page number is less then 1 and greater that pages amount
      */
     @Override
-    public List<Certificate> findPage(int page) throws PageOutOfBoundsException {
-        if (page < 1 || page > certificateDao.getTotalPages()) {
-            throw new PageOutOfBoundsException(page, certificateDao.getTotalPages(), 1);
-        }
-        List<Certificate> certificatesPage = certificateDao.findPage(page);
-        logger.info(String.format("certificates on page %d was found %s ", page, certificatesPage));
-        return certificatesPage;
+    public List<Certificate> findPage(int offset, int limit)  {
+        return certificateDao.findPage(offset, limit);
     }
 
     /**
      * Finds all certificates that match passed parameters
+     *
      * @param findParameters parameters by which need to find certificates
      * @return list of certificate that match passed parameters
      */
     @Override
-    public List<Certificate> findAllWithParameters(LinkedHashMap<String, String> findParameters) {
-        List<Certificate> foundCertificates = certificateDao.findWithParameters(findParameters);
+    public List<Certificate> findAllWithParameters(LinkedHashMap<String, String> findParameters, int offset, int limit) {
+        List<Certificate> foundCertificates = certificateDao.findWithParameters(findParameters, offset, limit);
         logger.info("Certificates with parameters were found " + foundCertificates);
         return foundCertificates;
     }
+
     /**
      * Finds and returns entity that has passed id
+     *
      * @param id of entity that need to be found
      * @return entity that has passed id
      * @throws ResourceNotFoundException if there is no entity with passed id
@@ -89,8 +87,10 @@ public class CertificateRestService implements CertificateService {
             throw new CertificateNotFoundException(id);
         }
     }
+
     /**
      * Saves entity and returns saved entity with assigned id
+     *
      * @param certificate that need to be saved
      * @return saved entity with assigned id
      * @throws InvalidResourceException if saved entity is invalid
@@ -109,11 +109,13 @@ public class CertificateRestService implements CertificateService {
         logger.info("New certificate was validated and saved successfully " + savedCertificate);
         return savedCertificate;
     }
+
     /**
      * Updated entity and returns updated entity
+     *
      * @param certificate that need to be updated
      * @return updated entity
-     * @throws InvalidResourceException if updated entity is invalid
+     * @throws InvalidResourceException  if updated entity is invalid
      * @throws ResourceNotFoundException if updated entity is not saved and cannot be found
      */
     @Override
@@ -138,6 +140,7 @@ public class CertificateRestService implements CertificateService {
 
     /**
      * Deletes saved entity
+     *
      * @param certificate entity that need to be saved
      */
     @Override
@@ -145,10 +148,12 @@ public class CertificateRestService implements CertificateService {
         certificateDao.delete(certificate);
         logger.info(String.format("Certificate was deleted %s", certificate));
     }
+
     /**
      * Add passed tags to passed certificate
+     *
      * @param certificate certificate to which need to add tags
-     * @param tags tags that need to be added to passed certificate
+     * @param tags        tags that need to be added to passed certificate
      * @return certificate with added tags
      * @throws InvalidResourceException if passed tag is invalid
      */
@@ -164,10 +169,12 @@ public class CertificateRestService implements CertificateService {
         logger.info("Certificate was updated with new tags " + updatedCertificate);
         return updatedCertificate;
     }
+
     /**
      * Deletes passed certificate passed tag
+     *
      * @param certificate whose tag need to be deleted
-     * @param tag that need to be deleted
+     * @param tag         that need to be deleted
      */
     @Override
     public void deleteCertificateTag(Certificate certificate, Tag tag) {
@@ -177,8 +184,9 @@ public class CertificateRestService implements CertificateService {
 
     /**
      * Finds and returns passed certificate tag that has passed id
+     *
      * @param certificate whose tag need to be find
-     * @param tagId id of tag need to be found
+     * @param tagId       id of tag need to be found
      * @return found certificate that has passed id
      * @throws ResourceNotFoundException if there is no tag with passed id that belongs to passed certificate
      */
@@ -193,24 +201,23 @@ public class CertificateRestService implements CertificateService {
             throw new TagNotFoundException(tagId);
         }
     }
+
     /**
      * Finds and returns passed certificate tags page
+     *
      * @param foundCertificate certificate whose tags page need to be found
-     * @param page certificate tags page that need to be found
+     * @param page             certificate tags page that need to be found
      * @return list of certificate tags on passed page
      * @throws PageOutOfBoundsException if page number is less than 1 and greater than pages amounts
      */
     @Override
-    public List<Tag> findCertificateTagsPage(Certificate foundCertificate, int page) throws PageOutOfBoundsException {
-        if (page < 1 || page > tagDao.getCertificateTagsTotalPages(foundCertificate.getId())) {
-            throw new PageOutOfBoundsException(page, tagDao.getCertificateTagsTotalPages(foundCertificate.getId()), 1);
-        }
-        List<Tag> tagsPage = tagDao.findCertificateTagsPage(foundCertificate.getId(), page);
-        logger.info(String.format("Certificate tags on page %d were found %s", page, tagsPage));
-        return tagsPage;
+    public List<Tag> findCertificateTagsPage(Certificate foundCertificate, int offset, int limit) throws PageOutOfBoundsException {
+        return tagDao.findCertificateTagsPage(foundCertificate.getId(), offset, limit);
     }
+
     /**
      * Computes and returns certificate tags pages amount
+     *
      * @param certificate whose tags pages need to be counted
      * @return certificate tags pages amount
      */
@@ -218,8 +225,10 @@ public class CertificateRestService implements CertificateService {
     public int getCertificateTagsTotalPages(Certificate certificate) {
         return tagDao.getCertificateTagsTotalPages(certificate.getId());
     }
+
     /**
      * Computes and returns certificate tags amount
+     *
      * @param certificate whose tags amount need to be counted
      * @return certificate tags amount
      */
@@ -227,31 +236,37 @@ public class CertificateRestService implements CertificateService {
     public int getCertificateTagsTotalElements(Certificate certificate) {
         return tagDao.getCertificateTagsTotalElements(certificate.getId());
     }
+
     /**
      * Computes and returns amount of entity elements
+     *
      * @return saved entities amount
      */
     @Override
     public int getTotalElements() {
         return certificateDao.getTotalElements();
     }
+
     /**
      * Computes and returns amount of entities pages
+     *
      * @return amount of entities pages
      */
     @Override
     public int getTotalPages() {
         return certificateDao.getTotalPages();
     }
+
     /**
      * Finds passed certificate order.
+     *
      * @param certificate whose order need to be found
      * @return order that has passed certificate
      * @throws ResourceNotFoundException if there is no orders that has passed certificate
      */
     @Override
-    public List<Order> findCertificateOrders(Certificate certificate) throws ResourceNotFoundException {
-        List<Order> certificateOrders = orderDao.findByCertificateId(certificate.getId());
+    public List<Order> findCertificateOrders(Certificate certificate, int offset, int limit) throws ResourceNotFoundException {
+        List<Order> certificateOrders = orderDao.findCertificateOrders(certificate.getId(), offset, limit);
         logger.info(String.format("Certificate with id %d orders were found %s", certificate.getId(), certificateOrders));
         return certificateOrders;
     }
@@ -266,5 +281,10 @@ public class CertificateRestService implements CertificateService {
             logger.error(String.format("Order with id %d wasn't found", orderId));
             throw new OrderNotFoundException(orderId);
         }
+    }
+
+    @Override
+    public int getCertificateOrdersTotalElements(Certificate certificate) {
+        return orderDao.getCertificateOrdersTotalElements(certificate.getId());
     }
 }
