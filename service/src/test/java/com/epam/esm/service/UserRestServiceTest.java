@@ -29,25 +29,34 @@ class UserRestServiceTest {
     private final Order order = new Order(certificate.getPrice(), certificate);
 
     @Test
-    public void findPage_shouldReturnUsersOnPage() throws PageOutOfBoundsException {
+    public void findPage_shouldReturnUsersOnPage() throws PageOutOfBoundsException, InvalidPageException {
         List<User> users = Collections.singletonList(user);
-        when(userDao.getTotalPages()).thenReturn(1);
-        when(userDao.findPage(1)).thenReturn(users);
+        when(userDao.getTotalElements()).thenReturn(1);
+        when(userDao.findPage(0, 10)).thenReturn(users);
 
-        List<User> usersOnPage = service.findPage(1);
+        List<User> usersOnPage = service.findPage(0, 10);
 
         assertEquals(users, usersOnPage);
-        verify(userDao, atLeastOnce()).getTotalPages();
-        verify(userDao).findPage(1);
+        verify(userDao, atLeastOnce()).getTotalElements();
+        verify(userDao).findPage(0, 10);
     }
 
     @Test
-    public void findPage_shouldThrowExceptionWhenThereIsNoPage() {
-        when(userDao.getTotalPages()).thenReturn(1);
+    public void findPage_shouldThrowExceptionIfOffsetGreaterThenTotalElements() {
+        when(userDao.getTotalElements()).thenReturn(1);
 
-        assertThrows(PageOutOfBoundsException.class, () -> service.findPage(100));
+        assertThrows(PageOutOfBoundsException.class, () -> service.findPage(10, 10));
 
-        verify(userDao, atLeastOnce()).getTotalPages();
+        verify(userDao).getTotalElements();
+    }
+
+    @Test
+    public void findPage_shouldThrowExceptionIfOffsetIsNegative() {
+        when(userDao.getTotalElements()).thenReturn(1);
+
+        assertThrows(InvalidPageException.class, () -> service.findPage(-10, 10));
+
+        verify(userDao).getTotalElements();
     }
 
     @Test
@@ -99,17 +108,6 @@ class UserRestServiceTest {
         assertTrue(totalElements >= 0);
         assertEquals(1, totalElements);
         verify(userDao).getTotalElements();
-    }
-
-    @Test
-    public void getTotalPages_shouldReturnNotNegativeValue() {
-        when(userDao.getTotalPages()).thenReturn(1);
-
-        int totalPages = service.getTotalPages();
-
-        assertTrue(totalPages >= 0);
-        assertEquals(1, totalPages);
-        verify(userDao).getTotalPages();
     }
 
     @Test
@@ -173,36 +171,34 @@ class UserRestServiceTest {
     }
 
     @Test
-    public void findUserOrdersPage_shouldReturnOrders() throws PageOutOfBoundsException {
+    public void findUserOrdersPage_shouldReturnOrders() throws PageOutOfBoundsException, InvalidPageException {
         List<Order> orders = Collections.singletonList(order);
-        when(orderDao.getUserOrdersTotalPages(user.getId())).thenReturn(1);
-        when(orderDao.findUserOrdersPage(user.getId(), 1)).thenReturn(orders);
+        when(orderDao.getUserOrdersTotalElements(user.getId())).thenReturn(1);
+        when(orderDao.findUserOrdersPage(user.getId(), 0, 10)).thenReturn(orders);
 
-        List<Order> ordersOnPage = service.findUserOrderPage(user, 1);
+        List<Order> ordersOnPage = service.findUserOrderPage(user, 0, 10);
 
         assertEquals(orders, ordersOnPage);
-        verify(orderDao, atLeastOnce()).getUserOrdersTotalPages(user.getId());
-        verify(orderDao).findUserOrdersPage(user.getId(), 1);
+        verify(orderDao, atLeastOnce()).getUserOrdersTotalElements(user.getId());
+        verify(orderDao).findUserOrdersPage(user.getId(), 0, 10);
     }
 
     @Test
-    public void findUserOrderPage_shouldThrowExceptionIfPageOutOfBounds() {
-        when(orderDao.getUserOrdersTotalPages(user.getId())).thenReturn(1);
+    public void findUserOrderPage_shouldThrowExceptionIfOffsetIsGreaterThenTotalElements() {
+        when(orderDao.getUserOrdersTotalElements(user.getId())).thenReturn(1);
 
-        assertThrows(PageOutOfBoundsException.class, () -> service.findUserOrderPage(user, 100));
+        assertThrows(PageOutOfBoundsException.class, () -> service.findUserOrderPage(user, 100, 10));
 
-        verify(orderDao, atLeastOnce()).getUserOrdersTotalPages(user.getId());
+        verify(orderDao).getUserOrdersTotalElements(user.getId());
     }
 
     @Test
-    public void getUserOrdersTotalPages_shouldReturnPositiveValue() {
-        when(orderDao.getUserOrdersTotalPages(user.getId())).thenReturn(1);
+    public void findUserOrderPage_shouldThrowExceptionIFOffsetIsNegative() {
+        when(orderDao.getUserOrdersTotalElements(user.getId())).thenReturn(1);
 
-        int userOrdersTotalPages = service.getUserOrdersTotalPages(user);
+        assertThrows(InvalidPageException.class, () -> service.findUserOrderPage(user, -10, 10));
 
-        assertTrue(userOrdersTotalPages >= 0);
-        assertEquals(1, userOrdersTotalPages);
-        verify(orderDao).getUserOrdersTotalPages(user.getId());
+        verify(orderDao).getUserOrdersTotalElements(user.getId());
     }
 
     @Test

@@ -8,8 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,7 +26,7 @@ class CertificateJdbcDaoTest {
 
     @Test
     public void findAll_shouldReturnSavedAllSavedCertificates() {
-        List<Certificate> certificates = dao.findPage(1);
+        List<Certificate> certificates = dao.findPage(0, 10);
 
         assertEquals(1, certificates.size());
         Certificate certificate = certificates.get(0);
@@ -94,5 +94,25 @@ class CertificateJdbcDaoTest {
         Optional<Certificate> optionalCertificate = dao.findById(1);
 
         assertFalse(optionalCertificate.isPresent());
+    }
+
+    @Test
+    public void findByOderId_shouldFindCertificate() {
+        Optional<Certificate> optionalCertificate = dao.findByOrderId(1);
+        assertFalse(optionalCertificate.isEmpty());
+        Certificate certificate = optionalCertificate.get();
+        assertEquals(1L, certificate.getId());
+        assertEquals("free music listen certificate", certificate.getName());
+        assertEquals("spotify free music listening", certificate.getDescription());
+        assertEquals(200.50, certificate.getPrice());
+        assertEquals(20, certificate.getDuration());
+        List<Tag> tags = certificate.getTags();
+        assertEquals(3, tags.size());
+        assertEquals(1L, tags.get(0).getId());
+        assertEquals("spotify", tags.get(0).getName());
+        assertEquals(2L, tags.get(1).getId());
+        assertEquals("music", tags.get(1).getName());
+        assertEquals(3L, tags.get(2).getId());
+        assertEquals("art", tags.get(2).getName());
     }
 }

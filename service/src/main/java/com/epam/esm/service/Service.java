@@ -53,10 +53,4 @@ public interface Service<T extends Entity> {
      * @return saved entities amount
      */
     int getTotalElements();
-
-    /**
-     * Computes and returns amount of entities pages
-     * @return amount of entities pages
-     */
-    int getTotalPages();
 }

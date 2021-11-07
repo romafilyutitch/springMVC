@@ -22,18 +22,13 @@ public interface OrderDao extends Dao<Order> {
     List<Order> findUserOrdersPage(long userId, int offset, int limit);
 
     /**
-     * Counts user orders pages amount.
-     * @param userId id of user which orders pages need to be count
-     * @return amount of user orders pages
-     */
-    int getUserOrdersTotalPages(long userId);
-
-    /**
      * Counts user orders amount.
      * @param userId id of user which orders amount need to be count
      * @return amount of user orders
      */
     int getUserOrdersTotalElements(long userId);
+
+    int getCertificateOrdersTotalElements(long certificateId);
 
     /**
      * Sets user to saved order.
@@ -49,6 +44,4 @@ public interface OrderDao extends Dao<Order> {
      * or empty order otherwise
      */
     List<Order> findCertificateOrders(long certificateId, int offset, int limit);
-
-    int getCertificateOrdersTotalElements(long certificateId);
 }

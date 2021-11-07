@@ -37,7 +37,8 @@ public class RestCertificateLinksBuilder implements CertificateLinksBuilder {
         entity.add(selfLink);
         if (!entity.getTags().isEmpty()) {
             Link tagsLink = linkTo(methodOn(CertificateController.class).showCertificateTags(entity.getId(), 0, 10)).withRel("tags");
-            entity.add(tagsLink);
+            Link ordersLink = linkTo(methodOn(CertificateController.class).showCertificateOrders(entity.getId(), 0, 10)).withRel("orders");
+            entity.add(tagsLink, ordersLink);
         }
         return entity;
     }
@@ -76,9 +77,13 @@ public class RestCertificateLinksBuilder implements CertificateLinksBuilder {
 
     @Override
     public CollectionModel<Tag> buildCertificateTagsPage(Certificate certificate, List<Tag> tags, int currentOffset, int currentLimit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
+        for (Tag tag : tags) {
+            Link tagLink = linkTo(methodOn(CertificateController.class).showCertificateTag(certificate.getId(), tag.getId())).withRel("tag");
+            tag.add(tagLink);
+        }
         Link selfLink = linkTo(methodOn(CertificateController.class).showCertificateTags(certificate.getId(), currentOffset, currentLimit)).withSelfRel();
-        Link nextPageLink = linkTo(methodOn(CertificateController.class).showCertificateTags(certificate.getId(), currentOffset + currentLimit, currentLimit)).withRel("nextPage");
-        Link previousPageLink = linkTo(methodOn(CertificateController.class).showCertificateTags(certificate.getId(), currentOffset - currentLimit, currentLimit)).withRel("previousPage");
+        Link nextPageLink = linkTo(methodOn(CertificateController.class).showCertificateTags(certificate.getId(), currentOffset + currentLimit, currentLimit)).withRel("next");
+        Link previousPageLink = linkTo(methodOn(CertificateController.class).showCertificateTags(certificate.getId(), currentOffset - currentLimit, currentLimit)).withRel("previous");
         return CollectionModel.of(tags, selfLink, nextPageLink, previousPageLink);
     }
 

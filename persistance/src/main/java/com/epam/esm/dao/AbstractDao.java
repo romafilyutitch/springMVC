@@ -7,6 +7,7 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 
 /**
@@ -20,7 +21,6 @@ import org.springframework.stereotype.Component;
 public abstract class AbstractDao<T extends Entity> implements Dao<T> {
     @Autowired
     protected SessionFactory sessionFactory;
-    protected final int rowsPerPage = 10;
     private final String entityName;
 
     public AbstractDao(String entityName) {
@@ -30,27 +30,21 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
     @Override
     public T save(T entity) {
         Session session = sessionFactory.getCurrentSession();
-        Transaction transaction = session.beginTransaction();
         session.save(entity);
-        transaction.commit();
         return entity;
     }
 
     @Override
     public T update(T entity) {
         Session session = sessionFactory.getCurrentSession();
-        Transaction transaction = session.beginTransaction();
         session.update(entity);
-        transaction.commit();
         return entity;
     }
 
     @Override
     public void delete(T entity) {
         Session session = sessionFactory.getCurrentSession();
-        Transaction transaction = session.beginTransaction();
         session.delete(entity);
-        transaction.commit();
     }
 
     @Override
@@ -59,12 +53,5 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
         Query<Long> query = session.createQuery(String.format("select count(*) from %s", entityName), Long.class);
         Long totalElements = query.uniqueResult();
         return totalElements.intValue();
-    }
-
-    @Override
-    public int getTotalPages() {
-        int totalElements = getTotalElements();
-        int totalPages = totalElements / rowsPerPage;
-        return totalElements % rowsPerPage == 0 ? totalPages : ++totalPages;
     }
 }

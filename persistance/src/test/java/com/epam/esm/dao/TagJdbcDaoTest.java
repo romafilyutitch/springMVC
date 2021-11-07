@@ -34,7 +34,7 @@ class TagJdbcDaoTest {
 
     @Test
     public void findPage_shouldReturnTagsOnPage() {
-        List<Tag> tags = dao.findPage(1);
+        List<Tag> tags = dao.findPage(0, 10);
         assertEquals(3, tags.size());
         Tag first = tags.get(0);
         Tag second = tags.get(1);
@@ -105,7 +105,7 @@ class TagJdbcDaoTest {
 
     @Test
     public void findCertificateTagsPage_shouldReturnTagsOnFirstPage() {
-        List<Tag> certificateTagsPage = dao.findCertificateTagsPage(1, 1);
+        List<Tag> certificateTagsPage = dao.findCertificateTagsPage(1, 0, 10);
         assertEquals(3, certificateTagsPage.size());
         Tag first = certificateTagsPage.get(0);
         Tag second = certificateTagsPage.get(1);
@@ -131,12 +131,6 @@ class TagJdbcDaoTest {
         assertEquals("music", second.getName());
         assertEquals(3, third.getId());
         assertEquals("art", third.getName());
-    }
-
-    @Test
-    public void getCertificateTagsTotalPages_mustReturnonePage() {
-        int certificateTagsTotalPages = dao.getCertificateTagsTotalPages(1);
-        assertEquals(1, certificateTagsTotalPages);
     }
 
     @Test

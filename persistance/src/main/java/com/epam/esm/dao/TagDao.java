@@ -36,13 +36,6 @@ public interface TagDao extends Dao<Tag> {
     List<Tag> findAllCertificateTags(long certificateId);
 
     /**
-     * Counts and returns certificate tags pages amount
-     * @param certificateId id of certificate whose tags pages need to be counted
-     * @return amount of specified certificate tags pages
-     */
-    int getCertificateTagsTotalPages(long certificateId);
-
-    /**
      * Counts and returns certificate tags elements amount
      * @param certificateId id of certificate whose tags amount need to be counted
      * @return amount of specified certificate tags

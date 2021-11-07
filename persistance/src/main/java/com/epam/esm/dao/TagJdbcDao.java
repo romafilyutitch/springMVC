@@ -64,13 +64,6 @@ public class TagJdbcDao extends AbstractDao<Tag> implements TagDao {
     }
 
     @Override
-    public int getCertificateTagsTotalPages(long certificateId) {
-        int totalElements = getCertificateTagsTotalElements(certificateId);
-        int totalPages = totalElements / rowsPerPage;
-        return totalElements % rowsPerPage == 0 ? totalPages : ++totalPages;
-    }
-
-    @Override
     public int getCertificateTagsTotalElements(long certificateId) {
         Session session = sessionFactory.getCurrentSession();
         Certificate certificate = session.get(Certificate.class, certificateId);

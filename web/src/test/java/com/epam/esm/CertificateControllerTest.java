@@ -2,7 +2,6 @@ package com.epam.esm;
 
 import com.epam.esm.config.PersistanceConfig;
 import com.epam.esm.model.Certificate;
-import com.epam.esm.model.Tag;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +13,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Collections;
-import java.util.List;
-
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -25,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = PersistanceConfig.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("dev")
-@Sql(scripts = {"classpath:delete.sql","classpath:data.sql"})
+@Sql(scripts = {"classpath:delete.sql", "classpath:data.sql"})
 class CertificateControllerTest {
 
     @Autowired
@@ -50,28 +46,20 @@ class CertificateControllerTest {
                 .andExpect(jsonPath("$._embedded.certificateList[0].tags[1].name", is("music")))
                 .andExpect(jsonPath("$._embedded.certificateList[0].tags[2].id", is(3)))
                 .andExpect(jsonPath("$._embedded.certificateList[0].tags[2].name", is("art")))
-                .andExpect(jsonPath("$._embedded.certificateList[0]._links.tags.href", is("http://localhost/certificates/1/tags/page/1")))
-                .andExpect(jsonPath("$._embedded.certificateList[0]._links.order.href", is("http://localhost/certificates/1/order")))
                 .andExpect(jsonPath("$._embedded.certificateList[0]._links.certificate.href", is("http://localhost/certificates/1")))
-                .andExpect(jsonPath("$._links.self.href", is("http://localhost/certificates/page/1")))
-                .andExpect(jsonPath("$._links.firstPage.href", is("http://localhost/certificates/page/1")))
-                .andExpect(jsonPath("$._links.lastPage.href", is("http://localhost/certificates/page/1")))
-                .andExpect(jsonPath("$.page.size", is(1)))
-                .andExpect(jsonPath("$.page.totalElements", is(1)))
-                .andExpect(jsonPath("$.page.totalPages", is(1)))
-                .andExpect(jsonPath("$.page.number", is(1)));
+                .andExpect(jsonPath("$._links.self.href", is("http://localhost/certificates?offset=0&limit=10")))
+                .andExpect(jsonPath("$._links.next.href", is("http://localhost/certificates?offset=10&limit=10")))
+                .andExpect(jsonPath("$._links.previous.href", is("http://localhost/certificates?offset=-10&limit=10")));
     }
 
     @Test
-    public void showCertificatePage_shouldThrowExceptionIfPageIsOutOfBounds() throws Exception {
-        mockMvc.perform(get("/certificates/page/{page}", 100))
+    public void showCertificatePage_shouldThrowExceptionIfOffsetIfGreaterThenTotalElements() throws Exception {
+        mockMvc.perform(get("/certificates?offset=100"))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE))
                 .andExpect(jsonPath("$.errorCode", is("40403")))
-                .andExpect(jsonPath("$.message", is("Current page number 100 is out of bounds. First page is 1, last page is 1")))
-                .andExpect(jsonPath("$._links.users.href", is("http://localhost/users")))
-                .andExpect(jsonPath("$._links.certificates.href", is("http://localhost/certificates")));
+                .andExpect(jsonPath("$.message", is("Current offset 100 is out of bounds. Total elements amount is 1")));
     }
 
     @Test
@@ -81,8 +69,7 @@ class CertificateControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE))
                 .andExpect(jsonPath("$.errorCode", is("40401")))
-                .andExpect(jsonPath("$.message", is("Certificate with id 100 not found")))
-                .andExpect(jsonPath("$._links.certificates.href", is("http://localhost/certificates")));
+                .andExpect(jsonPath("$.message", is("Certificate with id 100 not found")));
     }
 
     @Test
@@ -104,8 +91,8 @@ class CertificateControllerTest {
                 .andExpect(jsonPath("$.tags[2].id", is(3)))
                 .andExpect(jsonPath("$.tags[2].name", is("art")))
                 .andExpect(jsonPath("$._links.self.href", is("http://localhost/certificates/1")))
-                .andExpect(jsonPath("$._links.tags.href", is("http://localhost/certificates/1/tags/page/1")))
-                .andExpect(jsonPath("$._links.order.href", is("http://localhost/certificates/1/order")));
+                .andExpect(jsonPath("$._links.tags.href", is("http://localhost/certificates/1/tags?offset=0&limit=10")))
+                .andExpect(jsonPath("$._links.orders.href", is("http://localhost/certificates/1/orders?offset=0&limit=10")));
     }
 
     @Test
@@ -118,8 +105,7 @@ class CertificateControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE))
                 .andExpect(jsonPath("$.errorCode", is("40002")))
-                .andExpect(jsonPath("$.message", is("Passed certificate is invalid. Name and description must be not empty. Price and duration must be positive")))
-                .andExpect(jsonPath("$._links.certificates.href", is("http://localhost/certificates")));
+                .andExpect(jsonPath("$.message", is("Passed certificate is invalid. Name and description must be not empty. Price and duration must be positive")));
     }
 
     @Test
@@ -161,7 +147,8 @@ class CertificateControllerTest {
                 .andExpect(jsonPath("$.tags[2].id", is(3)))
                 .andExpect(jsonPath("$.tags[2].name", is("art")))
                 .andExpect(jsonPath("$._links.self.href", is("http://localhost/certificates/1")))
-                .andExpect(jsonPath("$._links.tags.href", is("http://localhost/certificates/1/tags/page/1")));
+                .andExpect(jsonPath("$._links.tags.href", is("http://localhost/certificates/1/tags?offset=0&limit=10")))
+                .andExpect(jsonPath("$._links.orders.href", is("http://localhost/certificates/1/orders?offset=0&limit=10")));
     }
 
     @Test
@@ -186,13 +173,9 @@ class CertificateControllerTest {
                 .andExpect(jsonPath("$._embedded.tagList[0]._links.tag.href", is("http://localhost/certificates/1/tags/1")))
                 .andExpect(jsonPath("$._embedded.tagList[1]._links.tag.href", is("http://localhost/certificates/1/tags/2")))
                 .andExpect(jsonPath("$._embedded.tagList[2]._links.tag.href", is("http://localhost/certificates/1/tags/3")))
-                .andExpect(jsonPath("$._links.self.href", is("http://localhost/certificates/1/tags/page/1")))
-                .andExpect(jsonPath("$._links.firstPage.href", is("http://localhost/certificates/1/tags/page/1")))
-                .andExpect(jsonPath("$._links.lastPage.href", is("http://localhost/certificates/1/tags/page/1")))
-                .andExpect(jsonPath("$.page.size", is(3)))
-                .andExpect(jsonPath("$.page.totalElements", is(3)))
-                .andExpect(jsonPath("$.page.totalPages", is(1)))
-                .andExpect(jsonPath("$.page.number", is(1)));
+                .andExpect(jsonPath("$._links.self.href", is("http://localhost/certificates/1/tags?offset=0&limit=10")))
+                .andExpect(jsonPath("$._links.next.href", is("http://localhost/certificates/1/tags?offset=10&limit=10")))
+                .andExpect(jsonPath("$._links.previous.href", is("http://localhost/certificates/1/tags?offset=-10&limit=10")));
     }
 
     @Test
@@ -213,49 +196,7 @@ class CertificateControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE))
                 .andExpect(jsonPath("$.errorCode", is("40401")))
-                .andExpect(jsonPath("$.message", is("Tag with id 100 not found")))
-                .andExpect(jsonPath("$._links.certificates.href", is("http://localhost/certificates")));
-    }
-
-    @Test
-    public void addTagToCertificate_shouldReturnCertificateWithNewTag() throws Exception {
-        List<Tag> tags = Collections.singletonList(new Tag(4L, "new tag"));
-        mockMvc.perform(post("/certificates/{id}/tags", 1L)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(new ObjectMapper().writeValueAsString(tags)))
-                .andDo(print())
-                .andExpect(status().isCreated())
-                .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE))
-                .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.name", is("free music listen certificate")))
-                .andExpect(jsonPath("$.description", is("spotify free music listening")))
-                .andExpect(jsonPath("$.price", is(200.5)))
-                .andExpect(jsonPath("$.duration", is(20)))
-                .andExpect(jsonPath("$.tags", hasSize(4)))
-                .andExpect(jsonPath("$.tags[0].id", is(1)))
-                .andExpect(jsonPath("$.tags[0].name", is("spotify")))
-                .andExpect(jsonPath("$.tags[1].id", is(2)))
-                .andExpect(jsonPath("$.tags[1].name", is("music")))
-                .andExpect(jsonPath("$.tags[2].id", is(3)))
-                .andExpect(jsonPath("$.tags[2].name", is("art")))
-                .andExpect(jsonPath("$.tags[3].id", is(4)))
-                .andExpect(jsonPath("$.tags[3].name", is("new tag")))
-                .andExpect(jsonPath("$._links.self.href", is("http://localhost/certificates/1")))
-                .andExpect(jsonPath("$._links.tags.href", is("http://localhost/certificates/1/tags/page/1")));
-    }
-
-    @Test
-    public void addTagToCertificate_shouldReturnBadRequestCode() throws Exception {
-        List<Tag> tags = Collections.singletonList(new Tag(""));
-        mockMvc.perform(post("/certificates/{id}/tags", 1L)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(new ObjectMapper().writeValueAsString(tags)))
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE))
-                .andExpect(jsonPath("$.errorCode", is("40002")))
-                .andExpect(jsonPath("$.message", is("Passed tag is invalid. Name must be not empty")))
-                .andExpect(jsonPath("$._links.certificates.href", is("http://localhost/certificates")));
+                .andExpect(jsonPath("$.message", is("Tag with id 100 not found")));
     }
 
     @Test
@@ -270,7 +211,6 @@ class CertificateControllerTest {
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.errorCode", is("40401")))
-                .andExpect(jsonPath("$.message", is("Tag with id 100 not found")))
-                .andExpect(jsonPath("$._links.certificates.href", is("http://localhost/certificates")));
+                .andExpect(jsonPath("$.message", is("Tag with id 100 not found")));
     }
 }

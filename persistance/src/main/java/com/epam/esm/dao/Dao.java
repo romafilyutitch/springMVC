@@ -56,11 +56,4 @@ public interface Dao<T extends Entity> {
      * @return saved entities amount
      */
     int getTotalElements();
-
-    /**
-     * Counts all entities and computes
-     * pages amount
-     * @return pages amount
-     */
-    int getTotalPages();
 }

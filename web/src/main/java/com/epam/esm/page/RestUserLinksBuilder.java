@@ -40,13 +40,14 @@ public class RestUserLinksBuilder implements UserLinksBuilder {
 
     @Override
     public CollectionModel<User> buildPageLinks(List<User> entities, int currentOffset, int currentLimit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
+        Link selfLink = linkTo(methodOn(UserController.class).showUsers(currentOffset, currentLimit)).withSelfRel();
         for (User entity : entities) {
             Link userLink = linkTo(methodOn(UserController.class).showUser(entity.getId())).withRel("user");
             entity.add(userLink);
         }
         Link nextLink = linkTo(methodOn(UserController.class).showUsers(currentOffset + currentLimit, currentLimit)).withRel("next");
         Link previousLink = linkTo(methodOn(UserController.class).showUsers(currentOffset  - currentLimit, currentLimit)).withRel("previous");
-        return CollectionModel.of(entities, nextLink, previousLink);
+        return CollectionModel.of(entities, selfLink, nextLink, previousLink);
     }
 
     @Override
@@ -64,8 +65,9 @@ public class RestUserLinksBuilder implements UserLinksBuilder {
             Link orderLink = linkTo(methodOn(UserController.class).showUserOrder(user.getId(), order.getId())).withRel("order");
             order.add(orderLink);
         }
+        Link selfLink = linkTo(methodOn(UserController.class).showUserOrders(user.getId(), currentOffset, currentLimit)).withSelfRel();
         Link nextLink = linkTo(methodOn(UserController.class).showUserOrders(user.getId(), currentOffset + currentLimit, currentLimit)).withRel("next");
         Link previousLink = linkTo(methodOn(UserController.class).showUserOrders(user.getId(), currentOffset - currentLimit, currentLimit)).withRel("previous");
-        return CollectionModel.of(orders, nextLink, previousLink);
+        return CollectionModel.of(orders, selfLink, nextLink, previousLink);
     }
 }

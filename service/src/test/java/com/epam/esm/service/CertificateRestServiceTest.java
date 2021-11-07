@@ -44,39 +44,46 @@ class CertificateRestServiceTest {
     }
 
     @Test
-    public void findPage_shouldReturnFirstPage() throws PageOutOfBoundsException {
-        when(certificateDao.getTotalPages()).thenReturn(1);
+    public void findPage_shouldReturnCertificateOnPage() throws PageOutOfBoundsException, InvalidPageException {
         List<Certificate> certificates = Collections.singletonList(certificate);
-        when(certificateDao.findPage(1)).thenReturn(certificates);
-        List<Certificate> foundPage = service.findPage(1);
+        when(certificateDao.getTotalElements()).thenReturn(1);
+        when(certificateDao.findPage(0, 10)).thenReturn(certificates);
+        List<Certificate> foundPage = service.findPage(0, 10);
 
         assertEquals(certificates, foundPage);
+        verify(certificateDao).getTotalElements();
+        verify(certificateDao).findPage(0, 10);
 
-        verify(certificateDao).getTotalPages();
-        verify(certificateDao).findPage(1);
     }
 
     @Test
-    public void findPage_shouldThrowExceptionIfPageOutOfBounds() {
-        when(certificateDao.getTotalPages()).thenReturn(1);
+    public void findPage_shouldThrowExceptionIfOffsetGreaterThenTotalElements() {
+        when(certificateDao.getTotalElements()).thenReturn(1);
 
-        assertThrows(PageOutOfBoundsException.class, () -> service.findPage(100));
+        assertThrows(PageOutOfBoundsException.class, () -> service.findPage(10, 10));
 
-        verify(certificateDao, atLeastOnce()).getTotalPages();
+        verify(certificateDao).getTotalElements();
     }
 
     @Test
-    public void findWithParameters_shouldReturnCertificatesThatMatchesPassedParameters() throws PageOutOfBoundsException {
+    public void findPage_shouldThrowExceptionIFOffsetIsNegative() {
+        assertThrows(InvalidPageException.class, () -> service.findPage(-10, 10));
+    }
+
+    @Test
+    public void findWithParameters_shouldReturnCertificatesThatMatchesPassedParameters() throws InvalidPageException, PageOutOfBoundsException {
         LinkedHashMap<String, String> map = new LinkedHashMap<>();
         map.put("partOfName", "e");
         map.put("partOfDescription", "e");
         List<Certificate> singletonCertificate = Collections.singletonList(certificate);
-        when(certificateDao.findWithParameters(map)).thenReturn(singletonCertificate);
+        when(certificateDao.getTotalElements()).thenReturn(1);
+        when(certificateDao.findWithParameters(map, 0, 10)).thenReturn(singletonCertificate);
 
-        List<Certificate> certificatesWithParameters = service.findAllWithParameters(map);
+        List<Certificate> certificatesWithParameters = service.findAllWithParameters(map, 0, 10);
 
         assertEquals(singletonCertificate, certificatesWithParameters);
-        verify(certificateDao).findWithParameters(map);
+        verify(certificateDao).getTotalElements();
+        verify(certificateDao).findWithParameters(map, 0, 10);
     }
 
     @Test
@@ -209,36 +216,31 @@ class CertificateRestServiceTest {
     }
 
     @Test
-    public void findCertificateTagsPage_shouldReturnFirstPage() throws PageOutOfBoundsException {
+    public void findCertificateTagsPage_shouldReturnTagsOnPage() throws PageOutOfBoundsException, InvalidPageException {
         Tag tag = new Tag(1, "tag");
         List<Tag> tags = Collections.singletonList(tag);
-        when(tagDao.getCertificateTagsTotalPages(certificate.getId())).thenReturn(1);
-        when(tagDao.findCertificateTagsPage(certificate.getId(), 1)).thenReturn(tags);
+        when(tagDao.getCertificateTagsTotalElements(certificate.getId())).thenReturn(1);
+        when(tagDao.findCertificateTagsPage(certificate.getId(), 0, 10)).thenReturn(tags);
 
-        List<Tag> tagsPage = service.findCertificateTagsPage(certificate, 1);
+        List<Tag> tagsPage = service.findCertificateTagsPage(certificate, 0, 10);
 
         assertEquals(tags, tagsPage);
-        verify(tagDao).getCertificateTagsTotalPages(certificate.getId());
-        verify(tagDao).findCertificateTagsPage(certificate.getId(), 1);
+        verify(tagDao).getCertificateTagsTotalElements(certificate.getId());
+        verify(tagDao).findCertificateTagsPage(certificate.getId(), 0, 10);
     }
 
     @Test
     public void findCertificateTagsPage_shouldThrowExceptionIfPageOutOfBounds() {
-        when(tagDao.getCertificateTagsTotalPages(certificate.getId())).thenReturn(1);
+        when(tagDao.getCertificateTagsTotalElements(certificate.getId())).thenReturn(1);
 
-        assertThrows(PageOutOfBoundsException.class, () -> service.findCertificateTagsPage(certificate, 100));
+        assertThrows(PageOutOfBoundsException.class, () -> service.findCertificateTagsPage(certificate, 10, 10));
 
-        verify(tagDao, atLeastOnce()).getCertificateTagsTotalPages(certificate.getId());
+        verify(tagDao).getCertificateTagsTotalElements(certificate.getId());
     }
 
     @Test
-    public void getCertificateTagsTotalPages_shouldReturnOne() {
-        when(tagDao.getCertificateTagsTotalPages(certificate.getId())).thenReturn(1);
-
-        int certificateTagsPages = service.getCertificateTagsTotalPages(certificate);
-
-        assertEquals(1, certificateTagsPages);
-        verify(tagDao).getCertificateTagsTotalPages(certificate.getId());
+    public void findCertificateTagsPage_shouldThrowExceptionIfOffsetIsInvalid() {
+        assertThrows(InvalidPageException.class, () -> service.findCertificateTagsPage(certificate, -10, 10));
     }
 
     @Test
@@ -262,33 +264,32 @@ class CertificateRestServiceTest {
     }
 
     @Test
-    public void getTotalPages_shouldReturnOne() {
-        when(certificateDao.getTotalPages()).thenReturn(1);
-
-        int totalPages = service.getTotalPages();
-
-        assertEquals(1, totalPages);
-        verify(certificateDao).getTotalPages();
-    }
-
-    @Test
-    public void findCertificateOrder_shouldReturnOrder() throws ResourceNotFoundException {
+    public void findCertificateOrders_shouldReturnOrdersOnPage() throws InvalidPageException, PageOutOfBoundsException {
         Order order = new Order(1, certificate.getPrice(), LocalDateTime.now());
         order.setCertificate(certificate);
-        when(orderDao.findCertificateOrders(certificate.getId())).thenReturn(Optional.of(order));
+        List<Order> orders = List.of(order);
+        when(orderDao.getCertificateOrdersTotalElements(certificate.getId())).thenReturn(1);
+        when(orderDao.findCertificateOrders(certificate.getId(), 0, 10)).thenReturn(orders);
 
-        Order certificateOrder = service.findCertificateOrder(certificate);
+        List<Order> foundOrders = service.findCertificateOrders(certificate, 0, 10);
 
-        assertEquals(order, certificateOrder);
-        verify(orderDao).findCertificateOrders(certificate.getId());
+        assertEquals(orders, foundOrders);
+        verify(orderDao).getCertificateOrdersTotalElements(certificate.getId());
+        verify(orderDao).findCertificateOrders(certificate.getId(), 0, 10);
     }
 
     @Test
-    public void findCertificateOrder_shouldThrowExceptionIfThereIsNoCertificateOrder() {
-        when(orderDao.findCertificateOrders(certificate.getId())).thenReturn(Optional.empty());
+    public void findCertificateOrders_shouldThrowExceptionIfOffsetGreaterThenTotalElements() {
+        when(orderDao.getCertificateOrdersTotalElements(certificate.getId())).thenReturn(1);
 
-        assertThrows(OrderNotFoundException.class, () -> service.findCertificateOrder(certificate));
+        assertThrows(PageOutOfBoundsException.class, () -> service.findCertificateOrders(certificate, 10, 10));
 
-        verify(orderDao).findCertificateOrders(certificate.getId());
+        verify(orderDao).getCertificateOrdersTotalElements(certificate.getId());
     }
+
+    @Test
+    public void findCertificateOrders_shouldThrowExceptionIfOffsetIsInvalid() {
+        assertThrows(InvalidPageException.class, () -> service.findCertificateTagsPage(certificate, -10, 10));
+    }
+
 }

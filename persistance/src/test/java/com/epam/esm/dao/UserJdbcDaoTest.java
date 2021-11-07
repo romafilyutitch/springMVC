@@ -26,7 +26,7 @@ class UserJdbcDaoTest {
 
     @Test
     public void findPage_mustReturnFirstPage() {
-        List<User> usersPage = dao.findPage(1);
+        List<User> usersPage = dao.findPage(0, 10);
         assertEquals(1, usersPage.size());
         User user = usersPage.get(0);
         assertEquals(1, user.getId());

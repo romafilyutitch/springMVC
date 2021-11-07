@@ -117,7 +117,7 @@ public class CertificateController {
      * @throws PageOutOfBoundsException  if page number is less then one and greater then pages amount
      */
     @GetMapping("/{id}/tags")
-    public CollectionModel<Tag> showCertificateTags(@PathVariable("id") long id, int offset, int limit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
+    public CollectionModel<Tag> showCertificateTags(@PathVariable("id") long id, @RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         Certificate foundCertificate = certificateService.findById(id);
         List<Tag> tags = certificateService.findCertificateTagsPage(foundCertificate, offset, limit);
         return certificateLinksBuilder.buildCertificateTagsPage(foundCertificate, tags, offset, limit);
@@ -180,7 +180,7 @@ public class CertificateController {
      * @throws PageOutOfBoundsException  if page number is less then 1 and greater then pages amount
      */
     @GetMapping("/{id}/orders")
-    public CollectionModel<Order> showCertificateOrders(@PathVariable Long id, @RequestParam int offset, int limit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
+    public CollectionModel<Order> showCertificateOrders(@PathVariable Long id, @RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         Certificate foundCertificate = certificateService.findById(id);
         List<Order> foundOrders = certificateService.findCertificateOrders(foundCertificate, offset, limit);
         return certificateLinksBuilder.buildCertificateOrdersPage(foundCertificate, foundOrders, offset, limit);

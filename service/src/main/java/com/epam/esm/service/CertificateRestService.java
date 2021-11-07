@@ -64,7 +64,8 @@ public class CertificateRestService implements CertificateService {
      * @return list of certificate that match passed parameters
      */
     @Override
-    public List<Certificate> findAllWithParameters(LinkedHashMap<String, String> findParameters, int offset, int limit) {
+    public List<Certificate> findAllWithParameters(LinkedHashMap<String, String> findParameters, int offset, int limit) throws InvalidPageException, PageOutOfBoundsException {
+        checkPage(offset, limit, certificateDao.getTotalElements());
         List<Certificate> foundCertificates = certificateDao.findWithParameters(findParameters, offset, limit);
         logger.info("Certificates with parameters were found " + foundCertificates);
         return foundCertificates;
@@ -218,17 +219,6 @@ public class CertificateRestService implements CertificateService {
     }
 
     /**
-     * Computes and returns certificate tags pages amount
-     *
-     * @param certificate whose tags pages need to be counted
-     * @return certificate tags pages amount
-     */
-    @Override
-    public int getCertificateTagsTotalPages(Certificate certificate) {
-        return tagDao.getCertificateTagsTotalPages(certificate.getId());
-    }
-
-    /**
      * Computes and returns certificate tags amount
      *
      * @param certificate whose tags amount need to be counted
@@ -247,16 +237,6 @@ public class CertificateRestService implements CertificateService {
     @Override
     public int getTotalElements() {
         return certificateDao.getTotalElements();
-    }
-
-    /**
-     * Computes and returns amount of entities pages
-     *
-     * @return amount of entities pages
-     */
-    @Override
-    public int getTotalPages() {
-        return certificateDao.getTotalPages();
     }
 
     /**
@@ -292,7 +272,7 @@ public class CertificateRestService implements CertificateService {
             throw new InvalidPageException(offset, limit);
         }
         if (offset >= totalElements) {
-            throw new PageOutOfBoundsException(offset, getTotalElements());
+            throw new PageOutOfBoundsException(offset, totalElements);
         }
     }
 }

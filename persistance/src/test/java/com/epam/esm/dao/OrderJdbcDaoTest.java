@@ -24,7 +24,7 @@ class OrderJdbcDaoTest {
 
     @Test
     public void findPage_shouldReturnFirstPage() {
-        List<Order> ordersPage = dao.findPage(1);
+        List<Order> ordersPage = dao.findPage(0, 10);
 
         assertEquals(1, ordersPage.size());
         Order order = ordersPage.get(0);
@@ -37,6 +37,10 @@ class OrderJdbcDaoTest {
     public void save_shouldReturnSavedOrder() {
         Optional<Order> optionalOrder = dao.findById(1);
         assertTrue(optionalOrder.isPresent());
+        Order order = optionalOrder.get();
+        assertEquals(1, order.getId());
+        assertEquals(200.50, order.getCost());
+        assertNotNull(order.getCertificate());
     }
 
     @Test
@@ -51,30 +55,30 @@ class OrderJdbcDaoTest {
 
     @Test
     public void findByCertificateId_shouldReturnOrderById() {
-        Optional<Order> order = dao.findCertificateOrders(1);
-        assertTrue(order.isPresent());
-    }
-
-    @Test
-    public void findByCertificateId_shouldReturnEmptyOptionalIfThereIsNoOrder() {
-        Optional<Order> optionalOrder = dao.findCertificateOrders(0);
-        assertFalse(optionalOrder.isPresent());
-    }
-
-    @Test
-    public void findUserOrderPage_shouldReturnUserOrdersFirstPage() {
-        List<Order> firstPage = dao.findUserOrdersPage(1, 1);
-        assertEquals(1, firstPage.size());
-        Order order = firstPage.get(0);
+        List<Order> orders = dao.findCertificateOrders(1, 0, 10);
+        assertFalse(orders.isEmpty());
+        assertEquals(1, orders.size());
+        Order order = orders.get(0);
         assertEquals(1, order.getId());
         assertEquals(200.50, order.getCost());
         assertNotNull(order.getCertificate());
     }
 
     @Test
-    public void getUserOrdersTotalPages_shouldReturnOne() {
-        int userOrdersPages = dao.getUserOrdersTotalPages(1);
-        assertEquals(1, userOrdersPages);
+    public void findByCertificateId_shouldReturnEmptyOptionalIfThereIsNoOrder() {
+        List<Order> orders = dao.findCertificateOrders(0, 0, 10);
+        assertTrue(orders.isEmpty());
+    }
+
+    @Test
+    public void findUserOrderPage_shouldReturnUserOrdersFirstPage() {
+        List<Order> orders = dao.findUserOrdersPage(1, 0, 10);
+        assertFalse(orders.isEmpty());
+        assertEquals(1, orders.size());
+        Order order = orders.get(0);
+        assertEquals(1, order.getId());
+        assertEquals(200.50, order.getCost());
+        assertNotNull(order.getCertificate());
     }
 
     @Test

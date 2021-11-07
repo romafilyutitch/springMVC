@@ -42,13 +42,6 @@ public interface UserService extends Service<User> {
     List<Order> findUserOrderPage(User user, int offset, int limit) throws InvalidPageException, PageOutOfBoundsException;
 
     /**
-     * Computes and returns user's orders pages amount
-     * @param user whose orders pages need to be counted
-     * @return user's orders pages amount
-     */
-    int getUserOrdersTotalPages(User user);
-
-    /**
      * Computes and returns user's order amount
      * @param user whose orders amount need to be counted
      * @return user's orders amount

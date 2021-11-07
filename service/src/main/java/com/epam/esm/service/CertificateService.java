@@ -56,13 +56,6 @@ public interface CertificateService extends Service<Certificate> {
     List<Tag> findCertificateTagsPage(Certificate foundCertificate, int offset, int limit) throws InvalidPageException, PageOutOfBoundsException;
 
     /**
-     * Computes and returns certificate tags pages amount
-     * @param certificate whose tags pages need to be counted
-     * @return certificate tags pages amount
-     */
-    int getCertificateTagsTotalPages(Certificate certificate);
-
-    /**
      * Computes and returns certificate tags amount
      * @param certificate whose tags amount need to be counted
      * @return certificate tags amount

@@ -100,16 +100,6 @@ public class UserRestService implements UserService {
     }
 
     /**
-     * Computes and returns amount of entities pages
-     *
-     * @return amount of entities pages
-     */
-    @Override
-    public int getTotalPages() {
-        return userDao.getTotalPages();
-    }
-
-    /**
      * Saves entity and returns saved entity with assigned id
      *
      * @param entity that need to be saved
@@ -178,17 +168,6 @@ public class UserRestService implements UserService {
     public List<Order> findUserOrderPage(User user, int offset, int limit) throws PageOutOfBoundsException, InvalidPageException {
         checkPage(offset, limit, orderDao.getUserOrdersTotalElements(user.getId()));
         return orderDao.findUserOrdersPage(user.getId(), offset, limit);
-    }
-
-    /**
-     * Computes and returns user's orders pages amount
-     *
-     * @param user whose orders pages need to be counted
-     * @return user's orders pages amount
-     */
-    @Override
-    public int getUserOrdersTotalPages(User user) {
-        return orderDao.getUserOrdersTotalPages(user.getId());
     }
 
     /**

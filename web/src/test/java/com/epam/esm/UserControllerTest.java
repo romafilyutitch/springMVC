@@ -33,31 +33,11 @@ class UserControllerTest {
                 .andExpect(jsonPath("$._embedded.userList", hasSize(1)))
                 .andExpect(jsonPath("$._embedded.userList[0].id", is(1)))
                 .andExpect(jsonPath("$._embedded.userList[0].name", is("user")))
-                .andExpect(jsonPath("$._embedded.userList[0].surname", is("test")));
-    }
-
-    @Test
-    public void showUsersPage_shouldReturnUserOnFirstPage() throws Exception {
-        mockMvc.perform(get("/users/page/{page}", 1))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE))
-                .andExpect(jsonPath("$._embedded.userList", hasSize(1)))
-                .andExpect(jsonPath("$._embedded.userList[0].id", is(1)))
-                .andExpect(jsonPath("$._embedded.userList[0].name", is("user")))
-                .andExpect(jsonPath("$._embedded.userList[0].surname", is("test")));
-    }
-
-    @Test
-    public void showUsersPage_shouldThrowExceptionIfPageIsOutOfBounds() throws Exception {
-        mockMvc.perform(get("/users/page/{page}", 100))
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE))
-                .andExpect(jsonPath("$.errorCode", is("40403")))
-                .andExpect(jsonPath("$.message", is("Current page number 100 is out of bounds. First page is 1, last page is 1")))
-                .andExpect(jsonPath("$._links.users.href", is("http://localhost/users")))
-                .andExpect(jsonPath("$._links.certificates.href", is("http://localhost/certificates")));
+                .andExpect(jsonPath("$._embedded.userList[0].surname", is("test")))
+                .andExpect(jsonPath("$._embedded.userList[0]._links.user.href", is("http://localhost/users/1")))
+                .andExpect(jsonPath("$._links.self.href", is("http://localhost/users?offset=0&limit=10")))
+                .andExpect(jsonPath("$._links.next.href", is("http://localhost/users?offset=10&limit=10")))
+                .andExpect(jsonPath("$._links.previous.href", is("http://localhost/users?offset=-10&limit=10")));
     }
 
     @Test
@@ -70,7 +50,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.name", is("user")))
                 .andExpect(jsonPath("$.surname", is("test")))
                 .andExpect(jsonPath("$._links.self.href", is("http://localhost/users/1")))
-                .andExpect(jsonPath("$._links.orders.href", is("http://localhost/users/1/orders/page/1")));
+                .andExpect(jsonPath("$._links.orders.href", is("http://localhost/users/1/orders?offset=0&limit=10")));
     }
 
     @Test
@@ -80,8 +60,7 @@ class UserControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE))
                 .andExpect(jsonPath("$.errorCode", is("40401")))
-                .andExpect(jsonPath("$.message", is("User with id 100 not found")))
-                .andExpect(jsonPath("$._links.users.href", is("http://localhost/users")));
+                .andExpect(jsonPath("$.message", is("User with id 100 not found")));
     }
 
     @Test
@@ -93,32 +72,22 @@ class UserControllerTest {
                 .andExpect(jsonPath("$._embedded.orderList", hasSize(1)))
                 .andExpect(jsonPath("$._embedded.orderList[0].id", is(1)))
                 .andExpect(jsonPath("$._embedded.orderList[0].cost", is(200.5)))
-                .andExpect(jsonPath("$._embedded.orderList[0]._links.order.href", is("http://localhost/certificates/1/order")))
-                .andExpect(jsonPath("$._links.self.href", is("http://localhost/users/1/orders/page/1")))
-                .andExpect(jsonPath("$._links.firstPage.href", is("http://localhost/users/1/orders/page/1")))
-                .andExpect(jsonPath("$._links.lastPage.href", is("http://localhost/users/1/orders/page/1")))
-                .andExpect(jsonPath("$.page.size", is(1)))
-                .andExpect(jsonPath("$.page.totalElements", is(1)))
-                .andExpect(jsonPath("$.page.totalPages", is(1)))
-                .andExpect(jsonPath("$.page.number", is(1)));
+                .andExpect(jsonPath("$._embedded.orderList[0]._links.order.href", is("http://localhost/users/1/orders/1")))
+                .andExpect(jsonPath("$._links.self.href", is("http://localhost/users/1/orders?offset=0&limit=10")))
+                .andExpect(jsonPath("$._links.next.href", is("http://localhost/users/1/orders?offset=10&limit=10")))
+                .andExpect(jsonPath("$._links.previous.href", is("http://localhost/users/1/orders?offset=-10&limit=10")));
     }
 
     @Test
-    public void shouUserOrdersPage_shouldReturnOrdersOnFirstPage() throws Exception {
-        mockMvc.perform(get("/users/{userId}/orders/page/{page}", 1, 1))
+    public void showSuersOrder_shouldReturnUserOrder() throws Exception {
+        mockMvc.perform(get("/users/{userId}/orders/{id}", 1, 1))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE))
-                .andExpect(jsonPath("$._embedded.orderList", hasSize(1)))
-                .andExpect(jsonPath("$._embedded.orderList[0].id", is(1)))
-                .andExpect(jsonPath("$._embedded.orderList[0].cost", is(200.5)))
-                .andExpect(jsonPath("$._embedded.orderList[0]._links.order.href", is("http://localhost/certificates/1/order")))
-                .andExpect(jsonPath("$._links.self.href", is("http://localhost/users/1/orders/page/1")))
-                .andExpect(jsonPath("$._links.firstPage.href", is("http://localhost/users/1/orders/page/1")))
-                .andExpect(jsonPath("$._links.lastPage.href", is("http://localhost/users/1/orders/page/1")))
-                .andExpect(jsonPath("$.page.size", is(1)))
-                .andExpect(jsonPath("$.page.totalElements", is(1)))
-                .andExpect(jsonPath("$.page.totalPages", is(1)))
-                .andExpect(jsonPath("$.page.number", is(1)));
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.cost", is(200.50)))
+                .andExpect(jsonPath("$._links.self.href", is("http://localhost/users/1/orders/1")))
+                .andExpect(jsonPath("$._links.user.href", is("http://localhost/users/1")))
+                .andExpect(jsonPath("$._links.certificate.href", is("http://localhost/certificates/1")));
     }
 }

@@ -72,13 +72,6 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
     }
 
     @Override
-    public int getUserOrdersTotalPages(long userId) {
-        int userOrdersTotalElements = getUserOrdersTotalElements(userId);
-        int userOrdersTotalPages = userOrdersTotalElements / rowsPerPage;
-        return userOrdersTotalElements % rowsPerPage == 0 ? userOrdersTotalPages : ++userOrdersTotalPages;
-    }
-
-    @Override
     public void setUserToOrder(long userId, long orderId) {
         Session session = sessionFactory.getCurrentSession();
         Transaction transaction = session.beginTransaction();
