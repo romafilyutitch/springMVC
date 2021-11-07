@@ -59,7 +59,7 @@ public class CertificateController {
      * @throws PageOutOfBoundsException  if page number is less then one and greater then pages amount
      */
     @GetMapping("/{id}")
-    public Certificate showCertificate(@PathVariable("id") long id) throws ResourceNotFoundException, PageOutOfBoundsException {
+    public Certificate showCertificate(@PathVariable("id") long id) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         Certificate foundCertificate = certificateService.findById(id);
         return certificateLinksBuilder.buildLinks(foundCertificate);
     }
@@ -72,7 +72,7 @@ public class CertificateController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Certificate saveCertificate(@RequestBody Certificate certificate) throws InvalidResourceException, ResourceNotFoundException, PageOutOfBoundsException {
+    public Certificate saveCertificate(@RequestBody Certificate certificate) throws InvalidResourceException, ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         Certificate savedCertificate = certificateService.save(certificate);
         return certificateLinksBuilder.buildLinks(savedCertificate);
     }
@@ -88,7 +88,7 @@ public class CertificateController {
      * @throws PageOutOfBoundsException  if page number is less then one and greater then pages amount
      */
     @PostMapping("/{id}")
-    public Certificate updateCertificate(@PathVariable("id") long id, @RequestBody Certificate certificate) throws ResourceNotFoundException, InvalidResourceException, PageOutOfBoundsException {
+    public Certificate updateCertificate(@PathVariable("id") long id, @RequestBody Certificate certificate) throws ResourceNotFoundException, InvalidResourceException, PageOutOfBoundsException, InvalidPageException {
         Certificate foundCertificate = certificateService.findById(id);
         certificate.setId(foundCertificate.getId());
         Certificate updatedCertificate = certificateService.update(certificate);
@@ -132,7 +132,7 @@ public class CertificateController {
      * @throws ResourceNotFoundException if certificate or tag is not found
      */
     @GetMapping("/{id}/tags/{tagId}")
-    public Tag showCertificateTag(@PathVariable("id") long id, @PathVariable("tagId") long tagId) throws ResourceNotFoundException, PageOutOfBoundsException {
+    public Tag showCertificateTag(@PathVariable("id") long id, @PathVariable("tagId") long tagId) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         Certificate foundCertificate = certificateService.findById(id);
         Tag foundTag = certificateService.findCertificateTag(foundCertificate, tagId);
         return certificateLinksBuilder.buildTagLinks(foundCertificate, foundTag);
@@ -150,7 +150,7 @@ public class CertificateController {
      */
     @PostMapping("/{id}/tags")
     @ResponseStatus(HttpStatus.CREATED)
-    public Certificate addTagToCertificate(@PathVariable("id") long id, @RequestBody List<Tag> tags) throws ResourceNotFoundException, InvalidResourceException, PageOutOfBoundsException {
+    public Certificate addTagToCertificate(@PathVariable("id") long id, @RequestBody List<Tag> tags) throws ResourceNotFoundException, InvalidResourceException, PageOutOfBoundsException, InvalidPageException {
         Certificate foundCertificate = certificateService.findById(id);
         Certificate updatedCertificate = certificateService.addTags(foundCertificate, tags);
         return certificateLinksBuilder.buildLinks(updatedCertificate);
@@ -187,7 +187,7 @@ public class CertificateController {
     }
 
     @GetMapping("/{id}/orders/{orderId}")
-    public Order showCertificateOrder(@PathVariable long id, @PathVariable long orderId) throws ResourceNotFoundException, PageOutOfBoundsException {
+    public Order showCertificateOrder(@PathVariable long id, @PathVariable long orderId) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         Certificate foundCertificate = certificateService.findById(id);
         Order foundOrder = certificateService.findCertificateOrder(orderId);
         User foundUser = userService.findOrderUser(foundOrder);
@@ -204,7 +204,7 @@ public class CertificateController {
      * @throws PageOutOfBoundsException  if page number is less then one and greater then pages amount
      */
     @PostMapping("/{id}/orders")
-    public Order makeOrder(@PathVariable Long id, @RequestBody User user) throws ResourceNotFoundException, PageOutOfBoundsException {
+    public Order makeOrder(@PathVariable Long id, @RequestBody User user) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         Certificate foundCertificate = certificateService.findById(id);
         User foundUser = userService.findById(user.getId());
         Order savedOrder = userService.orderCertificate(foundUser, foundCertificate);

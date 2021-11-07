@@ -4,6 +4,7 @@ import com.epam.esm.controller.CertificateController;
 import com.epam.esm.controller.UserController;
 import com.epam.esm.model.Order;
 import com.epam.esm.model.User;
+import com.epam.esm.service.InvalidPageException;
 import com.epam.esm.service.PageOutOfBoundsException;
 import com.epam.esm.service.ResourceNotFoundException;
 import com.epam.esm.service.UserService;
@@ -27,7 +28,7 @@ public class RestUserLinksBuilder implements UserLinksBuilder {
     }
 
     @Override
-    public User buildLinks(User entity) throws ResourceNotFoundException, PageOutOfBoundsException {
+    public User buildLinks(User entity) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         Link selfLink = linkTo(methodOn(UserController.class).showUser(entity.getId())).withSelfRel();
         entity.add(selfLink);
         if (!entity.getOrders().isEmpty()) {
@@ -38,7 +39,7 @@ public class RestUserLinksBuilder implements UserLinksBuilder {
     }
 
     @Override
-    public CollectionModel<User> buildPageLinks(List<User> entities, int currentOffset, int currentLimit) throws ResourceNotFoundException, PageOutOfBoundsException {
+    public CollectionModel<User> buildPageLinks(List<User> entities, int currentOffset, int currentLimit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         for (User entity : entities) {
             Link userLink = linkTo(methodOn(UserController.class).showUser(entity.getId())).withRel("user");
             entity.add(userLink);
@@ -49,7 +50,7 @@ public class RestUserLinksBuilder implements UserLinksBuilder {
     }
 
     @Override
-    public Order buildUserOrderLinks(User user, Order order) throws ResourceNotFoundException, PageOutOfBoundsException {
+    public Order buildUserOrderLinks(User user, Order order) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         Link selfLink = linkTo(methodOn(UserController.class).showUserOrder(user.getId(), order.getId())).withSelfRel();
         Link userLink  = linkTo(methodOn(UserController.class).showUser(user.getId())).withRel("user");
         Link certificateLink = linkTo(methodOn(CertificateController.class).showCertificate(order.getCertificate().getId())).withRel("certificate");
@@ -58,7 +59,7 @@ public class RestUserLinksBuilder implements UserLinksBuilder {
     }
 
     @Override
-    public CollectionModel<Order> buildUserOrdersPageLinks(User user, List<Order> orders, int currentOffset, int currentLimit) throws ResourceNotFoundException, PageOutOfBoundsException {
+    public CollectionModel<Order> buildUserOrdersPageLinks(User user, List<Order> orders, int currentOffset, int currentLimit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         for (Order order : orders) {
             Link orderLink = linkTo(methodOn(UserController.class).showUserOrder(user.getId(), order.getId())).withRel("order");
             order.add(orderLink);

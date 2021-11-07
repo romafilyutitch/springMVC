@@ -291,7 +291,7 @@ public class CertificateRestService implements CertificateService {
         if (offset < 0 || limit < 0) {
             throw new InvalidPageException(offset, limit);
         }
-        if (offset > totalElements) {
+        if (offset >= totalElements) {
             throw new PageOutOfBoundsException(offset, getTotalElements());
         }
     }
