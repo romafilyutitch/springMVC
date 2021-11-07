@@ -11,9 +11,11 @@ public interface Service<T extends Entity> {
 
     /**
      * Finds and returns entities on specified page
-     * @param page page of entities that need to be found
+     * @param offset current page offset
+     * @param limit current page limit
      * @return list of entities on passed page
-     * @throws PageOutOfBoundsException if page number is less then 1 and greater that pages amount
+     * @throws PageOutOfBoundsException offset is greater then total elements
+     * @throws InvalidPageException is offset or limit is negative
      */
     List<T> findPage(int offset, int limit) throws InvalidPageException, PageOutOfBoundsException;
 

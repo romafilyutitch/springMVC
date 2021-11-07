@@ -17,6 +17,10 @@ public interface CertificateService extends Service<Certificate> {
     /**
      * Finds all certificates that match passed parameters
      * @param findParameters parameters by which need to find certificates
+     * @param offset current page offset
+     * @param limit current page limit
+     * @throws PageOutOfBoundsException if offset is greater then total elements
+     * @throws InvalidPageException if offset or limit is negative
      * @return list of certificate that match passed parameters
      */
     List<Certificate> findAllWithParameters(LinkedHashMap<String, String> findParameters, int offset, int limit) throws InvalidPageException, PageOutOfBoundsException;
@@ -49,9 +53,11 @@ public interface CertificateService extends Service<Certificate> {
     /**
      * Finds and returns passed certificate tags page
      * @param foundCertificate certificate whose tags page need to be found
-     * @param page certificate tags page that need to be found
+     * @param offset current page offset
+     * @param  limit current page limit
      * @return list of certificate tags on passed page
-     * @throws PageOutOfBoundsException if page number is less than 1 and greater than pages amounts
+     * @throws PageOutOfBoundsException if offset is greater then total elements
+     * @throws InvalidPageException if offset or limit is negative
      */
     List<Tag> findCertificateTagsPage(Certificate foundCertificate, int offset, int limit) throws InvalidPageException, PageOutOfBoundsException;
 
@@ -65,11 +71,21 @@ public interface CertificateService extends Service<Certificate> {
     /**
      * Finds passed certificate order.
      * @param certificate whose order need to be found
+     * @param offset current page offset
+     * @param limit current page limit
      * @return order that has passed certificate
-     * @throws ResourceNotFoundException if there is no orders that has passed certificate
+     * @throws PageOutOfBoundsException if offset is greater then total elements
+     * @throws InvalidPageException is offset or limit is negative
      */
     List<Order> findCertificateOrders(Certificate certificate, int offset, int limit) throws PageOutOfBoundsException, InvalidPageException;
 
-    Order findCertificateOrder(long orderId) throws ResourceNotFoundException;
+    /**
+     * Finds certificate order
+     * @param certificate certificate
+     * @param orderId certificate order with id
+     * @return certificate order that has passed id
+     * @throws ResourceNotFoundException if certificate order is not found
+     */
+    Order findCertificateOrder(Certificate certificate, long orderId) throws ResourceNotFoundException;
 
 }

@@ -1,10 +1,7 @@
 package com.epam.esm.service;
 
 /**
- * Out of bounds exception. Occurs when client wants
- * to get entities on specified page bu there is not
- * specified page. If page is less than one and greater
- * than pages amount
+ * Pagination exception class. Occurs when current offset is greater then total elements amount
  */
 public class PageOutOfBoundsException extends Exception {
     private final int currentOffset;

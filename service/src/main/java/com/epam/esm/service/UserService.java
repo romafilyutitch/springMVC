@@ -34,10 +34,12 @@ public interface UserService extends Service<User> {
 
     /**
      * Finds and returns user orders specified page
-     * @param user whose orders need to be found
-     * @param page user's orders page that need to be found
+     * @param user user
+     * @param offset current page offset
+     * @param limit current page limit
      * @return list of found orders no passed page
-     * @throws PageOutOfBoundsException if page is less then 1 and greater then pages amount
+     * @throws PageOutOfBoundsException if offset is greater then total elements
+     * @throws InvalidPageException if offset or limit is negative
      */
     List<Order> findUserOrderPage(User user, int offset, int limit) throws InvalidPageException, PageOutOfBoundsException;
 
@@ -48,7 +50,19 @@ public interface UserService extends Service<User> {
      */
     int getUserOrdersTotalElements(User user);
 
+    /**
+     * Funds user that made passe order
+     * @param order order whose user need to be found
+     * @return user that made passed order
+     */
     User findOrderUser(Order order);
 
+    /**
+     * Finds user order that has passed id
+     * @param foundUser user whose order need to be found
+     * @param orderId order id
+     * @return user order that has passed id
+     * @throws ResourceNotFoundException if order is not found
+     */
     Order findUserOrder(User foundUser, long orderId) throws ResourceNotFoundException;
 }

@@ -208,7 +208,7 @@ public class CertificateController {
     @GetMapping("/{id}/orders/{orderId}")
     public Order showCertificateOrder(@PathVariable long id, @PathVariable long orderId) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         Certificate foundCertificate = certificateService.findById(id);
-        Order foundOrder = certificateService.findCertificateOrder(orderId);
+        Order foundOrder = certificateService.findCertificateOrder(foundCertificate, orderId);
         User foundUser = userService.findOrderUser(foundOrder);
         return userLinksBuilder.buildUserOrderLinks(foundUser, foundOrder);
     }

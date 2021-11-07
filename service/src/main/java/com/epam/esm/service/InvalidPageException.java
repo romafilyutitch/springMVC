@@ -1,6 +1,9 @@
 package com.epam.esm.service;
 
-public class InvalidPageException extends Throwable {
+/**
+ * Pagination exception class. Occurs when page offset or page limit is negative
+ */
+public class InvalidPageException extends Exception {
     private final int offset;
     private final int limit;
 
