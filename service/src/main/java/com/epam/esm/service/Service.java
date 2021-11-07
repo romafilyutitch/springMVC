@@ -15,7 +15,7 @@ public interface Service<T extends Entity> {
      * @return list of entities on passed page
      * @throws PageOutOfBoundsException if page number is less then 1 and greater that pages amount
      */
-    List<T> findPage(int offset, int limit);
+    List<T> findPage(int offset, int limit) throws InvalidPageException, PageOutOfBoundsException;
 
     /**
      * Finds and returns entity that has passed id

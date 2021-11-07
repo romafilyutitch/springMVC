@@ -39,7 +39,7 @@ public interface UserService extends Service<User> {
      * @return list of found orders no passed page
      * @throws PageOutOfBoundsException if page is less then 1 and greater then pages amount
      */
-    List<Order> findUserOrderPage(User user, int offset, int limit) throws PageOutOfBoundsException;
+    List<Order> findUserOrderPage(User user, int offset, int limit) throws InvalidPageException, PageOutOfBoundsException;
 
     /**
      * Computes and returns user's orders pages amount

@@ -52,7 +52,8 @@ public class CertificateRestService implements CertificateService {
      * @throws PageOutOfBoundsException if page number is less then 1 and greater that pages amount
      */
     @Override
-    public List<Certificate> findPage(int offset, int limit)  {
+    public List<Certificate> findPage(int offset, int limit) throws InvalidPageException, PageOutOfBoundsException {
+        checkPage(offset, limit, certificateDao.getTotalElements());
         return certificateDao.findPage(offset, limit);
     }
 
@@ -211,7 +212,8 @@ public class CertificateRestService implements CertificateService {
      * @throws PageOutOfBoundsException if page number is less than 1 and greater than pages amounts
      */
     @Override
-    public List<Tag> findCertificateTagsPage(Certificate foundCertificate, int offset, int limit) throws PageOutOfBoundsException {
+    public List<Tag> findCertificateTagsPage(Certificate foundCertificate, int offset, int limit) throws PageOutOfBoundsException, InvalidPageException {
+        checkPage(offset, limit, tagDao.getCertificateTagsTotalElements(foundCertificate.getId()));
         return tagDao.findCertificateTagsPage(foundCertificate.getId(), offset, limit);
     }
 
@@ -265,7 +267,8 @@ public class CertificateRestService implements CertificateService {
      * @throws ResourceNotFoundException if there is no orders that has passed certificate
      */
     @Override
-    public List<Order> findCertificateOrders(Certificate certificate, int offset, int limit) throws ResourceNotFoundException {
+    public List<Order> findCertificateOrders(Certificate certificate, int offset, int limit) throws InvalidPageException, PageOutOfBoundsException {
+        checkPage(offset, limit, orderDao.getCertificateOrdersTotalElements(certificate.getId()));
         List<Order> certificateOrders = orderDao.findCertificateOrders(certificate.getId(), offset, limit);
         logger.info(String.format("Certificate with id %d orders were found %s", certificate.getId(), certificateOrders));
         return certificateOrders;
@@ -283,8 +286,13 @@ public class CertificateRestService implements CertificateService {
         }
     }
 
-    @Override
-    public int getCertificateOrdersTotalElements(Certificate certificate) {
-        return orderDao.getCertificateOrdersTotalElements(certificate.getId());
+
+    private void checkPage(int offset, int limit, int totalElements) throws InvalidPageException, PageOutOfBoundsException {
+        if (offset < 0 || limit < 0) {
+            throw new InvalidPageException(offset, limit);
+        }
+        if (offset > totalElements) {
+            throw new PageOutOfBoundsException(offset, getTotalElements());
+        }
     }
 }

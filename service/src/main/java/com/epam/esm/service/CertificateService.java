@@ -19,7 +19,7 @@ public interface CertificateService extends Service<Certificate> {
      * @param findParameters parameters by which need to find certificates
      * @return list of certificate that match passed parameters
      */
-    List<Certificate> findAllWithParameters(LinkedHashMap<String, String> findParameters, int offset, int limit);
+    List<Certificate> findAllWithParameters(LinkedHashMap<String, String> findParameters, int offset, int limit) throws InvalidPageException, PageOutOfBoundsException;
 
     /**
      * Add passed tags to passed certificate
@@ -53,7 +53,7 @@ public interface CertificateService extends Service<Certificate> {
      * @return list of certificate tags on passed page
      * @throws PageOutOfBoundsException if page number is less than 1 and greater than pages amounts
      */
-    List<Tag> findCertificateTagsPage(Certificate foundCertificate, int offset, int limit) throws PageOutOfBoundsException;
+    List<Tag> findCertificateTagsPage(Certificate foundCertificate, int offset, int limit) throws InvalidPageException, PageOutOfBoundsException;
 
     /**
      * Computes and returns certificate tags pages amount
@@ -75,9 +75,8 @@ public interface CertificateService extends Service<Certificate> {
      * @return order that has passed certificate
      * @throws ResourceNotFoundException if there is no orders that has passed certificate
      */
-    List<Order> findCertificateOrders(Certificate certificate, int offset, int limit) throws ResourceNotFoundException;
+    List<Order> findCertificateOrders(Certificate certificate, int offset, int limit) throws PageOutOfBoundsException, InvalidPageException;
 
     Order findCertificateOrder(long orderId) throws ResourceNotFoundException;
 
-    int getCertificateOrdersTotalElements(Certificate certificate);
 }

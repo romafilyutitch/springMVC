@@ -45,7 +45,7 @@ public class CertificateController {
     @GetMapping
     public CollectionModel<Certificate> showCertificates(@RequestParam(required = false) LinkedHashMap<String, String> parameters,
                                                          @RequestParam(defaultValue = "0") int offset,
-                                                         @RequestParam(defaultValue = "10") int limit) throws ResourceNotFoundException, PageOutOfBoundsException {
+                                                         @RequestParam(defaultValue = "10") int limit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         List<Certificate> foundCertificates = certificateService.findAllWithParameters(parameters, offset, limit);
         return certificateLinksBuilder.buildPageLinks(foundCertificates, parameters, offset, limit);
     }
@@ -117,7 +117,7 @@ public class CertificateController {
      * @throws PageOutOfBoundsException  if page number is less then one and greater then pages amount
      */
     @GetMapping("/{id}/tags")
-    public CollectionModel<Tag> showCertificateTags(@PathVariable("id") long id, int offset, int limit) throws ResourceNotFoundException, PageOutOfBoundsException {
+    public CollectionModel<Tag> showCertificateTags(@PathVariable("id") long id, int offset, int limit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         Certificate foundCertificate = certificateService.findById(id);
         List<Tag> tags = certificateService.findCertificateTagsPage(foundCertificate, offset, limit);
         return certificateLinksBuilder.buildCertificateTagsPage(foundCertificate, tags, offset, limit);
@@ -180,7 +180,7 @@ public class CertificateController {
      * @throws PageOutOfBoundsException  if page number is less then 1 and greater then pages amount
      */
     @GetMapping("/{id}/orders")
-    public CollectionModel<Order> showCertificateOrders(@PathVariable Long id, @RequestParam int offset, int limit) throws ResourceNotFoundException, PageOutOfBoundsException {
+    public CollectionModel<Order> showCertificateOrders(@PathVariable Long id, @RequestParam int offset, int limit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         Certificate foundCertificate = certificateService.findById(id);
         List<Order> foundOrders = certificateService.findCertificateOrders(foundCertificate, offset, limit);
         return certificateLinksBuilder.buildCertificateOrdersPage(foundCertificate, foundOrders, offset, limit);

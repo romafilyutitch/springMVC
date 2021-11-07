@@ -7,25 +7,19 @@ package com.epam.esm.service;
  * than pages amount
  */
 public class PageOutOfBoundsException extends Exception {
-    private final int currentPage;
-    private final int maxPage;
-    private final int minPage;
+    private final int currentOffset;
+    private final int totalElements;
 
-    public PageOutOfBoundsException(int currentPage, int maxPage, int minPage) {
-        this.currentPage = currentPage;
-        this.maxPage = maxPage;
-        this.minPage = minPage;
+    public PageOutOfBoundsException(int currentOffset, int totalElements) {
+        this.currentOffset = currentOffset;
+        this.totalElements = totalElements;
     }
 
-    public int getCurrentPage() {
-        return currentPage;
+    public int getCurrentOffset() {
+        return currentOffset;
     }
 
-    public int getMaxPage() {
-        return maxPage;
-    }
-
-    public int getMinPage() {
-        return minPage;
+    public int getTotalElements() {
+        return totalElements;
     }
 }

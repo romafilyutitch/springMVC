@@ -38,7 +38,8 @@ public class UserRestService implements UserService {
      * @throws PageOutOfBoundsException if page number is less then 1 and greater that pages amount
      */
     @Override
-    public List<User> findPage(int offset, int limit) {
+    public List<User> findPage(int offset, int limit) throws InvalidPageException, PageOutOfBoundsException {
+        checkPage(offset, limit, userDao.getTotalElements());
         return userDao.findPage(offset, limit);
     }
 
@@ -174,7 +175,8 @@ public class UserRestService implements UserService {
      * @throws PageOutOfBoundsException if page is less then 1 and greater then pages amount
      */
     @Override
-    public List<Order> findUserOrderPage(User user, int offset, int limit) throws PageOutOfBoundsException {
+    public List<Order> findUserOrderPage(User user, int offset, int limit) throws PageOutOfBoundsException, InvalidPageException {
+        checkPage(offset, limit, orderDao.getUserOrdersTotalElements(user.getId()));
         return orderDao.findUserOrdersPage(user.getId(), offset, limit);
     }
 
@@ -212,6 +214,15 @@ public class UserRestService implements UserService {
             return foundOrder.get();
         } else {
             throw new ResourceNotFoundException(orderId);
+        }
+    }
+
+    private void checkPage(int offset, int limit, int totalElements) throws InvalidPageException, PageOutOfBoundsException {
+        if (offset < 0 || limit < 0) {
+            throw new InvalidPageException(offset, limit);
+        }
+        if (offset > totalElements) {
+            throw new PageOutOfBoundsException(offset, totalElements);
         }
     }
 }

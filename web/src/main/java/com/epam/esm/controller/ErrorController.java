@@ -2,12 +2,7 @@ package com.epam.esm.controller;
 
 import com.epam.esm.error.Error;
 import com.epam.esm.error.ErrorCode;
-import com.epam.esm.service.CertificateNotFoundException;
-import com.epam.esm.service.OrderNotFoundException;
-import com.epam.esm.service.PageOutOfBoundsException;
-import com.epam.esm.service.ResourceNotFoundException;
-import com.epam.esm.service.TagNotFoundException;
-import com.epam.esm.service.UserNotFoundException;
+import com.epam.esm.service.*;
 import com.epam.esm.validation.InvalidCertificateException;
 import com.epam.esm.validation.InvalidTagException;
 import com.epam.esm.validation.InvalidUserException;
@@ -155,7 +150,14 @@ public class ErrorController {
     @ExceptionHandler(PageOutOfBoundsException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Error pageOutOfBounds(PageOutOfBoundsException exception, Locale locale) throws ResourceNotFoundException, PageOutOfBoundsException {
-        String message = messageSource.getMessage("page.outOfBounds", new Object[] {exception.getCurrentPage(), exception.getMinPage(), exception.getMaxPage()}, locale);
+        String message = messageSource.getMessage("page.outOfBounds", new Object[] {exception.getCurrentOffset(), exception.getTotalElements()}, locale);
         return new Error(ErrorCode.PAGE_OUT_OF_BOUNDS.getCode(), message);
+    }
+
+    @ExceptionHandler(InvalidPageException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Error invalidPage(InvalidPageException exception, Locale locale) {
+        String message = messageSource.getMessage("page.invalid", new Object[] {exception.getOffset(), exception.getLimit()}, locale);
+        return new Error(ErrorCode.INVALID.getCode(), message);
     }
 }
