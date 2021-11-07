@@ -57,7 +57,7 @@ public class RestUserLinksBuilder implements UserLinksBuilder {
      * @throws InvalidPageException if offset or limit is negative
      */
     @Override
-    public CollectionModel<User> buildPageLinks(List<User> entities, int currentOffset, int currentLimit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
+    public PagedModel<User> buildPageLinks(List<User> entities, int currentOffset, int currentLimit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         Link selfLink = linkTo(methodOn(UserController.class).showUsers(currentOffset, currentLimit)).withSelfRel();
         for (User entity : entities) {
             Link userLink = linkTo(methodOn(UserController.class).showUser(entity.getId())).withRel("user");
@@ -99,7 +99,7 @@ public class RestUserLinksBuilder implements UserLinksBuilder {
      * @throws InvalidPageException if offset or limit is negative
      */
     @Override
-    public CollectionModel<Order> buildUserOrdersPageLinks(User user, List<Order> orders, int currentOffset, int currentLimit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
+    public PagedModel<Order> buildUserOrdersPageLinks(User user, List<Order> orders, int currentOffset, int currentLimit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         for (Order order : orders) {
             Link orderLink = linkTo(methodOn(UserController.class).showUserOrder(user.getId(), order.getId())).withRel("order");
             order.add(orderLink);
