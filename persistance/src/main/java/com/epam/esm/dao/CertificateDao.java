@@ -17,6 +17,8 @@ public interface CertificateDao extends Dao<Certificate> {
      * such as tag names, part of name , part of description.
      * Also make sorting based on passed sorting parameters
      * @param findParameters parameters by which need to find certificates
+     * @param offset current page offset
+     * @param limit current page limit
      * @return certificates that match passed parameters
      */
     List<Certificate> findWithParameters(LinkedHashMap<String, String> findParameters, int offset, int limit);

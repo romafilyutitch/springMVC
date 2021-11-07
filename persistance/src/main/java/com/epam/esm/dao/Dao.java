@@ -14,7 +14,8 @@ import java.util.Optional;
 public interface Dao<T extends Entity> {
     /**
      * Finds and returns entities on specified page
-     * @param page that need to be finds
+     * @param offset current page offset
+     * @param limit  current page limit
      * @return entities on passed page
      */
     List<T> findPage(int offset, int limit);

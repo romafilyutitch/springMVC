@@ -31,6 +31,15 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         this.builder = builder;
     }
 
+    /**
+     * Finds certificates that matches passed parameters
+     * such as tag names, part of name , part of description.
+     * Also make sorting based on passed sorting parameters
+     * @param findParameters parameters by which need to find certificates
+     * @param offset current page offset
+     * @param limit current page limit
+     * @return certificates that match passed parameters
+     */
     @Override
     public List<Certificate> findWithParameters(LinkedHashMap<String, String> findParameters, int offset, int limit) {
         findParameters.put("offset", Integer.toString(offset));
@@ -40,6 +49,13 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         return query.list();
     }
 
+    /**
+     * Finds certificate by passed order id.
+     * @param orderId order id by which need to find
+     *                certificate
+     * @return found certificate if there is order with passed certificate
+     * or empty optional otherwise
+     */
     @Override
     public Optional<Certificate> findByOrderId(long orderId) {
         Session session = sessionFactory.getCurrentSession();
@@ -47,6 +63,12 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         return Optional.of(order.getCertificate());
     }
 
+    /**
+     * Finds and returns entities on specified page
+     * @param offset current page offset
+     * @param limit  current page limit
+     * @return entities on passed page
+     */
     @Override
     public List<Certificate> findPage(int offset, int limit) {
         Session session = sessionFactory.getCurrentSession();
@@ -55,7 +77,13 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         query.setMaxResults(limit);
         return query.list();
     }
-
+    /**
+     * Finds and returns entity that have passed id
+     *
+     * @param id id of entity that need to be found
+     * @return Optional that contains entity if entity with passed id exists
+     * or empty optional otherwise
+     */
     @Override
     public Optional<Certificate> findById(long id) {
         Session session = sessionFactory.getCurrentSession();

@@ -32,6 +32,12 @@ public class UserJdbcDao extends AbstractDao<User> implements UserDao {
         super(User.class.getSimpleName());
     }
 
+    /**
+     * Finds and returns entities on specified page
+     * @param offset current page offset
+     * @param limit  current page limit
+     * @return entities on passed page
+     */
     @Override
     public List<User> findPage(int offset, int limit) {
         Session session = sessionFactory.getCurrentSession();
@@ -41,6 +47,13 @@ public class UserJdbcDao extends AbstractDao<User> implements UserDao {
         return query.list();
     }
 
+    /**
+     * Finds and returns entity that have passed id
+     *
+     * @param id id of entity that need to be found
+     * @return Optional that contains entity if entity with passed id exists
+     * or empty optional otherwise
+     */
     @Override
     public Optional<User> findById(long id) {
         Session session = sessionFactory.getCurrentSession();
@@ -48,6 +61,11 @@ public class UserJdbcDao extends AbstractDao<User> implements UserDao {
         return Optional.ofNullable(user);
     }
 
+    /**
+     * Finds and returns riches user.
+     * Riches user is the user that has maximum of orders cost.
+     * @return user that has maximum orders cost
+     */
     @Override
     public User findRichestUser() {
         Session session = sessionFactory.getCurrentSession();
@@ -60,6 +78,12 @@ public class UserJdbcDao extends AbstractDao<User> implements UserDao {
         return query.list().get(0);
     }
 
+    /**
+     * Finds and returns riches user popular tag.
+     * Popular tag is tag that uses most frequently amount richest
+     * user orders
+     * @return popular tag
+     */
     @Override
     public Tag findRichestUserPopularTag() {
         User richestUser = findRichestUser();
@@ -75,6 +99,11 @@ public class UserJdbcDao extends AbstractDao<User> implements UserDao {
         return query.list().get(0);
     }
 
+    /**
+     * Finds user that has order with passed id
+     * @param id order id
+     * @return user that has order with passed id
+     */
     @Override
     public User findByOrderId(long id) {
         Session session = sessionFactory.getCurrentSession();

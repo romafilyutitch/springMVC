@@ -16,7 +16,8 @@ public interface OrderDao extends Dao<Order> {
     /**
      * Finds and returns passed user passed orders page
      * @param userId user id which orders need to be found
-     * @param page user orders page that need to be found
+     * @param offset current page offset
+     * @param limit current page limit
      * @return user orders passed page
      */
     List<Order> findUserOrdersPage(long userId, int offset, int limit);
@@ -28,6 +29,11 @@ public interface OrderDao extends Dao<Order> {
      */
     int getUserOrdersTotalElements(long userId);
 
+    /**
+     * compute certificate orders amount
+     * @param certificateId certificate id
+     * @return certificate orders amount
+     */
     int getCertificateOrdersTotalElements(long certificateId);
 
     /**

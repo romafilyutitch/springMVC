@@ -23,7 +23,8 @@ public interface TagDao extends Dao<Tag> {
     /**
      * Finds and returns specified certificate tags page
      * @param certificateId id of certificate whose page need to be found
-     * @param page page number that need to be found
+     * @param offset current page offset
+     * @param limit current page limit
      * @return list of tags on specified page
      */
     List<Tag> findCertificateTagsPage(long certificateId, int offset, int limit);

@@ -27,6 +27,12 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
         this.entityName = entityName;
     }
 
+    /**
+     * Perform entity save operation. And assigns calculates by database id to saved entity
+     *
+     * @param entity entity that need to be saved
+     * @return saved entity with assigned id
+     */
     @Override
     @Transactional
     public T save(T entity) {
@@ -35,6 +41,12 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
         return entity;
     }
 
+    /**
+     * Performs entity update operation. Save oll entity properties to database fields.
+     *
+     * @param entity entity that need to be updated
+     * @return updated entity
+     */
     @Override
     @Transactional
     public T update(T entity) {
@@ -43,12 +55,21 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
         return entity;
     }
 
+    /**
+     * Performs entity delete operation. Deletes entity from database that have passed id
+     *
+     * @param entity entity that need to be deleted
+     */
     @Override
     public void delete(T entity) {
         Session session = sessionFactory.getCurrentSession();
         session.delete(entity);
     }
 
+    /**
+     * Counts all entities rand returns saved entities amount
+     * @return saved entities amount
+     */
     @Override
     public int getTotalElements() {
         Session session = sessionFactory.getCurrentSession();
