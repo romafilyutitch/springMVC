@@ -1,11 +1,13 @@
 package com.epam.esm.dao;
 
-import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
-import org.hibernate.Session;
-import org.hibernate.query.Query;
+import org.apache.catalina.mapper.Mapper;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,71 +17,71 @@ import java.util.Optional;
  */
 @Repository
 public class TagJdbcDao extends AbstractDao<Tag> implements TagDao {
+    private static final String TABLE_NAME = "tag";
+    private static final List<String> COLUMNS = Collections.singletonList("name");
+    private static final RowMapper<Tag> MAPPER = (rs, rowNum) -> {
+        long id = rs.getLong("id");
+        String name = rs.getString("name");
+        return new Tag(id, name);
+    };
+    private static final String FIND_BY_NAME_SQL = "select id, name from tag where name = ?";
+    private static final String FIND_TAGS_PAGE_BY_CERTIFICATE_ID_SQL = "select tag.id, tag.name from tag left join certificate_tag on certificate_tag.tag_id = tag.id where certificate_tag.certificate_id = ? limit ?, ?";
+    private static final String FIND_ALL_CERTIFICATE_TAGS_SQL = "select tag.id, tag.name from tag left join certificate_tag on certificate_tag.tag_id = tag.id where certificate_tag.certificate_id = ?";
+    private static final String COUNT_CERTIFICATE_TAGS_SQL = "select count(*) from tag left join certificate_tag on certificate_tag.tag_id = tag.id where certificate_tag.certificate_id = ?";
+    private static final String COUNT_COLUMN = "count(*)";
 
     public TagJdbcDao() {
-        super(Tag.class.getSimpleName());
+        super(TABLE_NAME, COLUMNS, MAPPER);
     }
 
     /**
-     * Finds and returns entities on specified page
-     * @param offset current page offset
-     * @param limit  current page limit
-     * @return entities on passed page
-     */
-    @Override
-    public List<Tag> findPage(int offset, int limit) {
-        Session session = sessionFactory.getCurrentSession();
-        Query<Tag> query = session.createQuery("from Tag", Tag.class);
-        query.setFirstResult(offset);
-        query.setMaxResults(limit);
-        return query.list();
-    }
-
-    /**
-     * Finds and returns entity that have passed id
+     * Sets Tag entity fields values to PreparedStatement to save entity in database.
      *
-     * @param id id of entity that need to be found
-     * @return Optional that contains entity if entity with passed id exists
-     * or empty optional otherwise
+     * @param saveStatement PreparedStatement that need to be set entity values for save
+     * @param entity        entity that need to be saved
+     * @throws SQLException if exception with database occurs
      */
     @Override
-    public Optional<Tag> findById(long id) {
-        Session session = sessionFactory.getCurrentSession();
-        Tag tag = session.get(Tag.class, id);
-        return Optional.ofNullable(tag);
+    protected void setSaveValues(PreparedStatement saveStatement, Tag entity) throws SQLException {
+        saveStatement.setString(1, entity.getName());
     }
 
     /**
-     * Finds tag that has passed name.
-     * May return empty optional if there is no tag with passed name
+     * Sets Tag entity values to PreparedStatement to update entity in database.
+     *
+     * @param updateStatement Prepared statement that need to be set entity values for update
+     * @param entity          entity that need to be updated
+     * @throws SQLException if exception with database occurs
+     */
+    @Override
+    protected void setUpdateValues(PreparedStatement updateStatement, Tag entity) throws SQLException {
+        updateStatement.setString(1, entity.getName());
+        updateStatement.setLong(2, entity.getId());
+    }
+
+    /**
+     * Finds Tag in database by passed name. May return empty
+     * Optional if there is no tag with passed name
      *
      * @param name of tag that need to be found
-     * @return optional tag if there is tag with passed name
-     * or empty tag otherwise
+     * @return Optional with Tag if there is Tag with passed name in database or
+     * empry Optional otherwise
      */
     @Override
     public Optional<Tag> findByName(String name) {
-        Session session = sessionFactory.getCurrentSession();
-        Query<Tag> query = session.createQuery("from Tag where name = ?1", Tag.class);
-        query.setParameter(1, name);
-        return query.uniqueResultOptional();
+        List<Tag> foundTag = template.query(FIND_BY_NAME_SQL, MAPPER, name);
+        return foundTag.isEmpty() ? Optional.empty() : Optional.of(foundTag.get(0));
     }
-
     /**
      * Finds and returns specified certificate tags page
      * @param certificateId id of certificate whose page need to be found
-     * @param offset current page offset
-     * @param limit current page limit
+     * @param offset page offset
+     * @param limit page limit
      * @return list of tags on specified page
      */
     @Override
     public List<Tag> findCertificateTagsPage(long certificateId, int offset, int limit) {
-        Session session = sessionFactory.getCurrentSession();
-        Query<Tag> query = session.createQuery("select t from Certificate c join c.tags t where c.id = ?1", Tag.class);
-        query.setParameter(1, certificateId);
-        query.setFirstResult(offset);
-        query.setMaxResults(limit);
-        return query.list();
+        return template.query(FIND_TAGS_PAGE_BY_CERTIFICATE_ID_SQL, MAPPER, certificateId, offset, limit);
     }
 
     /**
@@ -89,11 +91,7 @@ public class TagJdbcDao extends AbstractDao<Tag> implements TagDao {
      */
     @Override
     public List<Tag> findAllCertificateTags(long certificateId) {
-        Session session = sessionFactory.getCurrentSession();
-        Query<Certificate> query = session.createQuery("from Certificate where id = ?1", Certificate.class);
-        query.setParameter(1, certificateId);
-        Certificate certificate = query.uniqueResult();
-        return certificate.getTags();
+        return template.query(FIND_ALL_CERTIFICATE_TAGS_SQL, MAPPER, certificateId);
     }
 
     /**
@@ -103,12 +101,8 @@ public class TagJdbcDao extends AbstractDao<Tag> implements TagDao {
      */
     @Override
     public int getCertificateTagsTotalElements(long certificateId) {
-        Session session = sessionFactory.getCurrentSession();
-        Certificate certificate = session.get(Certificate.class, certificateId);
-        List<Tag> certificateTags = certificate.getTags();
-        return certificateTags.size();
+        return template.queryForObject(COUNT_CERTIFICATE_TAGS_SQL, (rs, rowNum) -> rs.getInt(COUNT_COLUMN), certificateId);
     }
-
     /**
      * Finds specified certificate specified tag
      * @param certificateId id of certificate whose tag need to be found
@@ -118,10 +112,7 @@ public class TagJdbcDao extends AbstractDao<Tag> implements TagDao {
      */
     @Override
     public Optional<Tag> findCertificateTag(long certificateId, long tagId) {
-        Session session = sessionFactory.getCurrentSession();
-        Query<Tag> query = session.createQuery("select t from Certificate c join c.tags t where c.id = ?1 and t.id = ?2", Tag.class);
-        query.setParameter(1, certificateId);
-        query.setParameter(2, tagId);
-        return query.uniqueResultOptional();
+        List<Tag> foundTags = template.query("select tag.id, tag.name from tag left join certificate_tag on certificate_tag.tag_id = tag.id where certificate_tag.certificate_id = ? and certificate_tag.tag_id = ?", MAPPER, certificateId, tagId);
+        return foundTags.isEmpty() ? Optional.empty() : Optional.of(foundTags.get(0));
     }
 }

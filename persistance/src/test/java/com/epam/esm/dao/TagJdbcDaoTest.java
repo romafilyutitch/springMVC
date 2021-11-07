@@ -1,6 +1,5 @@
 package com.epam.esm.dao;
 
-import com.epam.esm.config.PersistanceConfig;
 import com.epam.esm.model.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
