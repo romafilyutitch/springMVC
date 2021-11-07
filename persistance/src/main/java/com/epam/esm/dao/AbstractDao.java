@@ -28,6 +28,7 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
     }
 
     @Override
+    @Transactional
     public T save(T entity) {
         Session session = sessionFactory.getCurrentSession();
         session.save(entity);
@@ -35,6 +36,7 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
     }
 
     @Override
+    @Transactional
     public T update(T entity) {
         Session session = sessionFactory.getCurrentSession();
         session.update(entity);
