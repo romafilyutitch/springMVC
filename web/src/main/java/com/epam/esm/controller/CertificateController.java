@@ -42,6 +42,16 @@ public class CertificateController {
         this.userLinksBuilder = userLinksBuilder;
     }
 
+    /**
+     * Finds certificates that match passed parameters
+     * @param parameters find parameters (tagsNames, partOfName, partOfDescription, sortByName, sortByDate, offset, limit)
+     * @param offset pagination offset
+     * @param limit pagination limit
+     * @return found certificates
+     * @throws ResourceNotFoundException if certificate not found
+     * @throws PageOutOfBoundsException if offset is greater that total elements
+     * @throws InvalidPageException if offset or limit is invalid
+     */
     @GetMapping
     public CollectionModel<Certificate> showCertificates(@RequestParam(required = false) LinkedHashMap<String, String> parameters,
                                                          @RequestParam(defaultValue = "0") int offset,
@@ -186,6 +196,15 @@ public class CertificateController {
         return certificateLinksBuilder.buildCertificateOrdersPage(foundCertificate, foundOrders, offset, limit);
     }
 
+    /**
+     * Finds certificate order with passed id
+     * @param id certificate id
+     * @param orderId order id
+     * @return certificate order that ahas passed id
+     * @throws ResourceNotFoundException if certificate or order is not found
+     * @throws PageOutOfBoundsException if page offset is out of bounds
+     * @throws InvalidPageException  in page offset or limit is negative
+     */
     @GetMapping("/{id}/orders/{orderId}")
     public Order showCertificateOrder(@PathVariable long id, @PathVariable long orderId) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         Certificate foundCertificate = certificateService.findById(id);

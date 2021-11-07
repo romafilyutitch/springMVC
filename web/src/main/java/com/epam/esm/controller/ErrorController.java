@@ -154,6 +154,12 @@ public class ErrorController {
         return new Error(ErrorCode.PAGE_OUT_OF_BOUNDS.getCode(), message);
     }
 
+    /**
+     * Handled {@link InvalidPageException}
+     * @param exception occured exception
+     * @param locale client locale
+     * @return error response
+     */
     @ExceptionHandler(InvalidPageException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Error invalidPage(InvalidPageException exception, Locale locale) {

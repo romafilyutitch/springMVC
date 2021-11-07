@@ -31,6 +31,14 @@ public class RestCertificateLinksBuilder implements CertificateLinksBuilder {
         this.service = service;
     }
 
+    /**
+     * builds links for passed entity
+     * @param entity entity to build links
+     * @return entity that has  built links
+     * @throws ResourceNotFoundException if entity is not found
+     * @throws PageOutOfBoundsException if offset if greater then total elements
+     * @throws InvalidPageException if offset or limit is negative
+     */
     @Override
     public Certificate buildLinks(Certificate entity) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         Link selfLink = linkTo(methodOn(CertificateController.class).showCertificate(entity.getId())).withSelfRel();
@@ -43,6 +51,16 @@ public class RestCertificateLinksBuilder implements CertificateLinksBuilder {
         return entity;
     }
 
+    /**
+     * Builds links for passed entity page
+     * @param entities entities to build links
+     * @param currentOffset current page offset
+     * @param currentLimit current page limit
+     * @return entities that have build links
+     * @throws ResourceNotFoundException if entity is not found
+     * @throws PageOutOfBoundsException if offset is greater then total elements
+     * @throws InvalidPageException if offset or limit is negative
+     */
     @Override
     public CollectionModel<Certificate> buildPageLinks(List<Certificate> entities, int currentOffset, int currentLimit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         for (Certificate entity : entities) {
@@ -55,6 +73,17 @@ public class RestCertificateLinksBuilder implements CertificateLinksBuilder {
         return CollectionModel.of(entities, self, next, prev);
     }
 
+    /**
+     * Build certificate page links base with parameters
+     * @param entities certificates page
+     * @param parameters find parameters
+     * @param currentOffset current page offset
+     * @param currentLimit current page limit
+     * @return certificates that have built links
+     * @throws ResourceNotFoundException if certificate if not found
+     * @throws PageOutOfBoundsException if offset is greater then total elements
+     * @throws InvalidPageException if offset or limit is negative
+     */
     @Override
     public CollectionModel<Certificate> buildPageLinks(List<Certificate> entities, LinkedHashMap<String, String> parameters, int currentOffset, int currentLimit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         for (Certificate entity : entities) {
@@ -67,6 +96,15 @@ public class RestCertificateLinksBuilder implements CertificateLinksBuilder {
         return CollectionModel.of(entities, self, next, prev);
     }
 
+    /**
+     * Build certificate tag links
+     * @param certificate certificate
+     * @param tag certificate tag
+     * @return tag that has built links
+     * @throws ResourceNotFoundException if tag is not found
+     * @throws PageOutOfBoundsException if offset is greater then total elements
+     * @throws InvalidPageException if offset or limit is negative
+     */
     @Override
     public Tag buildTagLinks(Certificate certificate, Tag tag) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         Link selfLink = linkTo(methodOn(CertificateController.class).showCertificateTag(certificate.getId(), tag.getId())).withSelfRel();
@@ -75,6 +113,17 @@ public class RestCertificateLinksBuilder implements CertificateLinksBuilder {
         return tag;
     }
 
+    /**
+     * build certificate tags page links
+     * @param certificate certificate
+     * @param tags certificate tags
+     * @param currentOffset current page offset
+     * @param currentLimit current page limit
+     * @return tags that have build links
+     * @throws ResourceNotFoundException if tag is not found
+     * @throws PageOutOfBoundsException if offset is greater then total elements
+     * @throws InvalidPageException if offset or limit is negative
+     */
     @Override
     public CollectionModel<Tag> buildCertificateTagsPage(Certificate certificate, List<Tag> tags, int currentOffset, int currentLimit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         for (Tag tag : tags) {
@@ -87,6 +136,17 @@ public class RestCertificateLinksBuilder implements CertificateLinksBuilder {
         return CollectionModel.of(tags, selfLink, nextPageLink, previousPageLink);
     }
 
+    /**
+     * build certificate orders page links
+     * @param certificate certificate
+     * @param orders certificate orders
+     * @param currentOffset current page offset
+     * @param currentLimit current page limit
+     * @return orders that have built links
+     * @throws ResourceNotFoundException if order is not found
+     * @throws PageOutOfBoundsException if offset is greater then total elements
+     * @throws InvalidPageException if offset or limit is negative
+     */
     @Override
     public CollectionModel<Order> buildCertificateOrdersPage(Certificate certificate, List<Order> orders, int currentOffset, int currentLimit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         Link selfLink = linkTo(methodOn(CertificateController.class).showCertificateOrders(certificate.getId(), currentOffset, currentLimit)).withSelfRel();

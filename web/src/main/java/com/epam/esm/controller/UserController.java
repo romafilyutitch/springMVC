@@ -42,6 +42,15 @@ public class UserController {
         this.linksBuilder = linksBuilder;
     }
 
+    /**
+     * Finds users on page
+     * @param offset page offset
+     * @param limit page limit
+     * @return users on page
+     * @throws ResourceNotFoundException if user not found
+     * @throws PageOutOfBoundsException if offset is greater then total elements
+     * @throws InvalidPageException if offset or limit is negative
+     */
     @GetMapping
     public CollectionModel<User> showUsers(@RequestParam(required = false, defaultValue = "0") int offset,
                                            @RequestParam(required = false, defaultValue = "10") int limit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
@@ -76,6 +85,15 @@ public class UserController {
         return linksBuilder.buildUserOrdersPageLinks(user, orders, offset, limit);
     }
 
+    /**
+     * Finds user order that has passed id
+     * @param userId user id
+     * @param orderId order id
+     * @return found order that has passed id
+     * @throws ResourceNotFoundException if order is not found
+     * @throws PageOutOfBoundsException if offset is greater then total elements
+     * @throws InvalidPageException if offset or limit is invalid
+     */
     @GetMapping("/{userId}/orders/{orderId}")
     public Order showUserOrder(@PathVariable long userId, @PathVariable long orderId) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         User foundUser = userService.findById(userId);
