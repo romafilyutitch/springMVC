@@ -15,6 +15,7 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -160,30 +161,66 @@ public class RestCertificateLinksBuilder implements CertificateLinksBuilder {
     }
 
     private List<Link> makeCertificatePageLinks(List<Certificate> certificates, LinkedHashMap<String, String> parameters, int currentOffset, int currentLimit, int totalElements) throws PageOutOfBoundsException, ResourceNotFoundException, InvalidPageException {
+        List<Link> links = new ArrayList<>();
+        int pages = totalElements / currentLimit;
+        pages = totalElements % currentLimit == 0 ? pages : ++pages;
         Link selfLink = linkTo(methodOn(CertificateController.class).showCertificates(parameters, currentOffset, currentLimit)).withSelfRel();
-        Link nextPageLink = linkTo(methodOn(CertificateController.class).showCertificates(parameters, currentOffset + currentLimit, currentLimit)).withRel("next");
-        Link previousPageLink = linkTo(methodOn(CertificateController.class).showCertificates(parameters, currentOffset - currentLimit, currentLimit)).withRel("previous");
+        if (currentOffset + currentLimit < totalElements) {
+            Link nextPageLink = linkTo(methodOn(CertificateController.class).showCertificates(parameters, currentOffset + currentLimit, currentLimit)).withRel("next");
+            links.add(nextPageLink);
+        }
+        if (currentOffset - currentLimit >= 0) {
+            Link previousPageLink = linkTo(methodOn(CertificateController.class).showCertificates(parameters, currentOffset - currentLimit, currentLimit)).withRel("previous");
+            links.add(previousPageLink);
+        }
         Link firstPageLink = linkTo(methodOn(CertificateController.class).showCertificates(parameters, 0, currentLimit)).withRel("first");
-        Link lastPageLink = linkTo(methodOn(CertificateController.class).showCertificates(parameters, totalElements - currentLimit, currentLimit)).withRel("last");
-        return Arrays.asList(selfLink, nextPageLink, previousPageLink, firstPageLink, lastPageLink);
+        Link lastPageLink = linkTo(methodOn(CertificateController.class).showCertificates(parameters, currentLimit * (pages - 1), currentLimit)).withRel("last");
+        links.add(selfLink);
+        links.add(firstPageLink);
+        links.add(lastPageLink);
+        return links;
     }
 
     private List<Link> makeCertificateTagsPageLinks(Certificate certificate, List<Tag> tags, int currentOffset, int currentLimit, int totalElements) throws PageOutOfBoundsException, ResourceNotFoundException, InvalidPageException {
+        List<Link> links = new ArrayList<>();
+        int pages = totalElements / currentLimit;
+        pages = totalElements % currentLimit == 0 ? pages : ++pages;
         Link selfLink = linkTo(methodOn(CertificateController.class).showCertificateTags(certificate.getId(), currentOffset, currentLimit)).withSelfRel();
-        Link nextPageLink = linkTo(methodOn(CertificateController.class).showCertificateTags(certificate.getId(), currentOffset + currentLimit, currentLimit)).withRel("next");
-        Link previousPageLink = linkTo(methodOn(CertificateController.class).showCertificateTags(certificate.getId(), currentOffset - currentLimit, currentLimit)).withRel("previous");
+        if (currentOffset + currentLimit < totalElements) {
+            Link nextPageLink = linkTo(methodOn(CertificateController.class).showCertificateTags(certificate.getId(), currentOffset + currentLimit, currentLimit)).withRel("next");
+            links.add(nextPageLink);
+        }
+        if (currentOffset - currentLimit >= 0) {
+            Link previousPageLink = linkTo(methodOn(CertificateController.class).showCertificateTags(certificate.getId(), currentOffset - currentLimit, currentLimit)).withRel("previous");
+            links.add(previousPageLink);
+        }
         Link firstPageLink = linkTo(methodOn(CertificateController.class).showCertificateTags(certificate.getId(), 0, currentLimit)).withRel("first");
-        Link lastPageLink = linkTo(methodOn(CertificateController.class).showCertificateTags(certificate.getId(), totalElements - currentLimit, currentLimit)).withRel("last");
-        return Arrays.asList(selfLink, nextPageLink, previousPageLink, firstPageLink, lastPageLink);
+        Link lastPageLink = linkTo(methodOn(CertificateController.class).showCertificateTags(certificate.getId(), currentLimit * (pages - 1), currentLimit)).withRel("last");
+        links.add(selfLink);
+        links.add(firstPageLink);
+        links.add(lastPageLink);
+        return links;
     }
 
     private List<Link> makeCertificateOrdersPageLinks(Certificate certificate, List<Order> orders, int currentOffset, int currentLimit, int totalElements) throws PageOutOfBoundsException, ResourceNotFoundException, InvalidPageException {
+        List<Link> links = new ArrayList<>();
+        int pages = totalElements / currentLimit;
+        pages = totalElements % currentLimit == 0 ? pages : ++pages;
         Link selfLink = linkTo(methodOn(CertificateController.class).showCertificateOrders(certificate.getId(), currentOffset, currentLimit)).withSelfRel();
-        Link nextPageLink = linkTo(methodOn(CertificateController.class).showCertificateOrders(certificate.getId(), currentOffset + currentLimit, currentLimit)).withRel("next");
-        Link previousPageLink = linkTo(methodOn(CertificateController.class).showCertificateOrders(certificate.getId(), currentOffset - currentLimit, currentLimit)).withRel("previous");
+        if (currentOffset + currentLimit < totalElements) {
+            Link nextPageLink = linkTo(methodOn(CertificateController.class).showCertificateOrders(certificate.getId(), currentOffset + currentLimit, currentLimit)).withRel("next");
+            links.add(nextPageLink);
+        }
+        if (currentOffset - currentLimit >= 0) {
+            Link previousPageLink = linkTo(methodOn(CertificateController.class).showCertificateOrders(certificate.getId(), currentOffset - currentLimit, currentLimit)).withRel("previous");
+            links.add(previousPageLink);
+        }
         Link firstPageLink = linkTo(methodOn(CertificateController.class).showCertificateOrders(certificate.getId(), 0, currentLimit)).withRel("first");
-        Link lastPageLink = linkTo(methodOn(CertificateController.class).showCertificateOrders(certificate.getId(), totalElements - currentLimit, currentLimit)).withRel("last");
-        return Arrays.asList(selfLink, nextPageLink, previousPageLink, firstPageLink, lastPageLink);
+        Link lastPageLink = linkTo(methodOn(CertificateController.class).showCertificateOrders(certificate.getId(), currentLimit * (pages - 1), currentLimit)).withRel("last");
+        links.add(selfLink);
+        links.add(firstPageLink);
+        links.add(lastPageLink);
+        return links;
     }
 
     private PagedModel.PageMetadata makePageMetadata(int size, int offset, int limit, int totalElements) {
