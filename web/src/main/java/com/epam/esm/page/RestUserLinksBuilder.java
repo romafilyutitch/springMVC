@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.*;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -58,7 +59,6 @@ public class RestUserLinksBuilder implements UserLinksBuilder {
      */
     @Override
     public PagedModel<User> buildPageLinks(List<User> entities, int currentOffset, int currentLimit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
-        Link selfLink = linkTo(methodOn(UserController.class).showUsers(currentOffset, currentLimit)).withSelfRel();
         for (User entity : entities) {
             Link userLink = linkTo(methodOn(UserController.class).showUser(entity.getId())).withRel("user");
             entity.add(userLink);
@@ -111,21 +111,45 @@ public class RestUserLinksBuilder implements UserLinksBuilder {
     }
 
     private List<Link> makeUserPageLinks(List<User> users, int currentOffset, int currentLimit, int totalElements) throws PageOutOfBoundsException, ResourceNotFoundException, InvalidPageException {
+        List<Link> links = new ArrayList<>();
+        int pages = totalElements / currentLimit;
+        pages = totalElements % currentLimit == 0 ? pages : ++pages;
         Link selfLink = linkTo(methodOn(UserController.class).showUsers(currentOffset, currentLimit)).withSelfRel();
-        Link nextPageLink = linkTo(methodOn(UserController.class).showUsers(currentOffset + currentLimit, currentLimit)).withRel("next");
-        Link previousPageLink = linkTo(methodOn(UserController.class).showUsers(currentOffset - currentLimit, currentLimit)).withRel("previous");
+        if (currentOffset + currentLimit < totalElements) {
+            Link nextPageLink = linkTo(methodOn(UserController.class).showUsers(currentOffset + currentLimit, currentLimit)).withRel("next");
+            links.add(nextPageLink);
+        }
+        if (currentOffset - currentLimit >= 0) {
+            Link previousPageLink = linkTo(methodOn(UserController.class).showUsers(currentOffset - currentLimit, currentLimit)).withRel("previous");
+            links.add(previousPageLink);
+        }
         Link firstPageLink = linkTo(methodOn(UserController.class).showUsers(0, currentLimit)).withRel("first");
-        Link lastPageLink = linkTo(methodOn(UserController.class).showUsers(totalElements - currentLimit, currentLimit)).withRel("last");
-        return Arrays.asList(selfLink, nextPageLink, previousPageLink, firstPageLink, lastPageLink);
+        Link lastPageLink = linkTo(methodOn(UserController.class).showUsers(currentLimit * (pages - 1), currentLimit)).withRel("last");
+        links.add(selfLink);
+        links.add(firstPageLink);
+        links.add(lastPageLink);
+        return links;
     }
 
     private List<Link> makeOrdersPageLinks(User user, List<Order> orders, int currentOffset, int currentLimit, int totalElements) throws PageOutOfBoundsException, ResourceNotFoundException, InvalidPageException {
+        List<Link> links = new ArrayList<>();
+        int pages = totalElements / currentLimit;
+        pages = totalElements % currentLimit == 0 ? pages : ++pages;
         Link selfLink = linkTo(methodOn(UserController.class).showUserOrders(user.getId(), currentOffset, currentLimit)).withSelfRel();
-        Link nextPageLink =  linkTo(methodOn(UserController.class).showUserOrders(user.getId(), currentOffset + currentLimit, currentLimit)).withRel("next");
-        Link previousPageLink = linkTo(methodOn(UserController.class).showUserOrders(user.getId(), currentOffset - currentLimit, currentLimit)).withRel("previous");
+        if (currentOffset + currentLimit < totalElements) {
+            Link nextPageLink =  linkTo(methodOn(UserController.class).showUserOrders(user.getId(), currentOffset + currentLimit, currentLimit)).withRel("next");
+            links.add(nextPageLink);
+        }
+        if (currentOffset - currentLimit >= 0) {
+            Link previousPageLink = linkTo(methodOn(UserController.class).showUserOrders(user.getId(), currentOffset - currentLimit, currentLimit)).withRel("previous");
+            links.add(previousPageLink);
+        }
         Link firstPageLink = linkTo(methodOn(UserController.class).showUserOrders(user.getId(), 0, currentLimit)).withRel("first");
-        Link lastPageLink = linkTo(methodOn(UserController.class).showUserOrders(user.getId(), totalElements - currentLimit, currentLimit)).withRel("next");
-        return Arrays.asList(selfLink, nextPageLink, previousPageLink, firstPageLink, lastPageLink);
+        Link lastPageLink = linkTo(methodOn(UserController.class).showUserOrders(user.getId(), currentLimit * (pages - 1), currentLimit)).withRel("next");
+        links.add(selfLink);
+        links.add(firstPageLink);
+        links.add(lastPageLink);
+        return links;
     }
 
     private PagedModel.PageMetadata makePageMetadata(int size, int offset, int limit, int totalElements) {
