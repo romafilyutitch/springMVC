@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -150,6 +151,7 @@ public class UserRestService implements UserService {
         Order order = new Order(certificate.getPrice(), certificate);
         Order savedOrder = orderDao.save(order);
         orderDao.setUserToOrder(user.getId(), savedOrder.getId());
+        savedOrder.setOrderDate(LocalDateTime.now());
         logger.info(String.format("User order was saved %s", savedOrder));
         return savedOrder;
     }
