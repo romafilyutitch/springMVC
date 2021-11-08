@@ -1,5 +1,6 @@
 package com.epam.esm.dao;
 
+import com.epam.esm.config.DevConfig;
 import com.epam.esm.model.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,10 +14,9 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(classes = PersistanceConfig.class)
+@SpringBootTest(classes = DevConfig.class)
 @ActiveProfiles("dev")
 @Sql(scripts = {"classpath:delete.sql", "classpath:data.sql"})
-@Transactional
 class TagJdbcDaoTest {
 
     @Autowired

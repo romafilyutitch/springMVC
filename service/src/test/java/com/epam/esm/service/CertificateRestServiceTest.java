@@ -15,6 +15,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -267,7 +269,7 @@ class CertificateRestServiceTest {
     public void findCertificateOrders_shouldReturnOrdersOnPage() throws InvalidPageException, PageOutOfBoundsException {
         Order order = new Order(1, certificate.getPrice(), LocalDateTime.now());
         order.setCertificate(certificate);
-        List<Order> orders = List.of(order);
+        List<Order> orders = Collections.singletonList(order);
         when(orderDao.getCertificateOrdersTotalElements(certificate.getId())).thenReturn(1);
         when(orderDao.findCertificateOrders(certificate.getId(), 0, 10)).thenReturn(orders);
 

@@ -1,5 +1,6 @@
 package com.epam.esm.dao;
 
+import com.epam.esm.config.DevConfig;
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
 import org.junit.jupiter.api.Test;
@@ -14,10 +15,9 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(classes = PersistanceConfig.class)
+@SpringBootTest(classes = DevConfig.class)
 @ActiveProfiles("dev")
 @Sql(scripts = {"classpath:delete.sql", "classpath:data.sql"})
-@Transactional
 class CertificateJdbcDaoTest {
 
     @Autowired
@@ -98,7 +98,7 @@ class CertificateJdbcDaoTest {
     @Test
     public void findByOderId_shouldFindCertificate() {
         Optional<Certificate> optionalCertificate = dao.findByOrderId(1);
-        assertFalse(optionalCertificate.isEmpty());
+        assertTrue(optionalCertificate.isPresent());
         Certificate certificate = optionalCertificate.get();
         assertEquals(1L, certificate.getId());
         assertEquals("free music listen certificate", certificate.getName());

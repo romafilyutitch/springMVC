@@ -1,5 +1,6 @@
 package com.epam.esm;
 
+import com.epam.esm.config.DevConfig;
 import com.epam.esm.model.Certificate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -18,40 +19,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(classes = PersistanceConfig.class)
+@SpringBootTest(classes = DevConfig.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("dev")
 @Sql(scripts = {"classpath:delete.sql", "classpath:data.sql"})
-@Transactional
 class CertificateControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    @Test
-    public void showCertificates_shouldReturnFoundCertificatesOnFirstPage() throws Exception {
-        mockMvc.perform(get("/certificates"))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaTypes.HAL_JSON_VALUE))
-                .andExpect(jsonPath("$._embedded.certificateList", hasSize(1)))
-                .andExpect(jsonPath("$._embedded.certificateList[0].id", is(1)))
-                .andExpect(jsonPath("$._embedded.certificateList[0].name", is("free music listen certificate")))
-                .andExpect(jsonPath("$._embedded.certificateList[0].description", is("spotify free music listening")))
-                .andExpect(jsonPath("$._embedded.certificateList[0].price", is(200.50)))
-                .andExpect(jsonPath("$._embedded.certificateList[0].duration", is(20)))
-                .andExpect(jsonPath("$._embedded.certificateList[0].tags", hasSize(3)))
-                .andExpect(jsonPath("$._embedded.certificateList[0].tags[0].id", is(1)))
-                .andExpect(jsonPath("$._embedded.certificateList[0].tags[0].name", is("spotify")))
-                .andExpect(jsonPath("$._embedded.certificateList[0].tags[1].id", is(2)))
-                .andExpect(jsonPath("$._embedded.certificateList[0].tags[1].name", is("music")))
-                .andExpect(jsonPath("$._embedded.certificateList[0].tags[2].id", is(3)))
-                .andExpect(jsonPath("$._embedded.certificateList[0].tags[2].name", is("art")))
-                .andExpect(jsonPath("$._embedded.certificateList[0]._links.certificate.href", is("http://localhost/certificates/1")))
-                .andExpect(jsonPath("$._links.self.href", is("http://localhost/certificates?offset=0&limit=10")))
-                .andExpect(jsonPath("$._links.next.href", is("http://localhost/certificates?offset=10&limit=10")))
-                .andExpect(jsonPath("$._links.previous.href", is("http://localhost/certificates?offset=-10&limit=10")));
-    }
 
     @Test
     public void showCertificatePage_shouldThrowExceptionIfOffsetIfGreaterThenTotalElements() throws Exception {
@@ -174,9 +149,7 @@ class CertificateControllerTest {
                 .andExpect(jsonPath("$._embedded.tagList[0]._links.tag.href", is("http://localhost/certificates/1/tags/1")))
                 .andExpect(jsonPath("$._embedded.tagList[1]._links.tag.href", is("http://localhost/certificates/1/tags/2")))
                 .andExpect(jsonPath("$._embedded.tagList[2]._links.tag.href", is("http://localhost/certificates/1/tags/3")))
-                .andExpect(jsonPath("$._links.self.href", is("http://localhost/certificates/1/tags?offset=0&limit=10")))
-                .andExpect(jsonPath("$._links.next.href", is("http://localhost/certificates/1/tags?offset=10&limit=10")))
-                .andExpect(jsonPath("$._links.previous.href", is("http://localhost/certificates/1/tags?offset=-10&limit=10")));
+                .andExpect(jsonPath("$._links.self.href", is("http://localhost/certificates/1/tags?offset=0&limit=10")));
     }
 
     @Test
