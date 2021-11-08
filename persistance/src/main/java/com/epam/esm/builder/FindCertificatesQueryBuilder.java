@@ -76,7 +76,13 @@ public class FindCertificatesQueryBuilder {
             buildSortByNameOrder(criteriaBuilder, root, orders, key, value);
             buildSortByDateOrder(criteriaBuilder, root, orders, key, value);
         }
-        criteriaQuery.select(root).where(predicates.toArray(new Predicate[]{})).groupBy(root.get(ID_ATTRIBUTE)).orderBy(orders);
+        String tagNames = findParameters.get(TAG_NAME_ATTRIBUTE_KEY);
+        criteriaQuery.select(root).where(predicates.toArray(new Predicate[]{})).groupBy(root.get(ID_ATTRIBUTE));
+        if (tagNames != null) {
+            String[] names = tagNames.split(COMMA);
+            criteriaQuery.having(criteriaBuilder.equal(criteriaBuilder.count(root.get("id")), names.length));
+        }
+        criteriaQuery.orderBy(orders);
         String offsetValue = findParameters.remove("offset");
         int offset = Integer.parseInt(offsetValue);
         String limitValue = findParameters.remove("limit");
