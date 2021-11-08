@@ -166,7 +166,7 @@ class UserRestServiceTest {
         Order madeOrder = service.orderCertificate(user, certificate);
 
         assertEquals(order, madeOrder);
-        verify(orderDao).save(order);
+        verify(orderDao).save(any(Order.class));
         verify(orderDao).setUserToOrder(user.getId(), order.getId());
     }
 

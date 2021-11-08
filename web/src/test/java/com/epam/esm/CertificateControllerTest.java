@@ -49,9 +49,7 @@ class CertificateControllerTest {
                 .andExpect(jsonPath("$._embedded.certificateList[0].tags[2].id", is(3)))
                 .andExpect(jsonPath("$._embedded.certificateList[0].tags[2].name", is("art")))
                 .andExpect(jsonPath("$._embedded.certificateList[0]._links.certificate.href", is("http://localhost/certificates/1")))
-                .andExpect(jsonPath("$._links.self.href", is("http://localhost/certificates?offset=0&limit=10")))
-                .andExpect(jsonPath("$._links.next.href", is("http://localhost/certificates?offset=10&limit=10")))
-                .andExpect(jsonPath("$._links.previous.href", is("http://localhost/certificates?offset=-10&limit=10")));
+                .andExpect(jsonPath("$._links.self.href", is("http://localhost/certificates?offset=0&limit=10")));
     }
 
     @Test
@@ -175,9 +173,7 @@ class CertificateControllerTest {
                 .andExpect(jsonPath("$._embedded.tagList[0]._links.tag.href", is("http://localhost/certificates/1/tags/1")))
                 .andExpect(jsonPath("$._embedded.tagList[1]._links.tag.href", is("http://localhost/certificates/1/tags/2")))
                 .andExpect(jsonPath("$._embedded.tagList[2]._links.tag.href", is("http://localhost/certificates/1/tags/3")))
-                .andExpect(jsonPath("$._links.self.href", is("http://localhost/certificates/1/tags?offset=0&limit=10")))
-                .andExpect(jsonPath("$._links.next.href", is("http://localhost/certificates/1/tags?offset=10&limit=10")))
-                .andExpect(jsonPath("$._links.previous.href", is("http://localhost/certificates/1/tags?offset=-10&limit=10")));
+                .andExpect(jsonPath("$._links.self.href", is("http://localhost/certificates/1/tags?offset=0&limit=10")));
     }
 
     @Test

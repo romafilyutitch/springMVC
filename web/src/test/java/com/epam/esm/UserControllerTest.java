@@ -35,9 +35,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$._embedded.userList[0].name", is("user")))
                 .andExpect(jsonPath("$._embedded.userList[0].surname", is("test")))
                 .andExpect(jsonPath("$._embedded.userList[0]._links.user.href", is("http://localhost/users/1")))
-                .andExpect(jsonPath("$._links.self.href", is("http://localhost/users?offset=0&limit=10")))
-                .andExpect(jsonPath("$._links.next.href", is("http://localhost/users?offset=10&limit=10")))
-                .andExpect(jsonPath("$._links.previous.href", is("http://localhost/users?offset=-10&limit=10")));
+                .andExpect(jsonPath("$._links.self.href", is("http://localhost/users?offset=0&limit=10")));
     }
 
     @Test
@@ -73,9 +71,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$._embedded.orderList[0].id", is(1)))
                 .andExpect(jsonPath("$._embedded.orderList[0].cost", is(200.5)))
                 .andExpect(jsonPath("$._embedded.orderList[0]._links.order.href", is("http://localhost/users/1/orders/1")))
-                .andExpect(jsonPath("$._links.self.href", is("http://localhost/users/1/orders?offset=0&limit=10")))
-                .andExpect(jsonPath("$._links.next.href", is("http://localhost/users/1/orders?offset=10&limit=10")))
-                .andExpect(jsonPath("$._links.previous.href", is("http://localhost/users/1/orders?offset=-10&limit=10")));
+                .andExpect(jsonPath("$._links.self.href", is("http://localhost/users/1/orders?offset=0&limit=10")));
     }
 
     @Test
