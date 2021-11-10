@@ -7,6 +7,8 @@ import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import org.springframework.transaction.annotation.Transactional;
+
 
 /**
  * Dao layer abstract dao class. If it is need to make dao for some
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Component;
  * @param <T> entity which dao operates
  */
 @Component
+@Transactional
 public abstract class AbstractDao<T extends Entity> implements Dao<T> {
     @Autowired
     protected SessionFactory sessionFactory;
@@ -47,7 +50,7 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
     @Override
     public T update(T entity) {
         Session session = sessionFactory.getCurrentSession();
-        session.update(entity);
+        session.saveOrUpdate(entity);
         return entity;
     }
 

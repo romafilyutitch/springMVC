@@ -153,9 +153,9 @@ public class UserRestService implements UserService {
     @Override
     public Order orderCertificate(User user, Certificate certificate) {
         Order order = new Order(certificate.getPrice(), certificate);
+        order.setOrderDate(LocalDateTime.now());
         Order savedOrder = orderDao.save(order);
         orderDao.setUserToOrder(user.getId(), savedOrder.getId());
-        savedOrder.setOrderDate(LocalDateTime.now());
         logger.info(String.format("User order was saved %s", savedOrder));
         return savedOrder;
     }

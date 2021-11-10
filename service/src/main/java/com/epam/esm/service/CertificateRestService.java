@@ -112,8 +112,8 @@ public class CertificateRestService implements CertificateService {
         }
         List<Tag> tagsToSave = tags.stream().map(tag -> tagDao.findByName(tag.getName()).orElse(tag)).collect(Collectors.toList());
         certificate.setTags(tagsToSave);
+        certificate.setCreateDate(LocalDateTime.now());
         Certificate savedCertificate = certificateDao.save(certificate);
-        savedCertificate.setCreateDate(LocalDateTime.now());
         logger.info("New certificate was validated and saved successfully " + savedCertificate);
         return savedCertificate;
     }
@@ -138,10 +138,12 @@ public class CertificateRestService implements CertificateService {
             tagValidator.validate(tag);
         }
         List<Tag> tagsToUpdate = tags.stream().map(tag -> tagDao.findByName(tag.getName()).orElse(tag)).collect(Collectors.toList());
-        certificateFromTable.getTags().addAll(tagsToUpdate);
+        List<Tag> certificateTags = certificateFromTable.getTags();
+        tagsToUpdate.removeIf(certificateTags::contains);
+        certificateTags.addAll(tagsToUpdate);
         certificateValidator.validate(certificateFromTable);
+        certificateFromTable.setLastUpdateDate(LocalDateTime.now());
         Certificate updatedCertificate = certificateDao.update(certificateFromTable);
-        updatedCertificate.setLastUpdateDate(LocalDateTime.now());
         logger.info("Certificate was validated and updated successfully " + updatedCertificate);
         return updatedCertificate;
     }
@@ -172,7 +174,9 @@ public class CertificateRestService implements CertificateService {
         }
         List<Tag> tagsToUpdate = tags.stream().map(tag -> tagDao.findByName(tag.getName()).orElse(tag)).collect(Collectors.toList());
         List<Tag> certificateTags = certificate.getTags();
+        tagsToUpdate.removeIf(certificateTags::contains);
         certificateTags.addAll(tagsToUpdate);
+        certificate.setLastUpdateDate(LocalDateTime.now());
         Certificate updatedCertificate = certificateDao.update(certificate);
         logger.info("Certificate was updated with new tags " + updatedCertificate);
         return updatedCertificate;
@@ -187,6 +191,8 @@ public class CertificateRestService implements CertificateService {
     @Override
     public void deleteCertificateTag(Certificate certificate, Tag tag) {
         tagDao.delete(tag);
+        certificate.setLastUpdateDate(LocalDateTime.now());
+        certificateDao.update(certificate);
         logger.info("Certificate tag was deleted successfully");
     }
 
