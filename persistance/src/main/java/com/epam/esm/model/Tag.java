@@ -3,6 +3,7 @@ package com.epam.esm.model;
 import javax.persistence.Column;
 import javax.persistence.Table;
 import java.util.Objects;
+
 @javax.persistence.Entity
 @Table(name = "tag")
 public class Tag extends Entity {

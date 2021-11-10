@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 public class UserFieldsValidator implements UserValidator {
     /**
      * Validates user to save or update
+     *
      * @param user that need to be validated
      * @throws InvalidUserException if user is invalid
      */

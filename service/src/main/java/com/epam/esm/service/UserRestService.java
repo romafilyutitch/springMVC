@@ -33,11 +33,12 @@ public class UserRestService implements UserService {
 
     /**
      * Finds and returns entities on specified page
+     *
      * @param offset current page offset
-     * @param limit current page limit
+     * @param limit  current page limit
      * @return list of entities on passed page
      * @throws PageOutOfBoundsException offset is greater then total elements
-     * @throws InvalidPageException is offset or limit is negative
+     * @throws InvalidPageException     is offset or limit is negative
      */
     @Override
     public List<User> findPage(int offset, int limit) throws InvalidPageException, PageOutOfBoundsException {
@@ -47,6 +48,7 @@ public class UserRestService implements UserService {
 
     /**
      * Finds and returns entity that has passed id
+     *
      * @param id of entity that need to be found
      * @return entity that has passed id
      * @throws ResourceNotFoundException if there is no entity with passed id
@@ -66,6 +68,7 @@ public class UserRestService implements UserService {
     /**
      * Finds and returns richest user.
      * Richest user is user that has maximum of total orders cost
+     *
      * @return richest user
      */
     @Override
@@ -79,6 +82,7 @@ public class UserRestService implements UserService {
      * Finds and returns richest user popular tag.
      * Richest user popular tag is tag that uses most
      * frequently amount richest user orders
+     *
      * @return popular tag
      */
     @Override
@@ -158,12 +162,13 @@ public class UserRestService implements UserService {
 
     /**
      * Finds and returns user orders specified page
-     * @param user user
+     *
+     * @param user   user
      * @param offset current page offset
-     * @param limit current page limit
+     * @param limit  current page limit
      * @return list of found orders no passed page
      * @throws PageOutOfBoundsException if offset is greater then total elements
-     * @throws InvalidPageException if offset or limit is negative
+     * @throws InvalidPageException     if offset or limit is negative
      */
     @Override
     public List<Order> findUserOrderPage(User user, int offset, int limit) throws PageOutOfBoundsException, InvalidPageException {
@@ -184,6 +189,7 @@ public class UserRestService implements UserService {
 
     /**
      * Funds user that made passe order
+     *
      * @param order order whose user need to be found
      * @return user that made passed order
      */
@@ -194,8 +200,9 @@ public class UserRestService implements UserService {
 
     /**
      * Finds user order that has passed id
+     *
      * @param foundUser user whose order need to be found
-     * @param orderId order id
+     * @param orderId   order id
      * @return user order that has passed id
      * @throws ResourceNotFoundException if order is not found
      */
@@ -210,7 +217,7 @@ public class UserRestService implements UserService {
     }
 
     private void checkPage(int offset, int limit, int totalElements) throws InvalidPageException, PageOutOfBoundsException {
-        if (offset < 0 || limit < 0) {
+        if (offset < 0 || limit <= 0) {
             throw new InvalidPageException(offset, limit);
         }
         if (offset >= totalElements) {

@@ -1,21 +1,18 @@
 package com.epam.esm.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.hibernate.annotations.Columns;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinColumns;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
 @javax.persistence.Entity
 @Table(name = "gift_certificate")
 public class Certificate extends Entity {
@@ -34,7 +31,7 @@ public class Certificate extends Entity {
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "certificate_tag",
             joinColumns = {@JoinColumn(name = "certificate_id")},
-    inverseJoinColumns = {@JoinColumn(name = "tag_id")})
+            inverseJoinColumns = {@JoinColumn(name = "tag_id")})
     private List<Tag> tags = new ArrayList<>();
 
     public Certificate() {

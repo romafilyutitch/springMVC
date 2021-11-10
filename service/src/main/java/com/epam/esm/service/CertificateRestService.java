@@ -46,11 +46,12 @@ public class CertificateRestService implements CertificateService {
 
     /**
      * Finds and returns entities on specified page
+     *
      * @param offset current page offset
-     * @param limit current page limit
+     * @param limit  current page limit
      * @return list of entities on passed page
      * @throws PageOutOfBoundsException offset is greater then total elements
-     * @throws InvalidPageException is offset or limit is negative
+     * @throws InvalidPageException     is offset or limit is negative
      */
     @Override
     public List<Certificate> findPage(int offset, int limit) throws InvalidPageException, PageOutOfBoundsException {
@@ -60,12 +61,13 @@ public class CertificateRestService implements CertificateService {
 
     /**
      * Finds all certificates that match passed parameters
+     *
      * @param findParameters parameters by which need to find certificates
-     * @param offset current page offset
-     * @param limit current page limit
-     * @throws PageOutOfBoundsException if offset is greater then total elements
-     * @throws InvalidPageException if offset or limit is negative
+     * @param offset         current page offset
+     * @param limit          current page limit
      * @return list of certificate that match passed parameters
+     * @throws PageOutOfBoundsException if offset is greater then total elements
+     * @throws InvalidPageException     if offset or limit is negative
      */
     @Override
     public List<Certificate> findAllWithParameters(LinkedHashMap<String, String> findParameters, int offset, int limit) throws InvalidPageException, PageOutOfBoundsException {
@@ -77,6 +79,7 @@ public class CertificateRestService implements CertificateService {
 
     /**
      * Finds and returns entity that has passed id
+     *
      * @param id of entity that need to be found
      * @return entity that has passed id
      * @throws ResourceNotFoundException if there is no entity with passed id
@@ -95,6 +98,7 @@ public class CertificateRestService implements CertificateService {
 
     /**
      * Saves entity and returns saved entity with assigned id
+     *
      * @param certificate that need to be saved
      * @return saved entity with assigned id
      * @throws InvalidResourceException if saved entity is invalid
@@ -116,9 +120,10 @@ public class CertificateRestService implements CertificateService {
 
     /**
      * Updated entity and returns updated entity
+     *
      * @param certificate that need to be updated
      * @return updated entity
-     * @throws InvalidResourceException if updated entity is invalid
+     * @throws InvalidResourceException  if updated entity is invalid
      * @throws ResourceNotFoundException if updated entity is not saved and cannot be found
      */
     @Override
@@ -143,6 +148,7 @@ public class CertificateRestService implements CertificateService {
 
     /**
      * Deletes saved entity
+     *
      * @param certificate entity that need to be saved
      */
     @Override
@@ -153,8 +159,9 @@ public class CertificateRestService implements CertificateService {
 
     /**
      * Add passed tags to passed certificate
+     *
      * @param certificate certificate to which need to add tags
-     * @param tags tags that need to be added to passed certificate
+     * @param tags        tags that need to be added to passed certificate
      * @return certificate with added tags
      * @throws InvalidResourceException if passed tag is invalid
      */
@@ -173,8 +180,9 @@ public class CertificateRestService implements CertificateService {
 
     /**
      * Deletes passed certificate passed tag
+     *
      * @param certificate whose tag need to be deleted
-     * @param tag that need to be deleted
+     * @param tag         that need to be deleted
      */
     @Override
     public void deleteCertificateTag(Certificate certificate, Tag tag) {
@@ -184,8 +192,9 @@ public class CertificateRestService implements CertificateService {
 
     /**
      * Finds and returns passed certificate tag that has passed id
+     *
      * @param certificate whose tag need to be find
-     * @param tagId id of tag need to be found
+     * @param tagId       id of tag need to be found
      * @return found certificate that has passed id
      * @throws ResourceNotFoundException if there is no tag with passed id that belongs to passed certificate
      */
@@ -203,12 +212,13 @@ public class CertificateRestService implements CertificateService {
 
     /**
      * Finds and returns passed certificate tags page
+     *
      * @param foundCertificate certificate whose tags page need to be found
-     * @param offset current page offset
-     * @param  limit current page limit
+     * @param offset           current page offset
+     * @param limit            current page limit
      * @return list of certificate tags on passed page
      * @throws PageOutOfBoundsException if offset is greater then total elements
-     * @throws InvalidPageException if offset or limit is negative
+     * @throws InvalidPageException     if offset or limit is negative
      */
     @Override
     public List<Tag> findCertificateTagsPage(Certificate foundCertificate, int offset, int limit) throws PageOutOfBoundsException, InvalidPageException {
@@ -218,6 +228,7 @@ public class CertificateRestService implements CertificateService {
 
     /**
      * Computes and returns certificate tags amount
+     *
      * @param certificate whose tags amount need to be counted
      * @return certificate tags amount
      */
@@ -228,6 +239,7 @@ public class CertificateRestService implements CertificateService {
 
     /**
      * Computes and returns certificate orders amount
+     *
      * @param certificate whose orders need to count
      * @return certificate orders amount
      */
@@ -248,12 +260,13 @@ public class CertificateRestService implements CertificateService {
 
     /**
      * Finds passed certificate order.
+     *
      * @param certificate whose order need to be found
-     * @param offset current page offset
-     * @param limit current page limit
+     * @param offset      current page offset
+     * @param limit       current page limit
      * @return order that has passed certificate
      * @throws PageOutOfBoundsException if offset is greater then total elements
-     * @throws InvalidPageException is offset or limit is negative
+     * @throws InvalidPageException     is offset or limit is negative
      */
     @Override
     public List<Order> findCertificateOrders(Certificate certificate, int offset, int limit) throws InvalidPageException, PageOutOfBoundsException {
@@ -265,13 +278,14 @@ public class CertificateRestService implements CertificateService {
 
     /**
      * Finds certificate order
+     *
      * @param certificate certificate
-     * @param orderId certificate order with id
+     * @param orderId     certificate order with id
      * @return certificate order that has passed id
      * @throws ResourceNotFoundException if certificate order is not found
      */
     @Override
-    public Order findCertificateOrder(Certificate certificate ,long orderId) throws ResourceNotFoundException {
+    public Order findCertificateOrder(Certificate certificate, long orderId) throws ResourceNotFoundException {
         Optional<Order> byId = orderDao.findById(orderId);
         if (byId.isPresent()) {
             logger.info(String.format("Order with id was found by id %s", byId.get()));
@@ -284,7 +298,7 @@ public class CertificateRestService implements CertificateService {
 
 
     private void checkPage(int offset, int limit, int totalElements) throws InvalidPageException, PageOutOfBoundsException {
-        if (offset < 0 || limit < 0) {
+        if (offset < 0 || limit <= 0) {
             throw new InvalidPageException(offset, limit);
         }
         if (offset >= totalElements) {

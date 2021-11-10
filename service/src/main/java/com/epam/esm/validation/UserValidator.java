@@ -8,6 +8,7 @@ import com.epam.esm.model.User;
 public interface UserValidator {
     /**
      * Validate user to save or update
+     *
      * @param user that need to be saved
      * @throws InvalidUserException if user is invalid
      */

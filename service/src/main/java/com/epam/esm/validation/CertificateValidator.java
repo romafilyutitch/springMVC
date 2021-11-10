@@ -8,6 +8,7 @@ import com.epam.esm.model.Certificate;
 public interface CertificateValidator {
     /**
      * Validates certificate to save or updated
+     *
      * @param certificate that need to be validated
      * @throws InvalidCertificateException if certificate is invalid
      */

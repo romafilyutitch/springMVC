@@ -9,6 +9,7 @@ import com.epam.esm.model.Tag;
 public interface TagValidator {
     /**
      * Validated tag to save or update
+     *
      * @param tag tag that need to be validated
      * @throws InvalidTagException if tag is invalid
      */

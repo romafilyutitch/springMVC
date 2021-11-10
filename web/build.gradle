@@ -14,7 +14,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web:2.5.5'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas:2.5.5'
     testImplementation 'org.springframework.boot:spring-boot-starter-test:2.5.5'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa:2.5.5'
     implementation project(':service')
     implementation project(':persistance')
 }

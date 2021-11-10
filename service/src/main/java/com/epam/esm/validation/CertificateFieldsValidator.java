@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 public class CertificateFieldsValidator implements CertificateValidator {
     /**
      * Validates certificate's fields to save or update
+     *
      * @param resource that need to be validated
      * @throws InvalidCertificateException if certificate is invalid
      */
