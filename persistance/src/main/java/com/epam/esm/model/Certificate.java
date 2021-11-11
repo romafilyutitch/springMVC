@@ -28,7 +28,7 @@ public class Certificate extends Entity {
     private LocalDateTime createDate;
     @Column(name = "last_update_date")
     private LocalDateTime lastUpdateDate;
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(name = "certificate_tag",
             joinColumns = {@JoinColumn(name = "certificate_id")},
             inverseJoinColumns = {@JoinColumn(name = "tag_id")})

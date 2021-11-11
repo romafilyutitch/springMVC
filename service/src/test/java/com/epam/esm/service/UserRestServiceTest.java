@@ -160,7 +160,7 @@ class UserRestServiceTest {
 
     @Test
     public void orderCertificate_musReturnOrder() {
-        when(orderDao.save(order)).thenReturn(order);
+        when(orderDao.save(any(Order.class))).thenReturn(order);
         doNothing().when(orderDao).setUserToOrder(user.getId(), order.getId());
 
         Order madeOrder = service.orderCertificate(user, certificate);

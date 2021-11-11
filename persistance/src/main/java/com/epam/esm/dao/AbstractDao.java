@@ -37,7 +37,7 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
     @Override
     public T save(T entity) {
         Session session = sessionFactory.getCurrentSession();
-        session.save(entity);
+        session.persist(entity);
         return entity;
     }
 
