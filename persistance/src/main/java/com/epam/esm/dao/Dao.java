@@ -13,13 +13,13 @@ import java.util.Optional;
  */
 public interface Dao<T extends Entity> {
     /**
-     * Finds and returns all entities from particular database
-     * If there is not entities in database then empty list
-     * will be returned
+     * Finds and returns entities on specified page
      *
-     * @return list of entities from database
+     * @param offset current page offset
+     * @param limit  current page limit
+     * @return entities on passed page
      */
-    List<T> findAll();
+    List<T> findPage(int offset, int limit);
 
     /**
      * Finds and returns entity that have passed id
@@ -28,7 +28,7 @@ public interface Dao<T extends Entity> {
      * @return Optional that contains entity if entity with passed id exists
      * or empty optional otherwise
      */
-    Optional<T> findById(Long id);
+    Optional<T> findById(long id);
 
     /**
      * Perform entity save operation. And assigns calculates by database id to saved entity
@@ -49,7 +49,14 @@ public interface Dao<T extends Entity> {
     /**
      * Performs entity delete operation. Deletes entity from database that have passed id
      *
-     * @param id id of entity that need to be deleted
+     * @param entity entity that need to be deleted
      */
-    void delete(Long id);
+    void delete(T entity);
+
+    /**
+     * Counts all entities rand returns saved entities amount
+     *
+     * @return saved entities amount
+     */
+    int getTotalElements();
 }

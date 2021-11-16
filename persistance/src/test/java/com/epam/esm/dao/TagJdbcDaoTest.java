@@ -4,21 +4,20 @@ import com.epam.esm.config.PersistanceConfig;
 import com.epam.esm.model.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@ContextConfiguration(classes = PersistanceConfig.class)
+@SpringBootTest(classes = PersistanceConfig.class)
 @ActiveProfiles("dev")
-@Sql(scripts = "classpath:data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-@Sql(scripts = "classpath:delete.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-@SpringJUnitConfig(classes = PersistanceConfig.class)
+@Sql(scripts = {"classpath:delete.sql", "classpath:data.sql"})
+@Transactional
 class TagJdbcDaoTest {
 
     @Autowired
@@ -34,13 +33,12 @@ class TagJdbcDaoTest {
     }
 
     @Test
-    public void findAll_shouldReturnAllTags() {
-        List<Tag> allTags = dao.findAll();
-
-        assertEquals(3, allTags.size());
-        Tag first = allTags.get(0);
-        Tag second = allTags.get(1);
-        Tag third = allTags.get(2);
+    public void findPage_shouldReturnTagsOnPage() {
+        List<Tag> tags = dao.findPage(0, 10);
+        assertEquals(3, tags.size());
+        Tag first = tags.get(0);
+        Tag second = tags.get(1);
+        Tag third = tags.get(2);
         assertEquals(1, first.getId());
         assertEquals("spotify", first.getName());
         assertEquals(2, second.getId());
@@ -48,6 +46,7 @@ class TagJdbcDaoTest {
         assertEquals(3, third.getId());
         assertEquals("art", third.getName());
     }
+
 
     @Test
     public void findById_shouldReturnTagIfTagSaved() {
@@ -95,9 +94,56 @@ class TagJdbcDaoTest {
 
     @Test
     public void delete_shouldDeleteSavedTag() {
-        dao.delete(1L);
+        Optional<Tag> optionalSavedTag = dao.findById(1);
+        assertTrue(optionalSavedTag.isPresent());
+        Tag savedTag = optionalSavedTag.get();
+        dao.delete(savedTag);
         Optional<Tag> optionalTag = dao.findById(1L);
 
         assertFalse(optionalTag.isPresent());
+    }
+
+    @Test
+    public void findCertificateTagsPage_shouldReturnTagsOnFirstPage() {
+        List<Tag> certificateTagsPage = dao.findCertificateTagsPage(1, 0, 10);
+        assertEquals(3, certificateTagsPage.size());
+        Tag first = certificateTagsPage.get(0);
+        Tag second = certificateTagsPage.get(1);
+        Tag third = certificateTagsPage.get(2);
+        assertEquals(1, first.getId());
+        assertEquals("spotify", first.getName());
+        assertEquals(2, second.getId());
+        assertEquals("music", second.getName());
+        assertEquals(3, third.getId());
+        assertEquals("art", third.getName());
+    }
+
+    @Test
+    public void findAllCertificateTags_shouldReturnAllCertificateTags() {
+        List<Tag> allCertificateTags = dao.findAllCertificateTags(1);
+        assertEquals(3, allCertificateTags.size());
+        Tag first = allCertificateTags.get(0);
+        Tag second = allCertificateTags.get(1);
+        Tag third = allCertificateTags.get(2);
+        assertEquals(1, first.getId());
+        assertEquals("spotify", first.getName());
+        assertEquals(2, second.getId());
+        assertEquals("music", second.getName());
+        assertEquals(3, third.getId());
+        assertEquals("art", third.getName());
+    }
+
+    @Test
+    public void getCertificateTagsTotalElements_mustReturnThree() {
+        int certificateTagsTotalElements = dao.getCertificateTagsTotalElements(1);
+        assertEquals(3, certificateTagsTotalElements);
+    }
+
+    @Test
+    public void findCertificateTag_shouldReturnCertificateTag() {
+        Optional<Tag> optionalTag = dao.findCertificateTag(1, 1);
+        assertTrue(optionalTag.isPresent());
+        assertEquals(1, optionalTag.get().getId());
+        assertEquals("spotify", optionalTag.get().getName());
     }
 }

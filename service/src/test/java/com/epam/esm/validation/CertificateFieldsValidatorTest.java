@@ -17,8 +17,8 @@ class CertificateFieldsValidatorTest {
     @BeforeEach
     void setUp() {
         validator = new CertificateFieldsValidator();
-        validCertificate = new Certificate(null, "valid", "valid", 22.1, 23, LocalDateTime.now(), LocalDateTime.now());
-        invalidCertificate = new Certificate(null, "", "", -1.2, -3, LocalDateTime.now(), LocalDateTime.now());
+        validCertificate = new Certificate( "valid", "valid", 22.1, 23, LocalDateTime.now(), LocalDateTime.now());
+        invalidCertificate = new Certificate( "", "", -1.2, -3, LocalDateTime.now(), LocalDateTime.now());
     }
 
     @Test

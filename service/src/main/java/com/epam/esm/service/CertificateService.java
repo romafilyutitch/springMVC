@@ -1,9 +1,9 @@
 package com.epam.esm.service;
 
 import com.epam.esm.model.Certificate;
+import com.epam.esm.model.Order;
 import com.epam.esm.model.Tag;
-import com.epam.esm.validation.InvalidCertificateException;
-import com.epam.esm.validation.InvalidTagException;
+import com.epam.esm.validation.InvalidResourceException;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -12,93 +12,95 @@ import java.util.List;
  * Service layer certificate interface that defines
  * certificate operations
  */
-public interface CertificateService {
-    /**
-     * Finds all certificates.
-     * May return empty list if there is no certificates
-     *
-     * @return list of certificates
-     */
-    List<Certificate> findAll();
+public interface CertificateService extends Service<Certificate> {
 
     /**
-     * Finds certificates that matches passed find parameters.
-     * May return empty list if there is no certificates that matches
-     * passed parameters.
+     * Finds all certificates that match passed parameters
      *
-     * @param findParameters parameters that need to find certificates that
-     *                       certificates must matches
-     * @return list of certificates that matches passed parameters
+     * @param findParameters parameters by which need to find certificates
+     * @param offset         current page offset
+     * @param limit          current page limit
+     * @return list of certificate that match passed parameters
+     * @throws PageOutOfBoundsException if offset is greater then total elements
+     * @throws InvalidPageException     if offset or limit is negative
      */
-    List<Certificate> findAllWithParameters(LinkedHashMap<String, String> findParameters);
+    List<Certificate> findAllWithParameters(LinkedHashMap<String, String> findParameters, int offset, int limit) throws InvalidPageException, PageOutOfBoundsException;
 
     /**
-     * Finds Certificate that has passed id.
+     * Add passed tags to passed certificate
      *
-     * @param id of certificate that need to be found
-     * @return certificate that has passed id
-     * @throws CertificateNotFoundException if there is not certificate with passed id
-     */
-    Certificate findById(Long id) throws CertificateNotFoundException;
-
-    /**
-     * Performs save certificate operation. Saved only certificates with unique names
-     *
-     * @param certificate that need to be saved
-     * @return saved certificate
-     * @throws InvalidCertificateException if passed certificate is invalid
-     */
-    Certificate save(Certificate certificate) throws InvalidCertificateException;
-
-    /**
-     * updates certificate that have passed id.
-     * Replaces certificate with new certificate data
-     *
-     * @param id          certificate that need to be updated
-     * @param certificate data that need to be write
-     * @return updated certificate
-     * @throws CertificateNotFoundException if there is not certificated with passed id
-     * @throws InvalidCertificateException  if passed certificate is invalid
-     */
-    Certificate update(Long id, Certificate certificate) throws CertificateNotFoundException, InvalidCertificateException;
-
-    /**
-     * Performs certificate delete operation.
-     *
-     * @param id of certificate that need to be deleted
-     * @throws CertificateNotFoundException if there is no certificate with passed id
-     */
-    void delete(Long id) throws CertificateNotFoundException;
-
-    /**
-     * Performs add tags to certificate operation
-     *
-     * @param certificateId id of certificate that need to be found
-     * @param tags          list of tags that need to be added to certificate
+     * @param certificate certificate to which need to add tags
+     * @param tags        tags that need to be added to passed certificate
      * @return certificate with added tags
-     * @throws CertificateNotFoundException if there is not certificate with passed id
-     * @throws InvalidTagException          if passed tag is invalid
+     * @throws InvalidResourceException if passed tag is invalid
      */
-    Certificate addTags(Long certificateId, List<Tag> tags) throws CertificateNotFoundException, InvalidTagException;
+    Certificate addTags(Certificate certificate, List<Tag> tags) throws InvalidResourceException;
 
     /**
-     * Performs delete certificate tag operation
+     * Deletes passed certificate passed tag
      *
-     * @param certificateId id of certificate that need to be found
-     * @param tagId         id of tag that need to be deleted
-     * @throws CertificateNotFoundException if there is no certificate with passed id
-     * @throws TagNotFoundException         if there is no tag with passed id
+     * @param certificate whose tag need to be deleted
+     * @param tag         that need to be deleted
      */
-    void deleteCertificateTag(Long certificateId, Long tagId) throws CertificateNotFoundException, TagNotFoundException;
+    void deleteCertificateTag(Certificate certificate, Tag tag);
 
     /**
-     * Finds certificate with passed id and finds in certificate tag with passed id
+     * Finds and returns passed certificate tag that has passed id
      *
-     * @param certificateId id of certificate that need to be found
-     * @param tagId         id of certificate tag that need to be found
-     * @return certificate tag that has passed id
-     * @throws CertificateNotFoundException if there is no certificate with passed id
-     * @throws TagNotFoundException         if there is no tag with passed id
+     * @param certificate whose tag need to be find
+     * @param tagId       id of tag need to be found
+     * @return found certificate that has passed id
+     * @throws ResourceNotFoundException if there is no tag with passed id that belongs to passed certificate
      */
-    Tag findCertificateTag(Long certificateId, Long tagId) throws CertificateNotFoundException, TagNotFoundException;
+    Tag findCertificateTag(Certificate certificate, long tagId) throws ResourceNotFoundException;
+
+    /**
+     * Finds and returns passed certificate tags page
+     *
+     * @param foundCertificate certificate whose tags page need to be found
+     * @param offset           current page offset
+     * @param limit            current page limit
+     * @return list of certificate tags on passed page
+     * @throws PageOutOfBoundsException if offset is greater then total elements
+     * @throws InvalidPageException     if offset or limit is negative
+     */
+    List<Tag> findCertificateTagsPage(Certificate foundCertificate, int offset, int limit) throws InvalidPageException, PageOutOfBoundsException;
+
+    /**
+     * Computes and returns certificate tags amount
+     *
+     * @param certificate whose tags amount need to be counted
+     * @return certificate tags amount
+     */
+    int getCertificateTagsTotalElements(Certificate certificate);
+
+    /**
+     * Computes and returns certificate orders total elements
+     *
+     * @param certificate whose orders need to count
+     * @return certificate orders amount
+     */
+    int getCertificateOrdersTotalElements(Certificate certificate);
+
+    /**
+     * Finds passed certificate order.
+     *
+     * @param certificate whose order need to be found
+     * @param offset      current page offset
+     * @param limit       current page limit
+     * @return order that has passed certificate
+     * @throws PageOutOfBoundsException if offset is greater then total elements
+     * @throws InvalidPageException     is offset or limit is negative
+     */
+    List<Order> findCertificateOrders(Certificate certificate, int offset, int limit) throws PageOutOfBoundsException, InvalidPageException;
+
+    /**
+     * Finds certificate order
+     *
+     * @param certificate certificate
+     * @param orderId     certificate order with id
+     * @return certificate order that has passed id
+     * @throws ResourceNotFoundException if certificate order is not found
+     */
+    Order findCertificateOrder(Certificate certificate, long orderId) throws ResourceNotFoundException;
 }

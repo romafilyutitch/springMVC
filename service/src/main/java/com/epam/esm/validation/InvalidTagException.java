@@ -1,9 +1,8 @@
 package com.epam.esm.validation;
 
-public class InvalidTagException extends Exception {
-    private final String code = "04";
-
-    public String getCode() {
-        return code;
-    }
+/**
+ * Validation exception. Occurs if tag need to be
+ * saved or updated bu tag is invalid
+ */
+public class InvalidTagException extends InvalidResourceException {
 }

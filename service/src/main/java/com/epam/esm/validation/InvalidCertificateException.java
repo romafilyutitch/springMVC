@@ -1,9 +1,9 @@
 package com.epam.esm.validation;
 
-public class InvalidCertificateException extends Exception {
-    private final String code = "03";
+/**
+ * Validation exception. Occurs if certificate need to be
+ * saved or updated but passed certificate is invalid
+ */
+public class InvalidCertificateException extends InvalidResourceException {
 
-    public String getCode() {
-        return code;
-    }
 }

@@ -5,22 +5,20 @@ import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@ContextConfiguration(classes = PersistanceConfig.class)
+@SpringBootTest(classes = PersistanceConfig.class)
 @ActiveProfiles("dev")
-@SpringJUnitConfig(classes = PersistanceConfig.class)
-@Sql(scripts = "classpath:data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-@Sql(scripts = "classpath:delete.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+@Sql(scripts = {"classpath:delete.sql", "classpath:data.sql"})
+@Transactional
 class CertificateJdbcDaoTest {
 
     @Autowired
@@ -28,10 +26,10 @@ class CertificateJdbcDaoTest {
 
     @Test
     public void findAll_shouldReturnSavedAllSavedCertificates() {
-        List<Certificate> allCertificates = dao.findAll();
+        List<Certificate> certificates = dao.findPage(0, 10);
 
-        assertEquals(1, allCertificates.size());
-        Certificate certificate = allCertificates.get(0);
+        assertEquals(1, certificates.size());
+        Certificate certificate = certificates.get(0);
         assertEquals(1L, certificate.getId());
         assertEquals("free music listen certificate", certificate.getName());
         assertEquals("spotify free music listening", certificate.getDescription());
@@ -64,16 +62,6 @@ class CertificateJdbcDaoTest {
         assertFalse(optionalCertificate.isPresent());
     }
 
-    @Test
-    public void findWithParameters_shouldReturnCertificateWithCertificateParameters() {
-        LinkedHashMap<String, String> parameters = new LinkedHashMap<>();
-        parameters.put("partOfName", "music");
-        List<Certificate> certificateWithParameters = dao.findWithParameters(parameters);
-
-        assertEquals(1, certificateWithParameters.size());
-        Certificate foundCertificate = certificateWithParameters.get(0);
-        assertTrue(foundCertificate.getName().contains("music"));
-    }
 
     @Test
     public void save_shouldReturnSavedCertificateWithAssignedId() {
@@ -99,9 +87,32 @@ class CertificateJdbcDaoTest {
 
     @Test
     public void delete_shouldDeleteSavedCertificate() {
-        dao.delete(1L);
-        Optional<Certificate> optionalCertificate = dao.findById(1L);
+        Optional<Certificate> optionalSavedCertificate = dao.findById(1);
+        assertTrue(optionalSavedCertificate.isPresent());
+        Certificate certificate = optionalSavedCertificate.get();
+        dao.delete(certificate);
+        Optional<Certificate> optionalCertificate = dao.findById(1);
 
         assertFalse(optionalCertificate.isPresent());
+    }
+
+    @Test
+    public void findByOderId_shouldFindCertificate() {
+        Optional<Certificate> optionalCertificate = dao.findByOrderId(1);
+        assertTrue(optionalCertificate.isPresent());
+        Certificate certificate = optionalCertificate.get();
+        assertEquals(1L, certificate.getId());
+        assertEquals("free music listen certificate", certificate.getName());
+        assertEquals("spotify free music listening", certificate.getDescription());
+        assertEquals(200.50, certificate.getPrice());
+        assertEquals(20, certificate.getDuration());
+        List<Tag> tags = certificate.getTags();
+        assertEquals(3, tags.size());
+        assertEquals(1L, tags.get(0).getId());
+        assertEquals("spotify", tags.get(0).getName());
+        assertEquals(2L, tags.get(1).getId());
+        assertEquals("music", tags.get(1).getName());
+        assertEquals(3L, tags.get(2).getId());
+        assertEquals("art", tags.get(2).getName());
     }
 }

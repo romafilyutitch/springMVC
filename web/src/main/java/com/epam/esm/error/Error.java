@@ -1,10 +1,12 @@
-package com.epam.esm.conttoller.exception;
+package com.epam.esm.error;
+
+import org.springframework.hateoas.RepresentationModel;
 
 /**
  * Custom error class to display
  * when exception in controller occurs
  */
-public class Error {
+public class Error extends RepresentationModel<Error> {
     private final String errorCode;
     private final String message;
 
@@ -19,5 +21,13 @@ public class Error {
 
     public String getMessage() {
         return message;
+    }
+
+    @Override
+    public String toString() {
+        return "Error{" +
+                "errorCode=" + errorCode +
+                ", message='" + message + '\'' +
+                '}';
     }
 }

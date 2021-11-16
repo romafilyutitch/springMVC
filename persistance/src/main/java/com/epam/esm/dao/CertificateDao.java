@@ -4,6 +4,7 @@ import com.epam.esm.model.Certificate;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Dao layer interface that defines additional operations
@@ -11,5 +12,26 @@ import java.util.List;
  */
 public interface CertificateDao extends Dao<Certificate> {
 
-    List<Certificate> findWithParameters(LinkedHashMap<String, String> findParameters);
+    /**
+     * Finds certificates that matches passed parameters
+     * such as tag names, part of name , part of description.
+     * Also make sorting based on passed sorting parameters
+     *
+     * @param findParameters parameters by which need to find certificates
+     * @param offset         current page offset
+     * @param limit          current page limit
+     * @return certificates that match passed parameters
+     */
+    List<Certificate> findWithParameters(LinkedHashMap<String, String> findParameters, int offset, int limit);
+
+    /**
+     * Finds certificate by passed order id.
+     *
+     * @param orderId order id by which need to find
+     *                certificate
+     * @return found certificate if there is order with passed certificate
+     * or empty optional otherwise
+     */
+    Optional<Certificate> findByOrderId(long orderId);
+
 }
