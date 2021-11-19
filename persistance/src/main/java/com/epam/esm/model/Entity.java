@@ -5,11 +5,9 @@ import org.springframework.hateoas.RepresentationModel;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import javax.persistence.MappedSuperclass;
-import javax.persistence.Table;
 import java.util.Objects;
+
 @MappedSuperclass
 public abstract class Entity extends RepresentationModel<Entity> {
     @Id

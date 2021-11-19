@@ -4,7 +4,6 @@ import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Tag;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
-import org.springframework.lang.UsesSunMisc;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -55,7 +54,7 @@ public class FindCertificatesQueryBuilder {
      * keys that define parameter then appropriate sql query will be built.
      * If parameters map contains keys for order then sql will be build with order statement
      *
-     * @param findParameters parameters map that define find certificate parameters
+     * @param findParameters  parameters map that define find certificate parameters
      * @param criteriaBuilder builder to build HCQL query
      * @return built sql find all certificates statement that defined by passed parameters map
      */
@@ -76,7 +75,13 @@ public class FindCertificatesQueryBuilder {
             buildSortByNameOrder(criteriaBuilder, root, orders, key, value);
             buildSortByDateOrder(criteriaBuilder, root, orders, key, value);
         }
-        criteriaQuery.select(root).where(predicates.toArray(new Predicate[]{})).groupBy(root.get(ID_ATTRIBUTE)).orderBy(orders);
+        String tagNames = findParameters.get(TAG_NAME_ATTRIBUTE_KEY);
+        criteriaQuery.select(root).where(predicates.toArray(new Predicate[]{})).groupBy(root.get(ID_ATTRIBUTE));
+        if (tagNames != null) {
+            String[] names = tagNames.split(COMMA);
+            criteriaQuery.having(criteriaBuilder.equal(criteriaBuilder.count(root.get("id")), names.length));
+        }
+        criteriaQuery.orderBy(orders);
         String offsetValue = findParameters.remove("offset");
         int offset = Integer.parseInt(offsetValue);
         String limitValue = findParameters.remove("limit");

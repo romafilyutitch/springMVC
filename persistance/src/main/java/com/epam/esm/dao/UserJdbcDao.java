@@ -4,24 +4,14 @@ import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Order;
 import com.epam.esm.model.Tag;
 import com.epam.esm.model.User;
-import org.hibernate.Criteria;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import javax.el.Expression;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Join;
-import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Root;
-import java.io.Serializable;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,6 +24,7 @@ public class UserJdbcDao extends AbstractDao<User> implements UserDao {
 
     /**
      * Finds and returns entities on specified page
+     *
      * @param offset current page offset
      * @param limit  current page limit
      * @return entities on passed page
@@ -64,6 +55,7 @@ public class UserJdbcDao extends AbstractDao<User> implements UserDao {
     /**
      * Finds and returns riches user.
      * Riches user is the user that has maximum of orders cost.
+     *
      * @return user that has maximum orders cost
      */
     @Override
@@ -82,6 +74,7 @@ public class UserJdbcDao extends AbstractDao<User> implements UserDao {
      * Finds and returns riches user popular tag.
      * Popular tag is tag that uses most frequently amount richest
      * user orders
+     *
      * @return popular tag
      */
     @Override
@@ -101,6 +94,7 @@ public class UserJdbcDao extends AbstractDao<User> implements UserDao {
 
     /**
      * Finds user that has order with passed id
+     *
      * @param id order id
      * @return user that has order with passed id
      */

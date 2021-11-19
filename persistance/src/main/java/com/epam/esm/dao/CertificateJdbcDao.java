@@ -8,9 +8,6 @@ import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.transaction.Transactional;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
@@ -35,9 +32,10 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
      * Finds certificates that matches passed parameters
      * such as tag names, part of name , part of description.
      * Also make sorting based on passed sorting parameters
+     *
      * @param findParameters parameters by which need to find certificates
-     * @param offset current page offset
-     * @param limit current page limit
+     * @param offset         current page offset
+     * @param limit          current page limit
      * @return certificates that match passed parameters
      */
     @Override
@@ -51,6 +49,7 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
 
     /**
      * Finds certificate by passed order id.
+     *
      * @param orderId order id by which need to find
      *                certificate
      * @return found certificate if there is order with passed certificate
@@ -65,6 +64,7 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
 
     /**
      * Finds and returns entities on specified page
+     *
      * @param offset current page offset
      * @param limit  current page limit
      * @return entities on passed page
@@ -77,6 +77,7 @@ public class CertificateJdbcDao extends AbstractDao<Certificate> implements Cert
         query.setMaxResults(limit);
         return query.list();
     }
+
     /**
      * Finds and returns entity that have passed id
      *

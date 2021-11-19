@@ -99,7 +99,7 @@ class CertificateJdbcDaoTest {
     @Test
     public void findByOderId_shouldFindCertificate() {
         Optional<Certificate> optionalCertificate = dao.findByOrderId(1);
-        assertFalse(optionalCertificate.isEmpty());
+        assertTrue(optionalCertificate.isPresent());
         Certificate certificate = optionalCertificate.get();
         assertEquals(1L, certificate.getId());
         assertEquals("free music listen certificate", certificate.getName());

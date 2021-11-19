@@ -14,6 +14,7 @@ import java.util.Optional;
 public interface Dao<T extends Entity> {
     /**
      * Finds and returns entities on specified page
+     *
      * @param offset current page offset
      * @param limit  current page limit
      * @return entities on passed page
@@ -54,6 +55,7 @@ public interface Dao<T extends Entity> {
 
     /**
      * Counts all entities rand returns saved entities amount
+     *
      * @return saved entities amount
      */
     int getTotalElements();

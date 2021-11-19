@@ -22,15 +22,17 @@ public interface TagDao extends Dao<Tag> {
 
     /**
      * Finds and returns specified certificate tags page
+     *
      * @param certificateId id of certificate whose page need to be found
-     * @param offset current page offset
-     * @param limit current page limit
+     * @param offset        current page offset
+     * @param limit         current page limit
      * @return list of tags on specified page
      */
     List<Tag> findCertificateTagsPage(long certificateId, int offset, int limit);
 
     /**
      * Finds and returns all certificate tags
+     *
      * @param certificateId id of certificate whose tags need to be found
      * @return list of certificate tags
      */
@@ -38,6 +40,7 @@ public interface TagDao extends Dao<Tag> {
 
     /**
      * Counts and returns certificate tags elements amount
+     *
      * @param certificateId id of certificate whose tags amount need to be counted
      * @return amount of specified certificate tags
      */
@@ -45,8 +48,9 @@ public interface TagDao extends Dao<Tag> {
 
     /**
      * Finds specified certificate specified tag
+     *
      * @param certificateId id of certificate whose tag need to be found
-     * @param tagId id of certificate tag that need to be found
+     * @param tagId         id of certificate tag that need to be found
      * @return specified certificate specified tag if there is certificate tag
      * or empty optional otherwise
      */

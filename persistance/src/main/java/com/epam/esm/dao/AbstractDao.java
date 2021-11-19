@@ -3,10 +3,10 @@ package com.epam.esm.dao;
 import com.epam.esm.model.Entity;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import org.springframework.transaction.annotation.Transactional;
 
 
@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @param <T> entity which dao operates
  */
 @Component
+@Transactional
 public abstract class AbstractDao<T extends Entity> implements Dao<T> {
     @Autowired
     protected SessionFactory sessionFactory;
@@ -36,7 +37,7 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
     @Override
     public T save(T entity) {
         Session session = sessionFactory.getCurrentSession();
-        session.save(entity);
+        session.persist(entity);
         return entity;
     }
 
@@ -49,7 +50,7 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
     @Override
     public T update(T entity) {
         Session session = sessionFactory.getCurrentSession();
-        session.update(entity);
+        session.saveOrUpdate(entity);
         return entity;
     }
 
@@ -66,6 +67,7 @@ public abstract class AbstractDao<T extends Entity> implements Dao<T> {
 
     /**
      * Counts all entities rand returns saved entities amount
+     *
      * @return saved entities amount
      */
     @Override

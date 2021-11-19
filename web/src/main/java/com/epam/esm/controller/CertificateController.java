@@ -6,20 +6,27 @@ import com.epam.esm.model.Tag;
 import com.epam.esm.model.User;
 import com.epam.esm.page.CertificateLinksBuilder;
 import com.epam.esm.page.UserLinksBuilder;
-import com.epam.esm.service.*;
+import com.epam.esm.service.CertificateService;
+import com.epam.esm.service.InvalidPageException;
+import com.epam.esm.service.PageOutOfBoundsException;
+import com.epam.esm.service.ResourceNotFoundException;
+import com.epam.esm.service.UserService;
 import com.epam.esm.validation.InvalidResourceException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.CollectionModel;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.LinkedHashMap;
 import java.util.List;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
  * Certificate REST controller.
@@ -44,18 +51,19 @@ public class CertificateController {
 
     /**
      * Finds certificates that match passed parameters
+     *
      * @param parameters find parameters (tagsNames, partOfName, partOfDescription, sortByName, sortByDate, offset, limit)
-     * @param offset pagination offset
-     * @param limit pagination limit
+     * @param offset     pagination offset
+     * @param limit      pagination limit
      * @return found certificates
      * @throws ResourceNotFoundException if certificate not found
-     * @throws PageOutOfBoundsException if offset is greater that total elements
-     * @throws InvalidPageException if offset or limit is invalid
+     * @throws PageOutOfBoundsException  if offset is greater that total elements
+     * @throws InvalidPageException      if offset or limit is invalid
      */
     @GetMapping
     public PagedModel<Certificate> showCertificates(@RequestParam(required = false) LinkedHashMap<String, String> parameters,
-                                                         @RequestParam(defaultValue = "0") int offset,
-                                                         @RequestParam(defaultValue = "10") int limit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
+                                                    @RequestParam(defaultValue = "0") int offset,
+                                                    @RequestParam(defaultValue = "10") int limit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         List<Certificate> foundCertificates = certificateService.findAllWithParameters(parameters, offset, limit);
         return certificateLinksBuilder.buildPageLinks(foundCertificates, parameters, offset, limit);
     }
@@ -198,12 +206,13 @@ public class CertificateController {
 
     /**
      * Finds certificate order with passed id
-     * @param id certificate id
+     *
+     * @param id      certificate id
      * @param orderId order id
      * @return certificate order that ahas passed id
      * @throws ResourceNotFoundException if certificate or order is not found
-     * @throws PageOutOfBoundsException if page offset is out of bounds
-     * @throws InvalidPageException  in page offset or limit is negative
+     * @throws PageOutOfBoundsException  if page offset is out of bounds
+     * @throws InvalidPageException      in page offset or limit is negative
      */
     @GetMapping("/{id}/orders/{orderId}")
     public Order showCertificateOrder(@PathVariable long id, @PathVariable long orderId) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {

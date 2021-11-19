@@ -1,23 +1,11 @@
 package com.epam.esm.dao;
 
-import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Order;
 import com.epam.esm.model.User;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.hibernate.query.Query;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
-import java.io.Serializable;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,6 +18,7 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
 
     /**
      * Finds and returns entities on specified page
+     *
      * @param offset current page offset
      * @param limit  current page limit
      * @return entities on passed page
@@ -59,6 +48,7 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
 
     /**
      * Finds and returns user orders by user id
+     *
      * @param userId id of user which orders need to be found
      * @return list of user orders
      */
@@ -72,9 +62,10 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
 
     /**
      * Finds and returns passed user passed orders page
+     *
      * @param userId user id which orders need to be found
      * @param offset current page offset
-     * @param limit current page limit
+     * @param limit  current page limit
      * @return user orders passed page
      */
     @Override
@@ -89,6 +80,7 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
 
     /**
      * Counts user orders amount.
+     *
      * @param userId id of user which orders amount need to be count
      * @return amount of user orders
      */
@@ -103,7 +95,8 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
 
     /**
      * Sets user to saved order.
-     * @param userId id of user that need to be saved to order
+     *
+     * @param userId  id of user that need to be saved to order
      * @param orderId order id that need to be set to user
      */
     @Override
@@ -117,6 +110,7 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
 
     /**
      * Finds certificate order by passed certificate id
+     *
      * @param certificateId whose order need to be found
      * @return order that contains certificate with passed id
      * or empty order otherwise
@@ -133,6 +127,7 @@ public class OrderJdbcDao extends AbstractDao<Order> implements OrderDao {
 
     /**
      * compute certificate orders amount
+     *
      * @param certificateId certificate id
      * @return certificate orders amount
      */
