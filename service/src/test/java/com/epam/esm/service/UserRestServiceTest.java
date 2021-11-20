@@ -131,7 +131,7 @@ class UserRestServiceTest {
 
     @Test
     public void update_shouldUpdateUser() throws InvalidResourceException {
-        user.setName("updated");
+        user.setUsername("updated");
         when(userDao.update(user)).thenReturn(user);
 
         User updatedUser = service.update(user);

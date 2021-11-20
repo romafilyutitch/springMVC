@@ -18,8 +18,8 @@ public class UserFieldsValidator implements UserValidator {
      */
     @Override
     public void validate(User user) throws InvalidUserException {
-        String name = user.getName();
-        String surname = user.getSurname();
+        String name = user.getUsername();
+        String surname = user.getPassword();
         if (name == null || name.isEmpty()) {
             throw new InvalidUserException();
         }

@@ -3,45 +3,50 @@ package com.epam.esm.model;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @javax.persistence.Entity
 @Table(name = "user")
 public class User extends Entity {
-    @Column(name = "name")
-    private String name;
-    @Column(name = "surname")
-    private String surname;
+    @Column(name = "username")
+    private String username;
+    @Column(name = "password")
+    private String password;
     @OneToMany(targetEntity = Order.class, cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private List<Order> orders;
+    @OneToMany
+    @JoinTable(name = "user_role")
+    private Set<Role> roles;
 
     public User() {
     }
 
-    public User(long id, String name, String surname) {
+    public User(long id, String username, String password) {
         super(id);
-        this.name = name;
-        this.surname = surname;
+        this.username = username;
+        this.password = password;
     }
 
-    public String getName() {
-        return name;
+    public String getUsername() {
+        return username;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
-    public String getSurname() {
-        return surname;
+    public String getPassword() {
+        return password;
     }
 
-    public void setSurname(String surname) {
-        this.surname = surname;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public List<Order> getOrders() {
@@ -52,26 +57,35 @@ public class User extends Entity {
         this.orders = orders;
     }
 
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         User user = (User) o;
-        return Objects.equals(name, user.name) && Objects.equals(surname, user.surname) && Objects.equals(orders, user.orders);
+        return Objects.equals(username, user.username) && Objects.equals(password, user.password) && Objects.equals(orders, user.orders) && Objects.equals(roles, user.roles);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), name, surname, orders);
+        return Objects.hash(super.hashCode(), username, password, orders, roles);
     }
 
     @Override
     public String toString() {
         return "User{" +
-                "name='" + name + '\'' +
-                ", surname='" + surname + '\'' +
+                "username='" + username + '\'' +
+                ", password='" + password + '\'' +
                 ", orders=" + orders +
+                ", roles=" + roles +
                 '}';
     }
 }

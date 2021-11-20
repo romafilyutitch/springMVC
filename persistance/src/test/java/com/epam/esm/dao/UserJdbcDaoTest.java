@@ -30,8 +30,8 @@ class UserJdbcDaoTest {
         assertEquals(1, usersPage.size());
         User user = usersPage.get(0);
         assertEquals(1, user.getId());
-        assertEquals("user", user.getName());
-        assertEquals("test", user.getSurname());
+        assertEquals("user", user.getUsername());
+        assertEquals("test", user.getPassword());
     }
 
     @Test
