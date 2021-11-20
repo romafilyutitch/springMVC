@@ -135,12 +135,13 @@ public class UserController {
 
     /**
      * Makes user signup
+     *
      * @param user than need to be signed up
      * @return signed up user
-     * @throws InvalidResourceException if user is invalid
-     * @throws InvalidPageException if offset is negative or limit is equal or less then zero
+     * @throws InvalidResourceException  if user is invalid
+     * @throws InvalidPageException      if offset is negative or limit is equal or less then zero
      * @throws ResourceNotFoundException if saved user is not found
-     * @throws PageOutOfBoundsException if offset is greater then users amount
+     * @throws PageOutOfBoundsException  if offset is greater then users amount
      */
     @PostMapping("/signup")
     public User saveUser(@RequestBody User user) throws InvalidResourceException, InvalidPageException, ResourceNotFoundException, PageOutOfBoundsException {

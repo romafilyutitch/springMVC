@@ -236,6 +236,12 @@ public class UserRestService implements UserService, UserDetailsService {
         return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), grantedAuthorities);
     }
 
+    @Override
+    public User findByUsername(String username) {
+        Optional<User> optionalUser = userDao.findByName(username);
+        return optionalUser.get();
+    }
+
     private void checkPage(int offset, int limit, int totalElements) throws InvalidPageException, PageOutOfBoundsException {
         if (offset < 0 || limit <= 0) {
             throw new InvalidPageException(offset, limit);
