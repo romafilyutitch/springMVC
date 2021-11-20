@@ -2,8 +2,12 @@ package com.epam.esm.model;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.util.List;
@@ -20,8 +24,8 @@ public class User extends Entity {
     @OneToMany(targetEntity = Order.class, cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private List<Order> orders;
-    @OneToMany
-    @JoinTable(name = "user_role")
+    @ManyToMany
+    @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
 
     public User() {
