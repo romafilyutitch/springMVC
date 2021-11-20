@@ -8,11 +8,14 @@ import com.epam.esm.service.InvalidPageException;
 import com.epam.esm.service.PageOutOfBoundsException;
 import com.epam.esm.service.ResourceNotFoundException;
 import com.epam.esm.service.UserService;
+import com.epam.esm.validation.InvalidResourceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -128,5 +131,21 @@ public class UserController {
         Link selfLink = linkTo(methodOn(UserController.class).showRichestUserPopularTag()).withSelfRel();
         popularTag.add(selfLink);
         return popularTag;
+    }
+
+    /**
+     * Makes user signup
+     *
+     * @param user than need to be signed up
+     * @return signed up user
+     * @throws InvalidResourceException  if user is invalid
+     * @throws InvalidPageException      if offset is negative or limit is equal or less then zero
+     * @throws ResourceNotFoundException if saved user is not found
+     * @throws PageOutOfBoundsException  if offset is greater then users amount
+     */
+    @PostMapping("/signup")
+    public User saveUser(@RequestBody User user) throws InvalidResourceException, InvalidPageException, ResourceNotFoundException, PageOutOfBoundsException {
+        User savedUser = userService.save(user);
+        return linksBuilder.buildLinks(savedUser);
     }
 }

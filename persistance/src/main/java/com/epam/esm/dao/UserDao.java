@@ -3,6 +3,8 @@ package com.epam.esm.dao;
 import com.epam.esm.model.Tag;
 import com.epam.esm.model.User;
 
+import java.util.Optional;
+
 public interface UserDao extends Dao<User> {
 
     /**
@@ -29,4 +31,6 @@ public interface UserDao extends Dao<User> {
      * @return user that has order with passed id
      */
     User findByOrderId(long id);
+
+    Optional<User> findByName(String username);
 }
