@@ -18,12 +18,13 @@ public class UserFieldsValidator implements UserValidator {
      */
     @Override
     public void validate(User user) throws InvalidUserException {
+        System.out.println(user);
         String name = user.getUsername();
-        String surname = user.getPassword();
+        String password = user.getPassword();
         if (name == null || name.isEmpty()) {
             throw new InvalidUserException();
         }
-        if (surname == null || surname.isEmpty()) {
+        if (password == null || password.isEmpty()) {
             throw new InvalidUserException();
         }
     }
