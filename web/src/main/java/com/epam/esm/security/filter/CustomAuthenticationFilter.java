@@ -42,7 +42,7 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         User user = (User) authResult.getPrincipal();
-        Algorithm algorithm = Algorithm.HMAC256("secret");//@TODO make key string really secret and save in secret form and in secret place
+        Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());//@TODO make key string really secret and save in secret form and in secret place
         String accessToken = JWT.create()
                 .withSubject(user.getUsername())
                 .withExpiresAt(new Date(TimeUnit.DAYS.toMillis(21)))
