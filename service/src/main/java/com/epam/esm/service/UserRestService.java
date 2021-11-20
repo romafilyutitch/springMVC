@@ -16,6 +16,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -30,12 +31,14 @@ public class UserRestService implements UserService, UserDetailsService {
     private final UserDao userDao;
     private final OrderDao orderDao;
     private final UserValidator userValidator;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserRestService(UserDao userDao, OrderDao orderDao, UserValidator userValidator) {
+    public UserRestService(UserDao userDao, OrderDao orderDao, UserValidator userValidator, PasswordEncoder passwordEncoder) {
         this.userDao = userDao;
         this.orderDao = orderDao;
         this.userValidator = userValidator;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -119,6 +122,7 @@ public class UserRestService implements UserService, UserDetailsService {
     @Override
     public User save(User entity) throws InvalidResourceException {
         userValidator.validate(entity);
+        entity.setPassword(passwordEncoder.encode(entity.getPassword()));
         User savedUser = userDao.save(entity);
         logger.info(String.format("User was saved %s", savedUser));
         return savedUser;
