@@ -11,14 +11,21 @@ import com.epam.esm.validation.UserValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class UserRestService implements UserService {
+public class UserRestService implements UserService, UserDetailsService {
     private static final Logger logger = LogManager.getLogger(CertificateRestService.class);
     private final UserDao userDao;
     private final OrderDao orderDao;
@@ -214,6 +221,15 @@ public class UserRestService implements UserService {
         } else {
             throw new ResourceNotFoundException(orderId);
         }
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        Optional<User> optionalUser = userDao.findByName(username);
+        User user = optionalUser.orElseThrow(() -> new UsernameNotFoundException(String.format("User with name %s was not found", username)));
+        Collection<SimpleGrantedAuthority> grantedAuthorities = new ArrayList<>();
+        user.getRoles().forEach(role -> grantedAuthorities.add(new SimpleGrantedAuthority(role.getName())));
+        return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), grantedAuthorities);
     }
 
     private void checkPage(int offset, int limit, int totalElements) throws InvalidPageException, PageOutOfBoundsException {

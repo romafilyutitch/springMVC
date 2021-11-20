@@ -105,6 +105,14 @@ public class UserJdbcDao extends AbstractDao<User> implements UserDao {
         query.setParameter(1, id);
         return query.uniqueResult();
     }
+
+    @Override
+    public Optional<User> findByName(String username) {
+        Session session = sessionFactory.getCurrentSession();
+        Query<User> query = session.createQuery("from User where username = ?1", User.class);
+        query.setParameter(1, username);
+        return query.uniqueResultOptional();
+    }
 }
 
 
