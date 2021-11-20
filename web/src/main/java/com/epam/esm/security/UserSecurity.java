@@ -19,6 +19,12 @@ public class UserSecurity {
     public boolean hasUserId(Authentication authentication, long userId) {
         String username = (String) authentication.getPrincipal();
         User foundUser = userService.findByUsername(username);
-        return foundUser.getId() == userId;
+        boolean isAdmin = foundUser.getRoles().stream()
+                .anyMatch(role -> role.getName().equals("ROLE_ADMIN"));
+        if (isAdmin) {
+            return true;
+        } else {
+            return foundUser.getId() == userId;
+        }
     }
 }
