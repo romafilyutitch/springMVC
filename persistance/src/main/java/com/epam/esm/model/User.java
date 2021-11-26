@@ -1,5 +1,7 @@
 package com.epam.esm.model;
 
+import org.hibernate.annotations.Cascade;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -11,6 +13,8 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -24,10 +28,11 @@ public class User extends Entity {
     private String password;
     @OneToMany(targetEntity = Order.class, cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
-    private List<Order> orders;
+    private List<Order> orders = new ArrayList<>();
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles;
+    @Cascade(org.hibernate.annotations.CascadeType.ALL)
+    private Set<Role> roles = new HashSet<>();
 
     public User() {
     }

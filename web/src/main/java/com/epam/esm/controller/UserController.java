@@ -56,6 +56,7 @@ public class UserController {
      * @throws InvalidPageException      if offset or limit is negative
      */
     @GetMapping
+    @PreAuthorize("#oauth2.hasScope('read') && hasAuthority('ROLE_ADMIN')")
     public PagedModel<User> showUsers(@RequestParam(required = false, defaultValue = "0") int offset,
                                       @RequestParam(required = false, defaultValue = "10") int limit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         List<User> usersOnPage = userService.findPage(offset, limit);
@@ -71,6 +72,7 @@ public class UserController {
      * @throws PageOutOfBoundsException  if page number is less then one and greater then pages amount
      */
     @GetMapping("/{userId}")
+    @PreAuthorize("#oauth2.hasScope('read') && hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER') && @userSecurity.hasUserId(authentication, #userId)")
     public User showUser(@PathVariable Long userId) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         User user = userService.findById(userId);
         return linksBuilder.buildLinks(user);
@@ -85,6 +87,7 @@ public class UserController {
      * @throws PageOutOfBoundsException  if page number is less then one and greater then pages amount
      */
     @GetMapping("/{userId}/orders")
+    @PreAuthorize("#oauth2.hasScope('read') && hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER') && @userSecurity.hasUserId(authentication, #userId)")
     public PagedModel<Order> showUserOrders(@PathVariable long userId, @RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         User user = userService.findById(userId);
         List<Order> orders = userService.findUserOrderPage(user, offset, limit);
@@ -102,6 +105,7 @@ public class UserController {
      * @throws InvalidPageException      if offset or limit is invalid
      */
     @GetMapping("/{userId}/orders/{orderId}")
+    @PreAuthorize("#oauth2.hasScope('read') && hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER') && @userSecurity.hasUserId(authentication, #userId)")
     public Order showUserOrder(@PathVariable long userId, @PathVariable long orderId) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         User foundUser = userService.findById(userId);
         Order foundOrder = userService.findUserOrder(foundUser, orderId);
@@ -116,6 +120,7 @@ public class UserController {
      * @throws PageOutOfBoundsException  if page number is less then one and greater then pages amount
      */
     @GetMapping("/richest")
+    @PreAuthorize("#oauth2.hasScope('read') && hasAuthority('ROLE_ADMIN')")
     public User showRichestUser() throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         User richestUser = userService.findRichestUser();
         return linksBuilder.buildLinks(richestUser);
@@ -127,6 +132,7 @@ public class UserController {
      * @return richest user popular tag
      */
     @GetMapping("/richest/popularTag")
+    @PreAuthorize("#oauth2.hasScope('read') && hasAuthority('ROLE_ADMIN')")
     public Tag showRichestUserPopularTag() {
         Tag popularTag = userService.findRichestUserPopularTag();
         Link selfLink = linkTo(methodOn(UserController.class).showRichestUserPopularTag()).withSelfRel();

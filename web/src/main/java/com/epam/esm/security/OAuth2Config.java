@@ -45,10 +45,12 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        clients.inMemory().withClient("client").secret(passwordEncoder.encode("secret")).scopes("read", "write")
+        clients.inMemory().withClient("client").secret(passwordEncoder.encode("secret")).scopes("read", "write", "order")
                 .authorizedGrantTypes("password", "refresh_token", "implicit").accessTokenValiditySeconds(20000)
                 .refreshTokenValiditySeconds(20000);
     }
+
+
 
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
