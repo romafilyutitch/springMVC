@@ -15,6 +15,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
+import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 
 @Configuration
 @EnableWebSecurity
@@ -38,15 +39,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests().anyRequest().authenticated().and().sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        http
+                .authorizeRequests()
+                .antMatchers("/login", "/oauth/authorize").permitAll()
+                .anyRequest().authenticated()
+                .and()
+                .requestMatchers()
+                .antMatchers("/api/**");
     }
 
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring()
                 .antMatchers(HttpMethod.GET, "/certificates/**")
-                .antMatchers("/users/signup");
+                .antMatchers("/users/signup")
+                .antMatchers("/oauth/authorize")
+                .antMatchers("/oauth/login");
     }
 
     @Bean
