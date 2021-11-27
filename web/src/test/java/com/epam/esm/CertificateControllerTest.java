@@ -1,6 +1,5 @@
 package com.epam.esm;
 
-import com.epam.esm.config.PersistanceConfig;
 import com.epam.esm.model.Certificate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;

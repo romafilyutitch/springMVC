@@ -1,23 +1,26 @@
 package com.epam.esm.service;
 
-import com.epam.esm.dao.CertificateDao;
-import com.epam.esm.dao.OrderDao;
-import com.epam.esm.dao.TagDao;
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Order;
 import com.epam.esm.model.Tag;
+import com.epam.esm.repository.CertificateRepository;
+import com.epam.esm.repository.OffsetPageable;
+import com.epam.esm.repository.OrderRepository;
+import com.epam.esm.repository.TagRepository;
 import com.epam.esm.validation.CertificateValidator;
 import com.epam.esm.validation.InvalidResourceException;
 import com.epam.esm.validation.TagValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -28,18 +31,17 @@ import java.util.stream.Collectors;
 public class CertificateRestService implements CertificateService {
     private static final Logger logger = LogManager.getLogger(CertificateRestService.class);
 
-    private final CertificateDao certificateDao;
-    private final TagDao tagDao;
-    private final OrderDao orderDao;
+    private final CertificateRepository certificateRepository;
+    private final TagRepository tagRepository;
+    private final OrderRepository orderRepository;
 
     private final CertificateValidator certificateValidator;
     private final TagValidator tagValidator;
 
-    @Autowired
-    public CertificateRestService(CertificateDao certificateDao, TagDao tagDao, OrderDao orderDao, CertificateValidator certificateValidator, TagValidator tagValidator) {
-        this.certificateDao = certificateDao;
-        this.tagDao = tagDao;
-        this.orderDao = orderDao;
+    public CertificateRestService(CertificateRepository certificateRepository, TagRepository tagRepository, OrderRepository orderRepository, CertificateValidator certificateValidator, TagValidator tagValidator) {
+        this.certificateRepository = certificateRepository;
+        this.tagRepository = tagRepository;
+        this.orderRepository = orderRepository;
         this.certificateValidator = certificateValidator;
         this.tagValidator = tagValidator;
     }
@@ -55,8 +57,10 @@ public class CertificateRestService implements CertificateService {
      */
     @Override
     public List<Certificate> findPage(int offset, int limit) throws InvalidPageException, PageOutOfBoundsException {
-        checkPage(offset, limit, certificateDao.getTotalElements());
-        return certificateDao.findPage(offset, limit);
+        checkPage(offset, limit, (int) certificateRepository.count());
+        int page = (offset / limit) + 1;
+        Pageable pageable = new OffsetPageable(offset, limit);
+        return certificateRepository.findAll(pageable).getContent();
     }
 
     /**
@@ -71,10 +75,10 @@ public class CertificateRestService implements CertificateService {
      */
     @Override
     public List<Certificate> findAllWithParameters(LinkedHashMap<String, String> findParameters, int offset, int limit) throws InvalidPageException, PageOutOfBoundsException {
-        checkPage(offset, limit, certificateDao.getTotalElements());
-        List<Certificate> foundCertificates = certificateDao.findWithParameters(findParameters, offset, limit);
-        logger.info("Certificates with parameters were found " + foundCertificates);
-        return foundCertificates;
+        System.out.println(offset);
+        System.out.println(limit);
+        checkPage(offset, limit, (int) certificateRepository.count());
+        return null;
     }
 
     /**
@@ -86,7 +90,7 @@ public class CertificateRestService implements CertificateService {
      */
     @Override
     public Certificate findById(long id) throws ResourceNotFoundException {
-        Optional<Certificate> optionalCertificate = certificateDao.findById(id);
+        Optional<Certificate> optionalCertificate = certificateRepository.findById(id);
         if (optionalCertificate.isPresent()) {
             logger.info("Certificate was found by id " + optionalCertificate.get());
             return optionalCertificate.get();
@@ -104,16 +108,17 @@ public class CertificateRestService implements CertificateService {
      * @throws InvalidResourceException if saved entity is invalid
      */
     @Override
+    @Transactional
     public Certificate save(Certificate certificate) throws InvalidResourceException {
         certificateValidator.validate(certificate);
-        List<Tag> tags = certificate.getTags();
+        Set<Tag> tags = certificate.getTags();
         for (Tag tag : tags) {
             tagValidator.validate(tag);
         }
-        List<Tag> tagsToSave = tags.stream().map(tag -> tagDao.findByName(tag.getName()).orElse(tag)).collect(Collectors.toList());
+        Set<Tag> tagsToSave = tags.stream().map(tag -> tagRepository.findByName(tag.getName()).orElse(tag)).collect(Collectors.toSet());
         certificate.setTags(tagsToSave);
         certificate.setCreateDate(LocalDateTime.now());
-        Certificate savedCertificate = certificateDao.save(certificate);
+        Certificate savedCertificate = certificateRepository.save(certificate);
         logger.info("New certificate was validated and saved successfully " + savedCertificate);
         return savedCertificate;
     }
@@ -127,25 +132,25 @@ public class CertificateRestService implements CertificateService {
      * @throws ResourceNotFoundException if updated entity is not saved and cannot be found
      */
     @Override
+    @Transactional
     public Certificate update(Certificate certificate) throws InvalidResourceException, ResourceNotFoundException {
+        certificateValidator.validate(certificate);
         Certificate certificateFromTable = findById(certificate.getId());
         certificateFromTable.setName(certificate.getName() == null ? certificateFromTable.getName() : certificate.getName());
         certificateFromTable.setDescription(certificate.getDescription() == null ? certificateFromTable.getDescription() : certificate.getDescription());
-        certificateFromTable.setPrice(certificate.getPrice() == 0.0 ? certificateFromTable.getPrice() : certificate.getPrice());
-        certificateFromTable.setDuration(certificate.getDuration() == 0 ? certificateFromTable.getDuration() : certificate.getDuration());
-        List<Tag> tags = certificate.getTags();
+        certificateFromTable.setPrice(certificate.getPrice() <= 0.0 ? certificateFromTable.getPrice() : certificate.getPrice());
+        certificateFromTable.setDuration(certificate.getDuration() <= 0 ? certificateFromTable.getDuration() : certificate.getDuration());
+        Set<Tag> tags = certificate.getTags();
         for (Tag tag : tags) {
             tagValidator.validate(tag);
         }
-        List<Tag> tagsToUpdate = tags.stream().map(tag -> tagDao.findByName(tag.getName()).orElse(tag)).collect(Collectors.toList());
-        List<Tag> certificateTags = certificateFromTable.getTags();
+        Set<Tag> tagsToUpdate = tags.stream().map(tag -> tagRepository.findByName(tag.getName()).orElse(tag)).collect(Collectors.toSet());
+        Set<Tag> certificateTags = certificateFromTable.getTags();
         tagsToUpdate.removeIf(certificateTags::contains);
         certificateTags.addAll(tagsToUpdate);
-        certificateValidator.validate(certificateFromTable);
         certificateFromTable.setLastUpdateDate(LocalDateTime.now());
-        Certificate updatedCertificate = certificateDao.update(certificateFromTable);
-        logger.info("Certificate was validated and updated successfully " + updatedCertificate);
-        return updatedCertificate;
+        logger.info("Certificate was validated and updated successfully " + certificateFromTable);
+        return certificateFromTable;
     }
 
     /**
@@ -154,8 +159,9 @@ public class CertificateRestService implements CertificateService {
      * @param certificate entity that need to be saved
      */
     @Override
+    @Transactional
     public void delete(Certificate certificate) {
-        certificateDao.delete(certificate);
+        certificateRepository.delete(certificate);
         logger.info(String.format("Certificate was deleted %s", certificate));
     }
 
@@ -168,18 +174,18 @@ public class CertificateRestService implements CertificateService {
      * @throws InvalidResourceException if passed tag is invalid
      */
     @Override
+    @Transactional
     public Certificate addTags(Certificate certificate, List<Tag> tags) throws InvalidResourceException {
         for (Tag tag : tags) {
             tagValidator.validate(tag);
         }
-        List<Tag> tagsToUpdate = tags.stream().map(tag -> tagDao.findByName(tag.getName()).orElse(tag)).collect(Collectors.toList());
-        List<Tag> certificateTags = certificate.getTags();
+        Set<Tag> tagsToUpdate = tags.stream().map(tag -> tagRepository.findByName(tag.getName()).orElse(tag)).collect(Collectors.toSet());
+        Set<Tag> certificateTags = certificate.getTags();
         tagsToUpdate.removeIf(certificateTags::contains);
         certificateTags.addAll(tagsToUpdate);
         certificate.setLastUpdateDate(LocalDateTime.now());
-        Certificate updatedCertificate = certificateDao.update(certificate);
-        logger.info("Certificate was updated with new tags " + updatedCertificate);
-        return updatedCertificate;
+        logger.info("Certificate was updated with new tags " + certificate);
+        return certificate;
     }
 
     /**
@@ -189,10 +195,11 @@ public class CertificateRestService implements CertificateService {
      * @param tag         that need to be deleted
      */
     @Override
+    @Transactional
     public void deleteCertificateTag(Certificate certificate, Tag tag) {
-        tagDao.delete(tag);
+        Set<Tag> tags = certificate.getTags();
+        tags.remove(tag);
         certificate.setLastUpdateDate(LocalDateTime.now());
-        certificateDao.update(certificate);
         logger.info("Certificate tag was deleted successfully");
     }
 
@@ -206,7 +213,7 @@ public class CertificateRestService implements CertificateService {
      */
     @Override
     public Tag findCertificateTag(Certificate certificate, long tagId) throws ResourceNotFoundException {
-        Optional<Tag> optionalTag = tagDao.findCertificateTag(certificate.getId(), tagId);
+        Optional<Tag> optionalTag = tagRepository.findCertificateTag(certificate.getId(), tagId);
         if (optionalTag.isPresent()) {
             logger.info(String.format("Certificate tag was found %s", optionalTag.get()));
             return optionalTag.get();
@@ -228,8 +235,10 @@ public class CertificateRestService implements CertificateService {
      */
     @Override
     public List<Tag> findCertificateTagsPage(Certificate foundCertificate, int offset, int limit) throws PageOutOfBoundsException, InvalidPageException {
-        checkPage(offset, limit, tagDao.getCertificateTagsTotalElements(foundCertificate.getId()));
-        return tagDao.findCertificateTagsPage(foundCertificate.getId(), offset, limit);
+        checkPage(offset, limit, tagRepository.getCertificateTagsTotalElements(foundCertificate.getId()));
+        int page = (offset / limit);
+        Pageable pageable = new OffsetPageable(offset, limit);
+        return tagRepository.findCertificateTagsPage(foundCertificate.getId(), pageable).getContent();
     }
 
     /**
@@ -240,7 +249,7 @@ public class CertificateRestService implements CertificateService {
      */
     @Override
     public int getCertificateTagsTotalElements(Certificate certificate) {
-        return tagDao.getCertificateTagsTotalElements(certificate.getId());
+        return tagRepository.getCertificateTagsTotalElements(certificate.getId());
     }
 
     /**
@@ -251,7 +260,7 @@ public class CertificateRestService implements CertificateService {
      */
     @Override
     public int getCertificateOrdersTotalElements(Certificate certificate) {
-        return orderDao.getCertificateOrdersTotalElements(certificate.getId());
+        return orderRepository.getCertificateOrdersTotalElements(certificate.getId());
     }
 
     /**
@@ -261,7 +270,7 @@ public class CertificateRestService implements CertificateService {
      */
     @Override
     public int getTotalElements() {
-        return certificateDao.getTotalElements();
+        return (int) certificateRepository.count();
     }
 
     /**
@@ -276,8 +285,10 @@ public class CertificateRestService implements CertificateService {
      */
     @Override
     public List<Order> findCertificateOrders(Certificate certificate, int offset, int limit) throws InvalidPageException, PageOutOfBoundsException {
-        checkPage(offset, limit, orderDao.getCertificateOrdersTotalElements(certificate.getId()));
-        List<Order> certificateOrders = orderDao.findCertificateOrders(certificate.getId(), offset, limit);
+        checkPage(offset, limit, orderRepository.getCertificateOrdersTotalElements(certificate.getId()));
+        int page = (offset / limit) + 1;
+        Pageable pageable = new OffsetPageable(offset, limit);
+        List<Order> certificateOrders = orderRepository.findCertificateOrders(certificate.getId(), pageable).getContent();
         logger.info(String.format("Certificate with id %d orders were found %s", certificate.getId(), certificateOrders));
         return certificateOrders;
     }
@@ -292,7 +303,7 @@ public class CertificateRestService implements CertificateService {
      */
     @Override
     public Order findCertificateOrder(Certificate certificate, long orderId) throws ResourceNotFoundException {
-        Optional<Order> byId = orderDao.findById(orderId);
+        Optional<Order> byId = orderRepository.findById(orderId);
         if (byId.isPresent()) {
             logger.info(String.format("Order with id was found by id %s", byId.get()));
             return byId.get();

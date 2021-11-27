@@ -150,7 +150,7 @@ public class RestUserLinksBuilder implements UserLinksBuilder {
             links.add(previousPageLink);
         }
         Link firstPageLink = linkTo(methodOn(UserController.class).showUserOrders(user.getId(), 0, currentLimit)).withRel("first");
-        Link lastPageLink = linkTo(methodOn(UserController.class).showUserOrders(user.getId(), currentLimit * (pages - 1), currentLimit)).withRel("next");
+        Link lastPageLink = linkTo(methodOn(UserController.class).showUserOrders(user.getId(), currentLimit * (pages - 1), currentLimit)).withRel("last");
         links.add(selfLink);
         links.add(firstPageLink);
         links.add(lastPageLink);

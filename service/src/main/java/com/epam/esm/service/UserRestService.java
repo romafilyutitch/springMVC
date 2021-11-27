@@ -1,18 +1,18 @@
 package com.epam.esm.service;
 
-import com.epam.esm.dao.OrderDao;
-import com.epam.esm.dao.UserDao;
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Order;
 import com.epam.esm.model.Role;
 import com.epam.esm.model.Tag;
 import com.epam.esm.model.User;
+import com.epam.esm.repository.OffsetPageable;
+import com.epam.esm.repository.OrderRepository;
+import com.epam.esm.repository.UserRepository;
 import com.epam.esm.validation.InvalidResourceException;
 import com.epam.esm.validation.UserValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,25 +20,24 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class UserRestService implements UserService, UserDetailsService {
     private static final Logger logger = LogManager.getLogger(CertificateRestService.class);
-    private final UserDao userDao;
-    private final OrderDao orderDao;
+    private final UserRepository userRepository;
+    private final OrderRepository orderRepository;
     private final UserValidator userValidator;
     private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    public UserRestService(UserDao userDao, OrderDao orderDao, UserValidator userValidator, PasswordEncoder passwordEncoder) {
-        this.userDao = userDao;
-        this.orderDao = orderDao;
+    public UserRestService(UserRepository userRepository, OrderRepository orderRepository, UserValidator userValidator, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.orderRepository = orderRepository;
         this.userValidator = userValidator;
         this.passwordEncoder = passwordEncoder;
     }
@@ -54,8 +53,10 @@ public class UserRestService implements UserService, UserDetailsService {
      */
     @Override
     public List<User> findPage(int offset, int limit) throws InvalidPageException, PageOutOfBoundsException {
-        checkPage(offset, limit, userDao.getTotalElements());
-        return userDao.findPage(offset, limit);
+        checkPage(offset, limit,  (int) userRepository.count());
+        int page = (offset / limit) + 1;
+        Pageable pageable = new OffsetPageable(offset, limit);
+        return userRepository.findAll(pageable).getContent();
     }
 
     /**
@@ -67,7 +68,7 @@ public class UserRestService implements UserService, UserDetailsService {
      */
     @Override
     public User findById(long id) throws ResourceNotFoundException {
-        Optional<User> optionalUser = userDao.findById(id);
+        Optional<User> optionalUser = userRepository.findById(id);
         if (optionalUser.isPresent()) {
             logger.info(String.format("User was found by id %s", optionalUser.get()));
             return optionalUser.get();
@@ -85,7 +86,7 @@ public class UserRestService implements UserService, UserDetailsService {
      */
     @Override
     public User findRichestUser() {
-        User richestUser = userDao.findRichestUser();
+        User richestUser = userRepository.findRichestUser();
         logger.info(String.format("Richest user was found %s", richestUser));
         return richestUser;
     }
@@ -99,7 +100,7 @@ public class UserRestService implements UserService, UserDetailsService {
      */
     @Override
     public Tag findRichestUserPopularTag() {
-        Tag richestUserPopularTag = userDao.findRichestUserPopularTag();
+        Tag richestUserPopularTag = userRepository.findRichestUserPopularTag();
         logger.info(String.format("Richest user popular tag is %s", richestUserPopularTag));
         return richestUserPopularTag;
     }
@@ -111,7 +112,7 @@ public class UserRestService implements UserService, UserDetailsService {
      */
     @Override
     public int getTotalElements() {
-        return userDao.getTotalElements();
+        return (int) userRepository.count();
     }
 
     /**
@@ -122,11 +123,12 @@ public class UserRestService implements UserService, UserDetailsService {
      * @throws InvalidResourceException if saved entity is invalid
      */
     @Override
+    @Transactional
     public User save(User entity) throws InvalidResourceException {
         userValidator.validate(entity);
         entity.setPassword(passwordEncoder.encode(entity.getPassword()));
         entity.getRoles().add(new Role("ROLE_USER"));
-        User savedUser = userDao.save(entity);
+        User savedUser = userRepository.save(entity);
         logger.info(String.format("User was saved %s", savedUser));
         return savedUser;
     }
@@ -139,11 +141,15 @@ public class UserRestService implements UserService, UserDetailsService {
      * @throws InvalidResourceException if updated entity is invalid
      */
     @Override
+    @Transactional
     public User update(User entity) throws InvalidResourceException {
         userValidator.validate(entity);
-        User updatedUser = userDao.update(entity);
-        logger.info(String.format("User was updated %s", updatedUser));
-        return updatedUser;
+        Optional<User> optionalUser = userRepository.findById(entity.getId());
+        User savedUser = optionalUser.get();
+        savedUser.setUsername(entity.getUsername());
+        savedUser.setUsername(passwordEncoder.encode(entity.getPassword()));
+        logger.info(String.format("User was updated %s", savedUser));
+        return savedUser;
     }
 
     /**
@@ -152,8 +158,9 @@ public class UserRestService implements UserService, UserDetailsService {
      * @param entity entity that need to be saved
      */
     @Override
+    @Transactional
     public void delete(User entity) {
-        userDao.delete(entity);
+        userRepository.delete(entity);
         logger.info(String.format("User was deleted %s", entity));
     }
 
@@ -165,11 +172,12 @@ public class UserRestService implements UserService, UserDetailsService {
      * @return made order
      */
     @Override
+    @Transactional
     public Order orderCertificate(User user, Certificate certificate) {
         Order order = new Order(certificate.getPrice(), certificate);
         order.setOrderDate(LocalDateTime.now());
-        Order savedOrder = orderDao.save(order);
-        orderDao.setUserToOrder(user.getId(), savedOrder.getId());
+        Order savedOrder = orderRepository.save(order);
+        user.getOrders().add(savedOrder);
         logger.info(String.format("User order was saved %s", savedOrder));
         return savedOrder;
     }
@@ -186,8 +194,10 @@ public class UserRestService implements UserService, UserDetailsService {
      */
     @Override
     public List<Order> findUserOrderPage(User user, int offset, int limit) throws PageOutOfBoundsException, InvalidPageException {
-        checkPage(offset, limit, orderDao.getUserOrdersTotalElements(user.getId()));
-        return orderDao.findUserOrdersPage(user.getId(), offset, limit);
+        checkPage(offset, limit, orderRepository.getUserOrdersTotalElements(user.getId()));
+        int page = (offset / limit) + 1;
+        Pageable pageable = new OffsetPageable(offset, limit);
+        return orderRepository.findUserOrdersPage(user.getId(), pageable).getContent();
     }
 
     /**
@@ -198,7 +208,7 @@ public class UserRestService implements UserService, UserDetailsService {
      */
     @Override
     public int getUserOrdersTotalElements(User user) {
-        return orderDao.getUserOrdersTotalElements(user.getId());
+        return orderRepository.getUserOrdersTotalElements(user.getId());
     }
 
     /**
@@ -209,7 +219,7 @@ public class UserRestService implements UserService, UserDetailsService {
      */
     @Override
     public User findOrderUser(Order order) {
-        return userDao.findByOrderId(order.getId());
+        return userRepository.findByOrderId(order.getId());
     }
 
     /**
@@ -222,7 +232,7 @@ public class UserRestService implements UserService, UserDetailsService {
      */
     @Override
     public Order findUserOrder(User foundUser, long orderId) throws ResourceNotFoundException {
-        Optional<Order> foundOrder = orderDao.findById(orderId);
+        Optional<Order> foundOrder = orderRepository.findById(orderId);
         if (foundOrder.isPresent()) {
             return foundOrder.get();
         } else {
@@ -232,7 +242,7 @@ public class UserRestService implements UserService, UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<User> optionalUser = userDao.findByName(username);
+        Optional<User> optionalUser = userRepository.findByUsername(username);
         User user = optionalUser.orElseThrow(() -> new UsernameNotFoundException(String.format("User with name %s was not found", username)));
         Collection<SimpleGrantedAuthority> grantedAuthorities = new ArrayList<>();
         user.getRoles().forEach(role -> grantedAuthorities.add(new SimpleGrantedAuthority(role.getName())));
@@ -241,7 +251,7 @@ public class UserRestService implements UserService, UserDetailsService {
 
     @Override
     public User findByUsername(String username) {
-        Optional<User> optionalUser = userDao.findByName(username);
+        Optional<User> optionalUser = userRepository.findByUsername(username);
         return optionalUser.get();
     }
 

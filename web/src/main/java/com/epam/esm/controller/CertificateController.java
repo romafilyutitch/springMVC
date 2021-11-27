@@ -108,7 +108,7 @@ public class CertificateController {
      * @throws PageOutOfBoundsException  if page number is less then one and greater then pages amount
      */
     @PostMapping("/{id}")
-    @PreAuthorize("#oauth2.hasScope('write') && hastAuthority('ROLE_ADMIN')")
+    @PreAuthorize("#oauth2.hasScope('write') && hasAuthority('ROLE_ADMIN')")
     public Certificate updateCertificate(@PathVariable("id") long id, @RequestBody Certificate certificate) throws ResourceNotFoundException, InvalidResourceException, PageOutOfBoundsException, InvalidPageException {
         Certificate foundCertificate = certificateService.findById(id);
         certificate.setId(foundCertificate.getId());
@@ -172,7 +172,7 @@ public class CertificateController {
      */
     @PostMapping("/{id}/tags")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("#oauth2.hasScope('write') && hastAuthority('ROLE_ADMIN')")
+    @PreAuthorize("#oauth2.hasScope('write') && hasAuthority('ROLE_ADMIN')")
     public Certificate addTagToCertificate(@PathVariable("id") long id, @RequestBody List<Tag> tags) throws ResourceNotFoundException, InvalidResourceException, PageOutOfBoundsException, InvalidPageException {
         Certificate foundCertificate = certificateService.findById(id);
         Certificate updatedCertificate = certificateService.addTags(foundCertificate, tags);
@@ -188,7 +188,7 @@ public class CertificateController {
      */
     @DeleteMapping("/{id}/tags/{tagId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("#oauth2.hasScope('write') && hastAuthority('ROLE_ADMIN')")
+    @PreAuthorize("#oauth2.hasScope('write') && hasAuthority('ROLE_ADMIN')")
     public void deleteCertificateTag(@PathVariable("id") long id, @PathVariable("tagId") long tagId) throws ResourceNotFoundException {
         Certificate foundCertificate = certificateService.findById(id);
         Tag foundTag = certificateService.findCertificateTag(foundCertificate, tagId);
@@ -204,7 +204,7 @@ public class CertificateController {
      * @throws PageOutOfBoundsException  if page number is less then 1 and greater then pages amount
      */
     @GetMapping("/{id}/orders")
-    @PreAuthorize("#oauth2.hasScope('read') && hastAuthority('ROLE_ADMIN')")
+    @PreAuthorize("#oauth2.hasScope('read') && hasAuthority('ROLE_ADMIN')")
     public PagedModel<Order> showCertificateOrders(@PathVariable Long id, @RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         Certificate foundCertificate = certificateService.findById(id);
         List<Order> foundOrders = certificateService.findCertificateOrders(foundCertificate, offset, limit);
