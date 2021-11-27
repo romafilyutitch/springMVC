@@ -41,7 +41,7 @@ public class RestUserLinksBuilder implements UserLinksBuilder {
     public User buildLinks(User entity) throws ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
         Link selfLink = linkTo(methodOn(UserController.class).showUser(entity.getId())).withSelfRel();
         entity.add(selfLink);
-        if (!entity.getOrders().isEmpty()) {
+        if (entity.getOrders() != null && !entity.getOrders().isEmpty()) {
             Link ordersLink = linkTo(methodOn(UserController.class).showUserOrders(entity.getId(), 0, 10)).withRel("orders");
             entity.add(ordersLink);
         }

@@ -1,23 +1,26 @@
 package com.epam.esm.security;
 
-import com.epam.esm.security.filter.CustomAuthenticationFilter;
-import com.epam.esm.security.filter.CustomAuthorizationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.http.HttpMethod.POST;
+import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
+import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 
 @Configuration
 @EnableWebSecurity
+@EnableResourceServer
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final UserDetailsService userDetailsService;
@@ -36,22 +39,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable();
-        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        http.authorizeRequests().antMatchers("/login").permitAll();
-        http.authorizeRequests().antMatchers(GET, "/certificates", "/certificates/*", "/certificates/*/tags", "/certificates/*/tags/*").permitAll();
-        http.authorizeRequests().antMatchers(GET, "/certificates/*/orders", "/certificates/*/orders/*").hasAuthority("ROLE_ADMIN");
-        http.authorizeRequests().antMatchers(POST, "/certificates/*/orders").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER");
-        http.authorizeRequests().antMatchers(POST, "/certificates", "/certificates/*/tags", "/certificates/*/tags/*").hasAuthority("ROLE_ADMIN");
-        http.authorizeRequests().antMatchers(GET, "/users/richest","/users/richest/*").hasAuthority("ROLE_ADMIN");
-        http.authorizeRequests().antMatchers(GET, "/users/{userId}/**").access("@userSecurity.hasUserId(authentication, #userId)");
-        http.authorizeRequests().antMatchers(POST, "/users/{userId}/**").access("@userSecurity.hasUserId(authentication, #userId)");
-        http.authorizeRequests().antMatchers(GET, "/users/signup").permitAll();
-        http.authorizeRequests().antMatchers(POST, "/users/signup").permitAll();
-        http.authorizeRequests().anyRequest().authenticated();
-        http.addFilter(new CustomAuthenticationFilter(authenticationManagerBean()));
-        http.addFilterBefore(new CustomAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.authorizeRequests().anyRequest().authenticated().and().sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.NEVER);
     }
 
+    @Override
+    public void configure(WebSecurity web) throws Exception {
+        web.ignoring()
+                .antMatchers(HttpMethod.GET, "/certificates/**")
+                .antMatchers("/users/signup")
+                .antMatchers("/oauth/authorize")
+                .antMatchers("/oauth/login");
+    }
 
+    @Bean
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
+    }
 }

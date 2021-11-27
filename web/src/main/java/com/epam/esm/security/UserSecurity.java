@@ -27,4 +27,18 @@ public class UserSecurity {
             return foundUser.getId() == userId;
         }
     }
+
+    public boolean canOrder(Authentication authentication, User orderUser) {
+        String username = (String) authentication.getPrincipal();
+        User foundUser = userService.findByUsername(username);
+        boolean isAdmin = foundUser.getRoles().stream()
+                .anyMatch(role -> role.getName().equals("ROLE_ADMIN"));
+        if (isAdmin) {
+            return true;
+        } else {
+            long foundUserId = foundUser.getId();
+            long orderUserId = orderUser.getId();
+            return foundUserId == orderUserId;
+        }
+    }
 }

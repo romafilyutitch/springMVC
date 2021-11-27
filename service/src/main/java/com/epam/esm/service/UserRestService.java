@@ -4,6 +4,7 @@ import com.epam.esm.dao.OrderDao;
 import com.epam.esm.dao.UserDao;
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Order;
+import com.epam.esm.model.Role;
 import com.epam.esm.model.Tag;
 import com.epam.esm.model.User;
 import com.epam.esm.validation.InvalidResourceException;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -123,6 +125,7 @@ public class UserRestService implements UserService, UserDetailsService {
     public User save(User entity) throws InvalidResourceException {
         userValidator.validate(entity);
         entity.setPassword(passwordEncoder.encode(entity.getPassword()));
+        entity.getRoles().add(new Role("ROLE_USER"));
         User savedUser = userDao.save(entity);
         logger.info(String.format("User was saved %s", savedUser));
         return savedUser;
