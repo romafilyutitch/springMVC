@@ -1,5 +1,6 @@
 package com.epam.esm.service;
 
+import com.epam.esm.builder.FindCertificatesQueryBuilder;
 import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Order;
 import com.epam.esm.model.Tag;
@@ -12,8 +13,14 @@ import com.epam.esm.validation.InvalidResourceException;
 import com.epam.esm.validation.TagValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import sun.java2d.loops.Blit;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
@@ -34,14 +41,16 @@ public class CertificateRestService implements CertificateService {
     private final CertificateRepository certificateRepository;
     private final TagRepository tagRepository;
     private final OrderRepository orderRepository;
-
+    private final FindCertificatesQueryBuilder builder;
     private final CertificateValidator certificateValidator;
     private final TagValidator tagValidator;
 
-    public CertificateRestService(CertificateRepository certificateRepository, TagRepository tagRepository, OrderRepository orderRepository, CertificateValidator certificateValidator, TagValidator tagValidator) {
+    @Autowired
+    public CertificateRestService(CertificateRepository certificateRepository, TagRepository tagRepository, OrderRepository orderRepository, FindCertificatesQueryBuilder builder, CertificateValidator certificateValidator, TagValidator tagValidator) {
         this.certificateRepository = certificateRepository;
         this.tagRepository = tagRepository;
         this.orderRepository = orderRepository;
+        this.builder = builder;
         this.certificateValidator = certificateValidator;
         this.tagValidator = tagValidator;
     }
@@ -75,10 +84,18 @@ public class CertificateRestService implements CertificateService {
      */
     @Override
     public List<Certificate> findAllWithParameters(LinkedHashMap<String, String> findParameters, int offset, int limit) throws InvalidPageException, PageOutOfBoundsException {
-        System.out.println(offset);
-        System.out.println(limit);
         checkPage(offset, limit, (int) certificateRepository.count());
-        return null;
+        int page = offset / limit;
+        List<Specification<Certificate>> specifications = builder.buildSpecifications(findParameters);
+        List<Sort.Order> orders = builder.buildOrders(findParameters);
+        OffsetPageable offsetPageable = new OffsetPageable(offset, limit, Sort.by(orders));
+        if (specifications.isEmpty()) {
+            return certificateRepository.findAll(offsetPageable).getContent();
+        } else {
+            Specification<Certificate> firstSpecification = specifications.remove(0);
+            Specification<Certificate> finalSpecification = specifications.stream().reduce(firstSpecification, Specification::and);
+            return certificateRepository.findAll(finalSpecification, PageRequest.of(page, limit, Sort.by(orders))).getContent();
+        }
     }
 
     /**
