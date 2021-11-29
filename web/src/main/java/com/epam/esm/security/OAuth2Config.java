@@ -1,6 +1,8 @@
 package com.epam.esm.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,8 +19,22 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 @EnableAuthorizationServer
 public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 
-    private AuthenticationManager authenticationManager;
-    private PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder;
+    @Value("${jwt.signinKey}")
+    private String key;
+    @Value("${oauth2.client}")
+    private String client;
+    @Value("${oauth2.secret}")
+    private String secret;
+    @Value("${oauth2.client.scope}")
+    private String[] scopes;
+    @Value("${oauth2.client.grantType}")
+    private String[] grantTypes;
+    @Value("${oauth2.accessToken.validity}")
+    private int accessTokenValiditySeconds;
+    @Value("${oauth2.refreshToken.validity}")
+    private int refreshTokenValiditySeconds;
 
     @Autowired
     public OAuth2Config(AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder) {
@@ -29,7 +45,7 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
     @Bean
     public JwtAccessTokenConverter tokenConverter() {
         JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
-        converter.setSigningKey("key");
+        converter.setSigningKey(key);
         return converter;
     }
 
@@ -45,9 +61,9 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        clients.inMemory().withClient("client").secret(passwordEncoder.encode("secret")).scopes("read", "write", "order")
-                .authorizedGrantTypes("password", "refresh_token", "implicit").accessTokenValiditySeconds(20000)
-                .refreshTokenValiditySeconds(20000);
+        clients.inMemory().withClient(client).secret(passwordEncoder.encode(secret)).scopes(scopes)
+                .authorizedGrantTypes(grantTypes).accessTokenValiditySeconds(accessTokenValiditySeconds)
+                .refreshTokenValiditySeconds(refreshTokenValiditySeconds);
     }
 
 
