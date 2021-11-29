@@ -4,10 +4,18 @@ import com.epam.esm.model.Certificate;
 import com.epam.esm.model.Order;
 import com.epam.esm.model.Tag;
 import com.epam.esm.model.User;
+import com.epam.esm.repository.OffsetPageable;
+import com.epam.esm.repository.OrderRepository;
+import com.epam.esm.repository.UserRepository;
 import com.epam.esm.validation.InvalidResourceException;
 import com.epam.esm.validation.InvalidUserException;
 import com.epam.esm.validation.UserValidator;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -18,10 +26,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class UserRestServiceTest {
-    private final UserDao userDao = mock(UserDao.class);
-    private final OrderDao orderDao = mock(OrderDao.class);
+    private final UserRepository userRepository = mock(UserRepository.class);
+    private final OrderRepository orderRepository = mock(OrderRepository.class);
     private final UserValidator userValidator = mock(UserValidator.class);
-    private final UserRestService service = new UserRestService(userDao, orderDao, userValidator);
+    private final PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
+    private final UserRestService service = new UserRestService(userRepository, orderRepository, userValidator, passwordEncoder);
     private final User user = new User(1, "user", "user");
     private final Certificate certificate = new Certificate(1, "test", "test", 100.0, 10, LocalDateTime.now(), LocalDateTime.now());
     private final Order order = new Order(certificate.getPrice(), certificate);
@@ -29,93 +38,101 @@ class UserRestServiceTest {
     @Test
     public void findPage_shouldReturnUsersOnPage() throws PageOutOfBoundsException, InvalidPageException {
         List<User> users = Collections.singletonList(user);
-        when(userDao.getTotalElements()).thenReturn(1);
-        when(userDao.findPage(0, 10)).thenReturn(users);
+        Page<User> page = new PageImpl<>(users);
+        when(userRepository.count()).thenReturn(1L);
+        OffsetPageable offsetPageable = new OffsetPageable(0, 10);
+        when(userRepository.findAll(offsetPageable)).thenReturn(page);
 
         List<User> usersOnPage = service.findPage(0, 10);
 
         assertEquals(users, usersOnPage);
-        verify(userDao, atLeastOnce()).getTotalElements();
-        verify(userDao).findPage(0, 10);
+        verify(userRepository, atLeastOnce()).count();
+        verify(userRepository).findAll(offsetPageable);
     }
 
     @Test
     public void findPage_shouldThrowExceptionIfOffsetGreaterThenTotalElements() {
-        when(userDao.getTotalElements()).thenReturn(1);
+        when(userRepository.count()).thenReturn(1L);
 
         assertThrows(PageOutOfBoundsException.class, () -> service.findPage(10, 10));
 
-        verify(userDao).getTotalElements();
+        verify(userRepository).count();
     }
 
     @Test
     public void findPage_shouldThrowExceptionIfOffsetIsNegative() {
-        when(userDao.getTotalElements()).thenReturn(1);
+        when(userRepository.count()).thenReturn(1L);
 
         assertThrows(InvalidPageException.class, () -> service.findPage(-10, 10));
 
-        verify(userDao).getTotalElements();
+        verify(userRepository).count();
     }
 
     @Test
     public void findById_shouldReturnUser() throws ResourceNotFoundException {
-        when(userDao.findById(1)).thenReturn(Optional.of(user));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
         User foundUser = service.findById(1);
 
         assertEquals(user, foundUser);
-        verify(userDao).findById(1);
+        verify(userRepository).findById(1L);
     }
 
     @Test
     public void findById_shouldThrowExceptionIfThereIsNoUsersWithId() {
-        when(userDao.findById(1)).thenReturn(Optional.empty());
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> service.findById(1));
 
-        verify(userDao).findById(1);
+        verify(userRepository).findById(1L);
     }
 
     @Test
     public void findRichestUser_shouldReturnUser() {
-        when(userDao.findRichestUser()).thenReturn(user);
+        Page<User> page = new PageImpl<>(Collections.singletonList(user));
+        OffsetPageable offsetPageable = new OffsetPageable(0, 1);
+        when(userRepository.sortByUsersByCostDesc(offsetPageable)).thenReturn(page);
 
         User richestUser = service.findRichestUser();
 
         assertEquals(user, richestUser);
-        verify(userDao).findRichestUser();
+        verify(userRepository).sortByUsersByCostDesc(offsetPageable);
     }
 
     @Test
     public void findRichestUserPopularTag_shouldReturnUserTag() {
         Tag popularTag = new Tag(1, "tag");
-        when(userDao.findRichestUserPopularTag()).thenReturn(popularTag);
+        Page<Tag> page = new PageImpl<>(Collections.singletonList(popularTag));
+        Page<User> usersPage = new PageImpl<>(Collections.singletonList(user));
+        OffsetPageable offsetPageable = new OffsetPageable(0, 1);
+        when(userRepository.sortByUsersByCostDesc(offsetPageable)).thenReturn(usersPage);
+        when(userRepository.sortUserTagsByCountDesc(1, offsetPageable)).thenReturn(page);
 
         Tag foundTag = service.findRichestUserPopularTag();
 
         assertEquals(popularTag, foundTag);
-        verify(userDao).findRichestUserPopularTag();
+        verify(userRepository).sortUserTagsByCountDesc(1, offsetPageable);
     }
 
     @Test
     public void getTotalElements_shouldReturnNotNegativeValue() {
-        when(userDao.getTotalElements()).thenReturn(1);
+        when(userRepository.count()).thenReturn(1L);
 
         int totalElements = service.getTotalElements();
 
         assertTrue(totalElements >= 0);
         assertEquals(1, totalElements);
-        verify(userDao).getTotalElements();
+        verify(userRepository).count();
     }
 
     @Test
     public void save_shouldSaveUser() throws InvalidResourceException {
-        when(userDao.save(user)).thenReturn(user);
+        when(userRepository.save(user)).thenReturn(user);
 
         User savedUser = service.save(user);
 
         assertEquals(user, savedUser);
-        verify(userDao).save(user);
+        verify(userRepository).save(user);
     }
 
     @Test
@@ -130,12 +147,12 @@ class UserRestServiceTest {
     @Test
     public void update_shouldUpdateUser() throws InvalidResourceException {
         user.setUsername("updated");
-        when(userDao.update(user)).thenReturn(user);
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
 
         User updatedUser = service.update(user);
 
         assertEquals(user, updatedUser);
-        verify(userDao).update(user);
+        verify(userRepository).findById(user.getId());
     }
 
     @Test
@@ -149,65 +166,75 @@ class UserRestServiceTest {
 
     @Test
     public void delete_shouldDeleteUser() {
-        doNothing().when(userDao).delete(user);
+        doNothing().when(userRepository).delete(user);
 
         service.delete(user);
 
-        verify(userDao).delete(user);
+        verify(userRepository).delete(user);
     }
 
     @Test
     public void orderCertificate_musReturnOrder() {
-        when(orderDao.save(any(Order.class))).thenReturn(order);
-        doNothing().when(orderDao).setUserToOrder(user.getId(), order.getId());
+        when(orderRepository.save(any(Order.class))).thenReturn(order);
 
         Order madeOrder = service.orderCertificate(user, certificate);
 
         assertEquals(order, madeOrder);
-        verify(orderDao).save(any(Order.class));
-        verify(orderDao).setUserToOrder(user.getId(), order.getId());
+        verify(orderRepository).save(any(Order.class));
     }
 
     @Test
     public void findUserOrdersPage_shouldReturnOrders() throws PageOutOfBoundsException, InvalidPageException {
         List<Order> orders = Collections.singletonList(order);
-        when(orderDao.getUserOrdersTotalElements(user.getId())).thenReturn(1);
-        when(orderDao.findUserOrdersPage(user.getId(), 0, 10)).thenReturn(orders);
+        Page<Order> page = new PageImpl<>(orders);
+        OffsetPageable offsetPageable = new OffsetPageable(0, 10);
+        when(orderRepository.getUserOrdersTotalElements(user.getId())).thenReturn(1);
+        when(orderRepository.findUserOrdersPage(user.getId(), offsetPageable)).thenReturn(page);
 
         List<Order> ordersOnPage = service.findUserOrderPage(user, 0, 10);
 
         assertEquals(orders, ordersOnPage);
-        verify(orderDao, atLeastOnce()).getUserOrdersTotalElements(user.getId());
-        verify(orderDao).findUserOrdersPage(user.getId(), 0, 10);
+        verify(orderRepository, atLeastOnce()).getUserOrdersTotalElements(user.getId());
+        verify(orderRepository).findUserOrdersPage(user.getId(), offsetPageable);
     }
 
     @Test
     public void findUserOrderPage_shouldThrowExceptionIfOffsetIsGreaterThenTotalElements() {
-        when(orderDao.getUserOrdersTotalElements(user.getId())).thenReturn(1);
+        when(orderRepository.getUserOrdersTotalElements(user.getId())).thenReturn(1);
 
         assertThrows(PageOutOfBoundsException.class, () -> service.findUserOrderPage(user, 100, 10));
 
-        verify(orderDao).getUserOrdersTotalElements(user.getId());
+        verify(orderRepository).getUserOrdersTotalElements(user.getId());
     }
 
     @Test
     public void findUserOrderPage_shouldThrowExceptionIFOffsetIsNegative() {
-        when(orderDao.getUserOrdersTotalElements(user.getId())).thenReturn(1);
+        when(orderRepository.getUserOrdersTotalElements(user.getId())).thenReturn(1);
 
         assertThrows(InvalidPageException.class, () -> service.findUserOrderPage(user, -10, 10));
 
-        verify(orderDao).getUserOrdersTotalElements(user.getId());
+        verify(orderRepository).getUserOrdersTotalElements(user.getId());
     }
 
     @Test
     public void getUserOrdersTotalElements_shouldReturnPositiveValue() {
-        when(orderDao.getUserOrdersTotalElements(user.getId())).thenReturn(1);
+        when(orderRepository.getUserOrdersTotalElements(user.getId())).thenReturn(1);
 
         int userOrdersTotalElements = service.getUserOrdersTotalElements(user);
 
         assertTrue(userOrdersTotalElements >= 0);
         assertEquals(1, userOrdersTotalElements);
-        verify(orderDao).getUserOrdersTotalElements(user.getId());
+        verify(orderRepository).getUserOrdersTotalElements(user.getId());
     }
 
+    @Test
+    public void loadByUsername_shouldFindSavedUserWithName() {
+        when(userRepository.findByUsername("user")).thenReturn(Optional.of(user));
+
+        UserDetails details = service.loadUserByUsername("user");
+        assertEquals(user.getUsername(), details.getUsername());
+        assertEquals(user.getPassword(), details.getPassword());
+
+        verify(userRepository).findByUsername("user");
+    }
 }

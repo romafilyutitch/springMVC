@@ -3,6 +3,8 @@ package com.epam.esm.repository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+import java.util.Objects;
+
 public class OffsetPageable implements Pageable {
 
     private final int offset;
@@ -65,4 +67,19 @@ public class OffsetPageable implements Pageable {
     public boolean hasPrevious() {
         return offset > 0;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        OffsetPageable that = (OffsetPageable) o;
+        return offset == that.offset && limit == that.limit && Objects.equals(sort, that.sort);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(offset, limit, sort);
+    }
+
+
 }

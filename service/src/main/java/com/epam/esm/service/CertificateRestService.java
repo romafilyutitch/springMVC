@@ -67,7 +67,6 @@ public class CertificateRestService implements CertificateService {
     @Override
     public List<Certificate> findPage(int offset, int limit) throws InvalidPageException, PageOutOfBoundsException {
         checkPage(offset, limit, (int) certificateRepository.count());
-        int page = (offset / limit) + 1;
         Pageable pageable = new OffsetPageable(offset, limit);
         return certificateRepository.findAll(pageable).getContent();
     }
@@ -94,7 +93,7 @@ public class CertificateRestService implements CertificateService {
         } else {
             Specification<Certificate> firstSpecification = specifications.remove(0);
             Specification<Certificate> finalSpecification = specifications.stream().reduce(firstSpecification, Specification::and);
-            return certificateRepository.findAll(finalSpecification, PageRequest.of(page, limit, Sort.by(orders))).getContent();
+            return certificateRepository.findAll(finalSpecification, offsetPageable).getContent();
         }
     }
 
@@ -253,7 +252,6 @@ public class CertificateRestService implements CertificateService {
     @Override
     public List<Tag> findCertificateTagsPage(Certificate foundCertificate, int offset, int limit) throws PageOutOfBoundsException, InvalidPageException {
         checkPage(offset, limit, tagRepository.getCertificateTagsTotalElements(foundCertificate.getId()));
-        int page = (offset / limit);
         Pageable pageable = new OffsetPageable(offset, limit);
         return tagRepository.findCertificateTagsPage(foundCertificate.getId(), pageable).getContent();
     }

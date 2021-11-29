@@ -12,6 +12,7 @@ import com.epam.esm.validation.InvalidResourceException;
 import com.epam.esm.validation.UserValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -90,8 +91,10 @@ public class UserRestService implements UserService, UserDetailsService {
      */
     @Override
     public User findRichestUser() {
-        PageRequest pageable = PageRequest.of(0, 1);
-        User richestUser = userRepository.sortByUsersByCostDesc(pageable).getContent().get(0);
+        OffsetPageable offsetPageable = new OffsetPageable(0, 1);
+        Page<User> page = userRepository.sortByUsersByCostDesc(offsetPageable);
+        List<User> users = page.getContent();
+        User richestUser = users.get(0);
         logger.info(String.format("Richest user was found %s", richestUser));
         return richestUser;
     }
@@ -106,8 +109,8 @@ public class UserRestService implements UserService, UserDetailsService {
     @Override
     public Tag findRichestUserPopularTag() {
         User richestUser = findRichestUser();
-        PageRequest pageable = PageRequest.of(0, 1);
-        Tag richestUserPopularTag = userRepository.sortUserTagsByCountDesc(richestUser.getId(), pageable).getContent().get(0);
+        OffsetPageable offsetPageable = new OffsetPageable(0, 1);
+        Tag richestUserPopularTag = userRepository.sortUserTagsByCountDesc(richestUser.getId(), offsetPageable).getContent().get(0);
         logger.info(String.format("Richest user popular tag is %s", richestUserPopularTag));
         return richestUserPopularTag;
     }
