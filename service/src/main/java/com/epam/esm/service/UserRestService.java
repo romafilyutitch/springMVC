@@ -12,7 +12,9 @@ import com.epam.esm.validation.InvalidResourceException;
 import com.epam.esm.validation.UserValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,6 +22,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -86,7 +90,8 @@ public class UserRestService implements UserService, UserDetailsService {
      */
     @Override
     public User findRichestUser() {
-        User richestUser = userRepository.findRichestUser();
+        PageRequest pageable = PageRequest.of(0, 1);
+        User richestUser = userRepository.sortByUsersByCostDesc(pageable).getContent().get(0);
         logger.info(String.format("Richest user was found %s", richestUser));
         return richestUser;
     }
@@ -100,7 +105,9 @@ public class UserRestService implements UserService, UserDetailsService {
      */
     @Override
     public Tag findRichestUserPopularTag() {
-        Tag richestUserPopularTag = userRepository.findRichestUserPopularTag();
+        User richestUser = findRichestUser();
+        PageRequest pageable = PageRequest.of(0, 1);
+        Tag richestUserPopularTag = userRepository.sortUserTagsByCountDesc(richestUser.getId(), pageable).getContent().get(0);
         logger.info(String.format("Richest user popular tag is %s", richestUserPopularTag));
         return richestUserPopularTag;
     }
