@@ -1,5 +1,6 @@
 package com.epam.esm.security;
 
+import com.epam.esm.model.Role;
 import com.epam.esm.model.User;
 import com.epam.esm.service.UserService;
 import com.epam.esm.service.UsernameNotFoundException;
@@ -22,26 +23,15 @@ public class UserSecurity {
     public boolean hasUserId(Authentication authentication, long userId) throws UsernameNotFoundException {
         String username = (String) authentication.getPrincipal();
         User foundUser = userService.findByUsername(username);
-        boolean isAdmin = foundUser.getRoles().stream()
-                .anyMatch(role -> role.getName().equals("ROLE_ADMIN"));
-        if (isAdmin) {
-            return true;
-        } else {
-            return foundUser.getId() == userId;
-        }
+        boolean isAdmin = foundUser.getRole().equals(Role.ROLE_ADMIN);
+        return isAdmin || foundUser.getId() == userId;
+
     }
 
     public boolean canOrder(Authentication authentication, User orderUser) throws UsernameNotFoundException {
         String username = (String) authentication.getPrincipal();
         User foundUser = userService.findByUsername(username);
-        boolean isAdmin = foundUser.getRoles().stream()
-                .anyMatch(role -> role.getName().equals("ROLE_ADMIN"));
-        if (isAdmin) {
-            return true;
-        } else {
-            long foundUserId = foundUser.getId();
-            long orderUserId = orderUser.getId();
-            return foundUserId == orderUserId;
-        }
+        boolean isAdmin = foundUser.getRole().equals(Role.ROLE_ADMIN);
+        return isAdmin || foundUser.getId() == orderUser.getId();
     }
 }

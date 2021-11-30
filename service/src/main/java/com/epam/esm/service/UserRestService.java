@@ -131,7 +131,7 @@ public class UserRestService implements UserService {
             throw new UsernameExistsException(entity.getUsername());
         }
         entity.setPassword(passwordEncoder.encode(entity.getPassword()));
-        entity.getRoles().add(new Role("ROLE_USER"));
+        entity.setRole(Role.ROLE_USER);
         User savedUser = userRepository.save(entity);
         logger.info(String.format("User was saved %s", savedUser));
         return savedUser;

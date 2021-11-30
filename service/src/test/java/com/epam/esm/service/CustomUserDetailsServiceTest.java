@@ -1,5 +1,6 @@
 package com.epam.esm.service;
 
+import com.epam.esm.model.Role;
 import com.epam.esm.model.User;
 import com.epam.esm.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -19,12 +20,12 @@ class CustomUserDetailsServiceTest {
 
     @Test
     public void loadUserByUsername_shouldReturnUserDetails() {
+        user.setRole(Role.ROLE_USER);
         when(repository.findByUsername(user.getUsername())).thenReturn(Optional.of(user));
-
         UserDetails userDetails = service.loadUserByUsername(user.getUsername());
         assertEquals(user.getUsername(), userDetails.getUsername());
         assertEquals(user.getPassword(), userDetails.getPassword());
-        assertTrue(userDetails.getAuthorities().isEmpty());
+        assertEquals(1, userDetails.getAuthorities().size());
 
         verify(repository).findByUsername(user.getUsername());
     }

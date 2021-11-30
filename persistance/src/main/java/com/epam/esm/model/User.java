@@ -4,6 +4,8 @@ import org.hibernate.annotations.Cascade;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -26,10 +28,9 @@ public class User extends Entity {
     @OneToMany(targetEntity = Order.class, cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private List<Order> orders = new ArrayList<>();
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-    @Cascade(org.hibernate.annotations.CascadeType.ALL)
-    private Set<Role> roles = new HashSet<>();
+    @Column(name = "role")
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     public User() {
     }
@@ -64,12 +65,12 @@ public class User extends Entity {
         this.orders = orders;
     }
 
-    public Set<Role> getRoles() {
-        return roles;
+    public Role getRole() {
+        return role;
     }
 
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
+    public void setRole(Role role) {
+        this.role = role;
     }
 
     @Override
@@ -78,12 +79,12 @@ public class User extends Entity {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         User user = (User) o;
-        return Objects.equals(username, user.username) && Objects.equals(password, user.password) && Objects.equals(orders, user.orders) && Objects.equals(roles, user.roles);
+        return Objects.equals(username, user.username) && Objects.equals(password, user.password) && Objects.equals(orders, user.orders) && role == user.role;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), username, password, orders, roles);
+        return Objects.hash(super.hashCode(), username, password, orders, role);
     }
 
     @Override
@@ -92,7 +93,7 @@ public class User extends Entity {
                 "username='" + username + '\'' +
                 ", password='" + password + '\'' +
                 ", orders=" + orders +
-                ", roles=" + roles +
+                ", role=" + role +
                 '}';
     }
 }
