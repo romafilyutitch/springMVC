@@ -146,7 +146,6 @@ public class CertificateRestService implements CertificateService {
     @Override
     @Transactional
     public Certificate update(Certificate certificate) throws InvalidResourceException, ResourceNotFoundException {
-        certificateValidator.validate(certificate);
         Certificate certificateFromTable = findById(certificate.getId());
         certificateFromTable.setName(certificate.getName() == null ? certificateFromTable.getName() : certificate.getName());
         certificateFromTable.setDescription(certificate.getDescription() == null ? certificateFromTable.getDescription() : certificate.getDescription());
