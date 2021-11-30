@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Principal;
 import java.util.List;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -154,5 +155,20 @@ public class UserController {
     public User saveUser(@RequestBody User user) throws InvalidResourceException, InvalidPageException, ResourceNotFoundException, PageOutOfBoundsException {
         User savedUser = userService.save(user);
         return linksBuilder.buildLinks(savedUser);
+    }
+
+
+    /**
+     * Finds current user data (username, encrypted password, orders).
+     * @param principal user principal
+     * @return current user
+     * @throws InvalidPageException if offset is negative or limit is equal or less then zero
+     * @throws ResourceNotFoundException if saved user is not found
+     * @throws PageOutOfBoundsException if offset is greater then users amount
+     */
+    @GetMapping("/me")
+    public User showCurrentUser(Principal principal) throws InvalidPageException, ResourceNotFoundException, PageOutOfBoundsException {
+        User foundUser  = userService.findByUsername(principal.getName());
+        return linksBuilder.buildLinks(foundUser);
     }
 }

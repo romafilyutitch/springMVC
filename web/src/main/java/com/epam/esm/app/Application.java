@@ -11,8 +11,6 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 
 @SpringBootApplication(scanBasePackages = "com.epam.esm")
-@EntityScan(basePackages = {"com.epam.esm.model"} )
-@EnableJpaRepositories(basePackages = {"com.epam.esm.repository"})
 public class Application {
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
