@@ -9,6 +9,7 @@ import com.epam.esm.service.PageOutOfBoundsException;
 import com.epam.esm.service.ResourceNotFoundException;
 import com.epam.esm.service.UserService;
 import com.epam.esm.service.UsernameExistsException;
+import com.epam.esm.service.UsernameNotFoundException;
 import com.epam.esm.validation.InvalidResourceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
@@ -169,7 +170,7 @@ public class UserController {
      * @throws PageOutOfBoundsException  if offset is greater then users amount
      */
     @GetMapping("/me")
-    public User showCurrentUser(Principal principal) throws InvalidPageException, ResourceNotFoundException, PageOutOfBoundsException {
+    public User showCurrentUser(Principal principal) throws InvalidPageException, ResourceNotFoundException, PageOutOfBoundsException, UsernameNotFoundException {
         User foundUser = userService.findByUsername(principal.getName());
         return linksBuilder.buildLinks(foundUser);
     }
