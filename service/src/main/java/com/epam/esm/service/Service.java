@@ -34,7 +34,7 @@ public interface Service<T extends Entity> {
      * @return saved entity with assigned id
      * @throws InvalidResourceException if saved entity is invalid
      */
-    T save(T entity) throws InvalidResourceException;
+    T save(T entity) throws InvalidResourceException, UsernameExistsException;
 
     /**
      * Updated entity and returns updated entity

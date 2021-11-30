@@ -134,8 +134,12 @@ public class UserRestService implements UserService, UserDetailsService {
      */
     @Override
     @Transactional
-    public User save(User entity) throws InvalidResourceException {
+    public User save(User entity) throws InvalidResourceException, UsernameExistsException {
         userValidator.validate(entity);
+        Optional<User> optionalUser = userRepository.findByUsername(entity.getUsername());
+        if (optionalUser.isPresent()) {
+            throw new UsernameExistsException(entity.getUsername());
+        }
         entity.setPassword(passwordEncoder.encode(entity.getPassword()));
         entity.getRoles().add(new Role("ROLE_USER"));
         User savedUser = userRepository.save(entity);

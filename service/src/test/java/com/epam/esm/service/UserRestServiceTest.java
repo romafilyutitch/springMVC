@@ -126,12 +126,13 @@ class UserRestServiceTest {
     }
 
     @Test
-    public void save_shouldSaveUser() throws InvalidResourceException {
+    public void save_shouldSaveUser() throws InvalidResourceException, UsernameExistsException {
+        when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.empty());
         when(userRepository.save(user)).thenReturn(user);
-
         User savedUser = service.save(user);
 
         assertEquals(user, savedUser);
+        verify(userRepository).findByUsername(user.getUsername());
         verify(userRepository).save(user);
     }
 

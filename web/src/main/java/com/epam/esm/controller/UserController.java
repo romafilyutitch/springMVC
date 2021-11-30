@@ -8,6 +8,7 @@ import com.epam.esm.service.InvalidPageException;
 import com.epam.esm.service.PageOutOfBoundsException;
 import com.epam.esm.service.ResourceNotFoundException;
 import com.epam.esm.service.UserService;
+import com.epam.esm.service.UsernameExistsException;
 import com.epam.esm.validation.InvalidResourceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
@@ -152,7 +153,7 @@ public class UserController {
      * @throws PageOutOfBoundsException  if offset is greater then users amount
      */
     @PostMapping("/signup")
-    public User saveUser(@RequestBody User user) throws InvalidResourceException, InvalidPageException, ResourceNotFoundException, PageOutOfBoundsException {
+    public User saveUser(@RequestBody User user) throws InvalidResourceException, InvalidPageException, ResourceNotFoundException, PageOutOfBoundsException, UsernameExistsException {
         User savedUser = userService.save(user);
         return linksBuilder.buildLinks(savedUser);
     }
