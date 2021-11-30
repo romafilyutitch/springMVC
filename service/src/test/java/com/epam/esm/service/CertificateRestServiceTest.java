@@ -8,17 +8,22 @@ import com.epam.esm.repository.CertificateRepository;
 import com.epam.esm.repository.OffsetPageable;
 import com.epam.esm.repository.OrderRepository;
 import com.epam.esm.repository.TagRepository;
-import com.epam.esm.validation.*;
+import com.epam.esm.validation.CertificateValidator;
+import com.epam.esm.validation.InvalidCertificateException;
+import com.epam.esm.validation.InvalidResourceException;
+import com.epam.esm.validation.InvalidTagException;
+import com.epam.esm.validation.TagValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;

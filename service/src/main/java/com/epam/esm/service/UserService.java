@@ -73,5 +73,5 @@ public interface UserService extends Service<User> {
      */
     Order findUserOrder(User foundUser, long orderId) throws ResourceNotFoundException;
 
-    User findByUsername(String username);
+    User findByUsername(String username) throws UsernameNotFoundException;
 }

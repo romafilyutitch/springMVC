@@ -27,29 +27,24 @@ import java.util.Map;
 @Component
 public class FindCertificatesQueryBuilder {
 
-    public static final String JOIN_ATTRIBUTE_NAME = "tags";
     public static final String SORT_BY_DATE_PARAMETER_KEY = "sortByDate";
     public static final String SORT_BY_NAME_PARAMETER_KEY = "sortByName";
     public static final String ASCENDING_ORDER_VALUE = "asc";
     public static final String DESCENDING_ORDER_VALUE = "desc";
-    public static final String CREATE_DATE_ATTRIBUTE = "createDate";
     public static final String NAME_ATTRIBUTE = "name";
     public static final String TAG_NAME_ATTRIBUTE_KEY = "tagName";
-    public static final String TAG_NAME_ATTRIBUTE = "name";
     public static final String COMMA = ",";
     public static final String PART_OF_DESCRIPTION_PARAMETER_KEY = "partOfDescription";
     public static final String PART_OF_NAME_PARAMETER_KEY = "partOfName";
     public static final String DESCRIPTION_ATTRIBUTE = "description";
     public static final String LIKE_PATTERN = "%%%s%%";
-    public static final String ID_ATTRIBUTE = "id";
 
     /**
      * Build sql find all query that by passed parameters. argument map contains
      * keys that define parameter then appropriate sql query will be built.
      * If parameters map contains keys for order then sql will be build with order statement
      *
-     * @param findParameters  parameters map that define find certificate parameters
-     * @param criteriaBuilder builder to build HCQL query
+     * @param findParameters parameters map that define find certificate parameters
      * @return built sql find all certificates statement that defined by passed parameters map
      */
     public List<Specification<Certificate>> buildSpecifications(LinkedHashMap<String, String> findParameters) {

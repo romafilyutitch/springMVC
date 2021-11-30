@@ -13,8 +13,6 @@ import com.epam.esm.validation.UserValidator;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
@@ -146,7 +144,7 @@ class UserRestServiceTest {
     }
 
     @Test
-    public void update_shouldUpdateUser() throws InvalidResourceException {
+    public void update_shouldUpdateUser() throws InvalidResourceException, UserNotFoundException {
         user.setUsername("updated");
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
 
@@ -229,13 +227,22 @@ class UserRestServiceTest {
     }
 
     @Test
-    public void loadByUsername_shouldFindSavedUserWithName() {
-        when(userRepository.findByUsername("user")).thenReturn(Optional.of(user));
+    public void findByUsername_shouldReturnSavedUserByUsername() throws UsernameNotFoundException {
+        when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.of(user));
 
-        UserDetails details = service.loadUserByUsername("user");
-        assertEquals(user.getUsername(), details.getUsername());
-        assertEquals(user.getPassword(), details.getPassword());
+        User foundUser = service.findByUsername(user.getUsername());
+        assertEquals(user, foundUser);
 
-        verify(userRepository).findByUsername("user");
+
+        verify(userRepository).findByUsername(user.getUsername());
+    }
+
+    @Test
+    public void findByUserName_shouldThrowExceptionIfThereIsNoUserWithName() {
+        when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.empty());
+
+        assertThrows(UsernameNotFoundException.class, () -> service.findByUsername(user.getUsername()));
+
+        verify(userRepository).findByUsername(user.getUsername());
     }
 }

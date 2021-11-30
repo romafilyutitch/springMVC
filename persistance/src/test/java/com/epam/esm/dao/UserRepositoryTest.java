@@ -7,11 +7,9 @@ import com.epam.esm.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 
 import javax.transaction.Transactional;
@@ -19,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 @SpringBootTest(classes = PersistanceConfiguration.class)
 @ActiveProfiles("dev")
 @Sql(scripts = {"classpath:delete.sql", "classpath:data.sql"})
@@ -53,7 +52,7 @@ class UserRepositoryTest {
 
     @Test
     public void findRichestUser_shouldReturnNotNullUser() {
-        List<User> users = repository.sortByUsersByCostDesc(PageRequest.of(0,10)).getContent();
+        List<User> users = repository.sortByUsersByCostDesc(PageRequest.of(0, 10)).getContent();
         users.forEach(System.out::println);
     }
 
@@ -62,8 +61,4 @@ class UserRepositoryTest {
         List<Tag> tags = repository.sortUserTagsByCountDesc(1L, PageRequest.of(0, 10)).getContent();
         System.out.println(tags);
     }
-
-    
-
-
 }

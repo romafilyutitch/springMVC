@@ -14,13 +14,10 @@ import com.epam.esm.validation.TagValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import sun.java2d.loops.Blit;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
@@ -84,7 +81,6 @@ public class CertificateRestService implements CertificateService {
     @Override
     public List<Certificate> findAllWithParameters(LinkedHashMap<String, String> findParameters, int offset, int limit) throws InvalidPageException, PageOutOfBoundsException {
         checkPage(offset, limit, (int) certificateRepository.count());
-        int page = offset / limit;
         List<Specification<Certificate>> specifications = builder.buildSpecifications(findParameters);
         List<Sort.Order> orders = builder.buildOrders(findParameters);
         OffsetPageable offsetPageable = new OffsetPageable(offset, limit, Sort.by(orders));
@@ -301,7 +297,6 @@ public class CertificateRestService implements CertificateService {
     @Override
     public List<Order> findCertificateOrders(Certificate certificate, int offset, int limit) throws InvalidPageException, PageOutOfBoundsException {
         checkPage(offset, limit, orderRepository.getCertificateOrdersTotalElements(certificate.getId()));
-        int page = (offset / limit) + 1;
         Pageable pageable = new OffsetPageable(offset, limit);
         List<Order> certificateOrders = orderRepository.findCertificateOrders(certificate.getId(), pageable).getContent();
         logger.info(String.format("Certificate with id %d orders were found %s", certificate.getId(), certificateOrders));

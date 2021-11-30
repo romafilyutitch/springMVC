@@ -13,27 +13,17 @@ import com.epam.esm.validation.UserValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.JoinType;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class UserRestService implements UserService, UserDetailsService {
+public class UserRestService implements UserService {
     private static final Logger logger = LogManager.getLogger(CertificateRestService.class);
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
@@ -58,8 +48,7 @@ public class UserRestService implements UserService, UserDetailsService {
      */
     @Override
     public List<User> findPage(int offset, int limit) throws InvalidPageException, PageOutOfBoundsException {
-        checkPage(offset, limit,  (int) userRepository.count());
-        int page = (offset / limit) + 1;
+        checkPage(offset, limit, (int) userRepository.count());
         Pageable pageable = new OffsetPageable(offset, limit);
         return userRepository.findAll(pageable).getContent();
     }
@@ -131,6 +120,7 @@ public class UserRestService implements UserService, UserDetailsService {
      * @param entity that need to be saved
      * @return saved entity with assigned id
      * @throws InvalidResourceException if saved entity is invalid
+     * @throws UsernameExistsException if there is user with passed username
      */
     @Override
     @Transactional
@@ -156,9 +146,12 @@ public class UserRestService implements UserService, UserDetailsService {
      */
     @Override
     @Transactional
-    public User update(User entity) throws InvalidResourceException {
+    public User update(User entity) throws InvalidResourceException, UserNotFoundException {
         userValidator.validate(entity);
         Optional<User> optionalUser = userRepository.findById(entity.getId());
+        if (!optionalUser.isPresent()) {
+            throw new UserNotFoundException(entity.getId());
+        }
         User savedUser = optionalUser.get();
         savedUser.setUsername(entity.getUsername());
         savedUser.setUsername(passwordEncoder.encode(entity.getPassword()));
@@ -209,7 +202,6 @@ public class UserRestService implements UserService, UserDetailsService {
     @Override
     public List<Order> findUserOrderPage(User user, int offset, int limit) throws PageOutOfBoundsException, InvalidPageException {
         checkPage(offset, limit, orderRepository.getUserOrdersTotalElements(user.getId()));
-        int page = (offset / limit) + 1;
         Pageable pageable = new OffsetPageable(offset, limit);
         return orderRepository.findUserOrdersPage(user.getId(), pageable).getContent();
     }
@@ -254,18 +246,18 @@ public class UserRestService implements UserService, UserDetailsService {
         }
     }
 
+    /**
+     * Finds User that has passed username
+     * @param username username that need to belong to user
+     * @return user that has passed string as username
+     * @throws UsernameNotFoundException if there is no user with passed username
+     */
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public User findByUsername(String username) throws UsernameNotFoundException {
         Optional<User> optionalUser = userRepository.findByUsername(username);
-        User user = optionalUser.orElseThrow(() -> new UsernameNotFoundException(String.format("User with name %s was not found", username)));
-        Collection<SimpleGrantedAuthority> grantedAuthorities = new ArrayList<>();
-        user.getRoles().forEach(role -> grantedAuthorities.add(new SimpleGrantedAuthority(role.getName())));
-        return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), grantedAuthorities);
-    }
-
-    @Override
-    public User findByUsername(String username) {
-        Optional<User> optionalUser = userRepository.findByUsername(username);
+        if (!optionalUser.isPresent()) {
+            throw new UsernameNotFoundException(username);
+        }
         return optionalUser.get();
     }
 

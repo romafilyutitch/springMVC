@@ -11,6 +11,7 @@ import com.epam.esm.service.InvalidPageException;
 import com.epam.esm.service.PageOutOfBoundsException;
 import com.epam.esm.service.ResourceNotFoundException;
 import com.epam.esm.service.UserService;
+import com.epam.esm.service.UsernameExistsException;
 import com.epam.esm.validation.InvalidResourceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.PagedModel;
@@ -92,7 +93,7 @@ public class CertificateController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("#oauth2.hasScope('write') && hasAuthority('ROLE_ADMIN')")
-    public Certificate saveCertificate(@RequestBody Certificate certificate) throws InvalidResourceException, ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException {
+    public Certificate saveCertificate(@RequestBody Certificate certificate) throws InvalidResourceException, ResourceNotFoundException, PageOutOfBoundsException, InvalidPageException, UsernameExistsException {
         Certificate savedCertificate = certificateService.save(certificate);
         return certificateLinksBuilder.buildLinks(savedCertificate);
     }

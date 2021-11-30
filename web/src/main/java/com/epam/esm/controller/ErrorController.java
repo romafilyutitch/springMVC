@@ -10,6 +10,7 @@ import com.epam.esm.service.ResourceNotFoundException;
 import com.epam.esm.service.TagNotFoundException;
 import com.epam.esm.service.UserNotFoundException;
 import com.epam.esm.service.UsernameExistsException;
+import com.epam.esm.service.UsernameNotFoundException;
 import com.epam.esm.validation.InvalidCertificateException;
 import com.epam.esm.validation.InvalidTagException;
 import com.epam.esm.validation.InvalidUserException;
@@ -181,14 +182,29 @@ public class ErrorController {
 
     /**
      * Handles {@link UsernameExistsException}
+     *
      * @param exception occured exception
-     * @param locale client locale
+     * @param locale    client locale
      * @return error response
      */
     @ExceptionHandler(UsernameExistsException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Error usernameExists(UsernameExistsException exception, Locale locale) {
-        String message = messageSource.getMessage("user.usernameExists", new Object[] {exception.getUsername()}, locale);
+        String message = messageSource.getMessage("user.usernameExists", new Object[]{exception.getUsername()}, locale);
+        return new Error(ErrorCode.INVALID.getCode(), message);
+    }
+
+    /**
+     * Handles {@link UsernameNotFoundException}
+     *
+     * @param exception occured exception
+     * @param locale    client locale
+     * @return error response
+     */
+    @ExceptionHandler(UsernameNotFoundException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Error usernameNotFound(UsernameNotFoundException exception, Locale locale) {
+        String message = messageSource.getMessage("user.usernameNotFound", new Object[]{exception.getUsername()}, locale);
         return new Error(ErrorCode.INVALID.getCode(), message);
     }
 }

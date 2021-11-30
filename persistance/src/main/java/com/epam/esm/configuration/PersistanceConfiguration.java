@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @Configuration
 @EnableAutoConfiguration
-@EntityScan(basePackages = {"com.epam.esm.model"} )
+@EntityScan(basePackages = {"com.epam.esm.model"})
 @EnableJpaRepositories(basePackages = {"com.epam.esm.repository"})
 public class PersistanceConfiguration {
 }

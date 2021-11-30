@@ -161,15 +161,16 @@ public class UserController {
 
     /**
      * Finds current user data (username, encrypted password, orders).
+     *
      * @param principal user principal
      * @return current user
-     * @throws InvalidPageException if offset is negative or limit is equal or less then zero
+     * @throws InvalidPageException      if offset is negative or limit is equal or less then zero
      * @throws ResourceNotFoundException if saved user is not found
-     * @throws PageOutOfBoundsException if offset is greater then users amount
+     * @throws PageOutOfBoundsException  if offset is greater then users amount
      */
     @GetMapping("/me")
     public User showCurrentUser(Principal principal) throws InvalidPageException, ResourceNotFoundException, PageOutOfBoundsException {
-        User foundUser  = userService.findByUsername(principal.getName());
+        User foundUser = userService.findByUsername(principal.getName());
         return linksBuilder.buildLinks(foundUser);
     }
 }
